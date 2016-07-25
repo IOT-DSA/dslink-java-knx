@@ -1,0 +1,46 @@
+{
+  "name": "dslink-java-knx",
+  "version": "0.0.1",
+  "description": "Java DSLink for KNX",
+  "license": "Apache",
+  "author": {
+    "name": "HUA HOU",
+    "email": "hhou2011@gmail.com"
+  },
+  "main": "bin/dslink-java-knx",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/IOT-DSA/dslink-java-knx"
+  },
+  "bugs": {
+    "url": "https://github.com/IOT-DSA/dslink-java-knx/issues"
+  },
+  "configs": {
+    "name": {
+      "type": "string",
+      "default": "knx"
+    },
+    "broker": {
+      "type": "url"
+    },
+    "token": {
+      "type": "string"
+    },
+    "nodes": {
+      "type": "path",
+      "default": "nodes.json"
+    },
+    "key": {
+      "type": "path",
+      "default": ".key"
+    },
+    "log": {
+      "type": "enum",
+      "default": "info"
+    },
+    "handler_class": {
+      "type": "string",
+      "default": "org.dsa.iot.knx.Main"
+    }
+  }
+}

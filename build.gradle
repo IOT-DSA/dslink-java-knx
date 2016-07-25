@@ -1,0 +1,31 @@
+apply plugin: 'java'
+apply plugin: 'findbugs'
+apply plugin: 'application'
+
+version '0.0.1-SNAPSHOT'
+
+mainClassName = 'org.dsa.iot.knx.Main'
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'org.iot-dsa:dslink:0.14.1'
+}
+
+tasks.withType(FindBugs) {
+    reports {
+        xml.enabled = false
+        html.enabled = true
+    }
+}
+
+run {
+    args System.getProperty("exec.args", "").split()
+    workingDir project.buildDir
+}
+
+applicationDistribution.from new File(project.projectDir, "/dslink.json")
