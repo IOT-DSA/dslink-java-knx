@@ -14,6 +14,8 @@ repositories {
 
 dependencies {
     compile 'org.iot-dsa:dslink:0.14.1'
+    compile 'com.github.calimero:calimero-core:2.2'
+    compile 'com.github.calimero:calimero-tools:2.2' 
 }
 
 tasks.withType(FindBugs) {
