@@ -13,6 +13,8 @@ import org.dsa.iot.dslink.util.handler.Handler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import tuwien.auto.calimero.GroupAddress;
+
 public abstract class EditablePoint {
 	private static final Logger LOGGER;
 
@@ -23,15 +25,28 @@ public abstract class EditablePoint {
 	static final String ATTR_NAME = "name";
 	static final String ATTR_POINT_TYPE = "point type";
 	static final String ATTR_RESTORE_TYPE = "restore type";
+	static final String ATTR_MAIN_GROUP_NAME = "main group name";
+	static final String ATTR_MIDDLE_GROUP_NAME = "middle group name";
+	static final String ATTR_SUB_GROUP_NAME = "sub group name";
+	static final String ATTR_MAIN_GROUP_ADDRESS = "main group address";
+	static final String ATTR_MIDDLE_GROUP_ADDRESS = "middle group address";
+	static final String ATTR_SUB_GROUP_ADDRESS = "sub group address";
 
 	static final String ACTION_REMOVE = "remove";
 	static final String ACTION_EDIT = "edit";
-
+	static final String DEFAULT_GROUP_ADDRESS = "0";
 	static final String RESTORE_EDITABLE_POINT = "editable point";
 
 	KnxConnection conn;
 	EditableFolder folder;
 	Node node;
+
+	int mainGroupAddress;
+	int middleGroupAddress;
+	int subGroupAddress;
+	GroupAddress groupAddress;
+	ValueType valType;
+	PointType type;
 
 	public EditablePoint(KnxConnection conn, EditableFolder folder, Node node) {
 		this.conn = conn;
@@ -41,6 +56,12 @@ public abstract class EditablePoint {
 		makeEditAction();
 		makeRemoveAction();
 		makeSetAction();
+
+		this.type = PointType.parseType(node.getAttribute(ATTR_POINT_TYPE).getString());
+		this.mainGroupAddress = node.getAttribute(ATTR_MAIN_GROUP_ADDRESS).getNumber().intValue();
+		this.middleGroupAddress = node.getAttribute(ATTR_MIDDLE_GROUP_ADDRESS).getNumber().intValue();
+		this.subGroupAddress = node.getAttribute(ATTR_SUB_GROUP_ADDRESS).getNumber().intValue();
+		this.groupAddress = new GroupAddress(mainGroupAddress, middleGroupAddress, subGroupAddress);
 	}
 
 	protected void makeEditAction() {
@@ -49,6 +70,12 @@ public abstract class EditablePoint {
 		act.addParameter(new Parameter(ATTR_NAME, ValueType.STRING, new Value(node.getName())));
 		act.addParameter(new Parameter(ATTR_POINT_TYPE, ValueType.makeEnum(Utils.enumNames(PointType.class)),
 				node.getAttribute(ATTR_POINT_TYPE)));
+		act.addParameter(new Parameter(ATTR_MAIN_GROUP_NAME, ValueType.STRING, new Value("")));
+		act.addParameter(new Parameter(ATTR_MIDDLE_GROUP_NAME, ValueType.STRING, new Value("")));
+		act.addParameter(new Parameter(ATTR_SUB_GROUP_NAME, ValueType.STRING, new Value(DEFAULT_GROUP_ADDRESS)));
+		act.addParameter(new Parameter(ATTR_MAIN_GROUP_ADDRESS, ValueType.STRING, new Value(DEFAULT_GROUP_ADDRESS)));
+		act.addParameter(new Parameter(ATTR_MIDDLE_GROUP_ADDRESS, ValueType.STRING, new Value(DEFAULT_GROUP_ADDRESS)));
+		act.addParameter(new Parameter(ATTR_SUB_GROUP_ADDRESS, ValueType.STRING, new Value(DEFAULT_GROUP_ADDRESS)));
 
 		Node actionNode = node.getChild(ACTION_EDIT);
 		if (actionNode == null)
@@ -69,7 +96,7 @@ public abstract class EditablePoint {
 	protected class EditHandler implements Handler<ActionResult> {
 		public void handle(ActionResult event) {
 			String newname = event.getParameter("name", ValueType.STRING).getString();
-			if (newname != null && newname.length() > 0 && !newname.equals(node.getName())) {
+			if (newname != null && !newname.isEmpty() && !newname.equals(node.getName())) {
 				Node parent = node.getParent();
 				parent.removeChild(node);
 				node = parent.createChild(newname).build();
@@ -99,9 +126,17 @@ public abstract class EditablePoint {
 			}
 			Value newVal = event.getCurrent();
 			handleSet(newVal);
-
 		}
 	}
 
+	protected KnxConnection getConnection() {
+		return this.conn;
+	}
+
 	protected abstract void handleSet(Value val);
+
+	public abstract PointType getType();
+
+	public abstract GroupAddress getGroupAddress();
+
 }
