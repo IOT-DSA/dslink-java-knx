@@ -1,7 +1,7 @@
 package org.dsa.iot.knx;
 
 public enum GroupAddressType {
-   THREE_LEVEL, TWO_LEVEL, FREE;
+	THREE_LEVEL, TWO_LEVEL, FREE;
 
 	public static GroupAddressType parseType(String str) {
 		GroupAddressType type;
@@ -13,7 +13,6 @@ public enum GroupAddressType {
 		case "TWO_LEVEL":
 			type = GroupAddressType.TWO_LEVEL;
 			break;
-
 		case "FREE":
 			type = GroupAddressType.FREE;
 			break;

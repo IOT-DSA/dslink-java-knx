@@ -1,5 +1,8 @@
 package org.dsa.iot.knx;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 import org.dsa.iot.dslink.node.Node;
 import org.dsa.iot.dslink.node.Permission;
 import org.dsa.iot.dslink.node.actions.Action;
@@ -51,7 +54,7 @@ public class KnxLink {
 
 	public void init() {
 		restoreLastSession();
-		
+
 		makeAddIpConnection();
 		makeUSBConnection();
 		makeAddUartConnection();
@@ -60,15 +63,30 @@ public class KnxLink {
 	private void makeAddIpConnection() {
 		Action act = new Action(Permission.READ, new AddIpConnectionHandler());
 		act.addParameter(new Parameter(ATTR_NAME, ValueType.STRING));
-		act.addParameter(new Parameter(ATTR_TRANSMISSION_TYPE, ValueType.makeEnum(Utils.enumNames(TransmissionType.class))));
 		act.addParameter(
-				new Parameter(ATTR_GROUP_LEVEL, ValueType.makeEnum(Utils.enumNames(GroupAddressType.class))));
-		act.addParameter(new Parameter(ATTR_LOCAL_HOST, ValueType.STRING, new Value(DEFAULT_HOST_ADDRESS)));
-		act.addParameter(new Parameter(ATTR_REMOTE_HOST, ValueType.STRING, new Value("")));
+				new Parameter(ATTR_TRANSMISSION_TYPE, ValueType.makeEnum(Utils.enumNames(TransmissionType.class))));
+		act.addParameter(new Parameter(ATTR_GROUP_LEVEL, ValueType.makeEnum(Utils.enumNames(GroupAddressType.class))));
+		act.addParameter(new Parameter(ATTR_LOCAL_HOST, ValueType.STRING, new Value(getLocalHost())));
+		act.addParameter(new Parameter(ATTR_REMOTE_HOST, ValueType.STRING, new Value(DEFAULT_HOST_ADDRESS)));
 		act.addParameter(new Parameter(ATTR_REMOTE_PORT, ValueType.NUMBER, new Value(DEFAULT_KNX_PORT)));
 		act.addParameter(new Parameter(ATTR_USE_NAT, ValueType.BOOL, new Value(false)));
 		act.addParameter(new Parameter(ATTR_POLLING_INTERVAL, ValueType.NUMBER, new Value(DEFAULT_POLLING_INTERVAL)));
 		node.createChild(ACTION_ADD_IP_CONNECTION).setAction(act).build().setSerializable(false);
+	}
+
+	private String getLocalHost() {
+		String localHost = DEFAULT_HOST_ADDRESS;
+		InetAddress localInetAddress = null;
+		try {
+			localInetAddress = InetAddress.getLocalHost();
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		}
+		if (null != localInetAddress) {
+			localHost = localInetAddress.getHostAddress();
+		}
+
+		return localHost;
 	}
 
 	private void makeUSBConnection() {
@@ -80,7 +98,7 @@ public class KnxLink {
 	}
 
 	public void restoreLastSession() {
- 
+
 	}
 
 	private class AddIpConnectionHandler implements Handler<ActionResult> {
@@ -92,11 +110,11 @@ public class KnxLink {
 			String remoteHost = event.getParameter(ATTR_REMOTE_HOST, ValueType.STRING).getString();
 			int port = event.getParameter(ATTR_REMOTE_PORT, ValueType.NUMBER).getNumber().intValue();
 			boolean useNat = event.getParameter(ATTR_USE_NAT, ValueType.BOOL).getBool();
-            int interval = event.getParameter(ATTR_POLLING_INTERVAL, ValueType.NUMBER).getNumber().intValue();
-            		
+			int interval = event.getParameter(ATTR_POLLING_INTERVAL, ValueType.NUMBER).getNumber().intValue();
+
 			Node ipConnNode = node.createChild(name).build();
 			ipConnNode.setAttribute(ATTR_TRANSMISSION_TYPE, new Value(transmission));
-			ipConnNode.setAttribute(ATTR_GROUP_LEVEL, new Value(groupAddress));			
+			ipConnNode.setAttribute(ATTR_GROUP_LEVEL, new Value(groupAddress));
 			ipConnNode.setAttribute(ATTR_LOCAL_HOST, new Value(localHost));
 			ipConnNode.setAttribute(ATTR_REMOTE_HOST, new Value(remoteHost));
 			ipConnNode.setAttribute(ATTR_REMOTE_PORT, new Value(port));

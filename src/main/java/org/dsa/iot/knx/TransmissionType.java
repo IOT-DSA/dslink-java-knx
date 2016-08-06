@@ -2,7 +2,7 @@ package org.dsa.iot.knx;
 
 public enum TransmissionType {
 	Tunneling, Routing;
-	
+
 	public static TransmissionType parseType(String str) {
 		TransmissionType type;
 
