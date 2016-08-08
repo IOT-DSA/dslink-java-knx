@@ -74,7 +74,7 @@ public class KnxIpConnection extends KnxConnection {
 	InetSocketAddress localEP;
 	InetSocketAddress remoteEP;
 	String groupAddress;
-	TransmissionType serviceMode;
+	TransmissionType transType;
 	String localHost;
 	String remoteHost;
 	int port;
@@ -87,7 +87,7 @@ public class KnxIpConnection extends KnxConnection {
 	public KnxIpConnection(KnxLink link, Node node) {
 		super(link, node);
 
-		this.serviceMode = TransmissionType.parseType(node.getAttribute(ATTR_TRANSMISSION).getString());
+		this.transType = TransmissionType.parseType(node.getAttribute(ATTR_TRANSMISSION).getString());
 		this.groupAddress = node.getAttribute(ATTR_GROUP_ADDRESS).getString();
 		this.localHost = node.getAttribute(ATTR_LOCAL_HOST).getString();
 		this.localEP = (null == localHost || localHost.isEmpty()) ? null : new InetSocketAddress(localHost, 0);
@@ -99,14 +99,23 @@ public class KnxIpConnection extends KnxConnection {
 		groupToPoint = new HashMap<String, EditablePoint>();
 		stpe = Objects.createDaemonThreadPool();
 		addressToDeviceDIB = new HashMap<String, DeviceDIB>();
+
 		try {
-			networkLink = new KNXNetworkLinkIP(serviceMode.ordinal(), localEP, remoteEP, useNat, TPSettings.TP1);
-			networkLink.addLinkListener(new NetworkListener());
+			networkLink = new KNXNetworkLinkIP(TransmissionType.parseServiceMode(transType), localEP, remoteEP, useNat, TPSettings.TP1);
 		} catch (KNXException e) {
-			LOGGER.debug("error:", e);
+			e.printStackTrace();
 		} catch (InterruptedException e) {
-			LOGGER.debug("error:", e);
+			e.printStackTrace();
 		}
+		networkLink.addLinkListener(new NetworkListener());
+
+		try {
+			communicator = new ProcessCommunicatorImpl(networkLink);
+		} catch (KNXLinkClosedException e) {
+			e.printStackTrace();
+		}
+		communicator.addProcessListener(new ProcessCommunicatorListener());
+
 	}
 
 	public void init() {
@@ -192,6 +201,18 @@ public class KnxIpConnection extends KnxConnection {
 
 	}
 
+	private class ProcessCommunicatorListener implements ProcessListener {
+
+		public void groupWrite(ProcessEvent e) {
+
+		}
+
+		public void detached(DetachEvent e) {
+
+		}
+
+	}
+
 	private class Poller implements Runnable {
 		KnxConnection listener;
 
@@ -201,30 +222,10 @@ public class KnxIpConnection extends KnxConnection {
 
 		@Override
 		public void run() {
-
-			try {
-				communicator = new ProcessCommunicatorImpl(networkLink);
-				communicator.addProcessListener(new ProcessListener() {
-
-					public void groupWrite(ProcessEvent e) {
-
-					}
-
-					public void detached(DetachEvent e) {
-
-					}
-
-				});
-			} catch (KNXLinkClosedException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-
 			try {
 				poll(groupToPoint);
-			} catch (InterruptedException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
 			}
 		}
 	}
