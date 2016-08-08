@@ -179,12 +179,16 @@ public class DeviceFolder extends EditableFolder {
 			break;
 		case "4 Bit":
 			type = PointType.CONTROL;
+			break;
 		case "1 Byte":
 			type = PointType.UNSIGNED;
+			break;
 		case "2 Byte":
 			type = PointType.UNSIGNED;
+			break;
 		case "4 Byte":
 			type = PointType.UNSIGNED;
+			break;
 		default:
 			type = PointType.STRING;
 			break;
