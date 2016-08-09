@@ -12,6 +12,7 @@ import java.util.Queue;
 
 import org.dsa.iot.dslink.node.Node;
 import org.dsa.iot.knx.EditableFolder;
+import org.dsa.iot.knx.GroupAddressBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,8 +36,8 @@ public class OpcFileParser {
 
 	public void parseItems() {
 		Map<String, ArrayList<GroupAddress>> pathToNodes = new HashMap<String, ArrayList<GroupAddress>>();
-		Map<GroupAddress, String> addressToName = new HashMap<GroupAddress, String>();
-		Map<GroupAddress, String> addressToDataType = new HashMap<GroupAddress, String>();
+		Map<GroupAddress, GroupAddressBean> addressToBean = new HashMap<GroupAddress, GroupAddressBean>();
+	
 		String[] lines = content.split(System.getProperty("line.separator"));
 		String mainGroup = null;
 		String middleGroup = null;
@@ -55,15 +56,20 @@ public class OpcFileParser {
 			try {
 				groupAddress = new GroupAddress(address);
 			} catch (KNXFormatException e) {
-
 				e.printStackTrace();
 			}
+			
 			String nodeAndPath = addressAndMore[1];
 			String[] subDirectories = nodeAndPath.split("_");
 			String nodeName = subDirectories[0] + ("_") + subDirectories[1] + ("_") + subDirectories[2];
 
-			addressToName.put(groupAddress, nodeName);
-			addressToDataType.put(groupAddress, dataSize);
+			GroupAddressBean bean = new GroupAddressBean();
+			bean.setMainGroup(mainGroup);
+			bean.setMiddleGroup(middleGroup);
+			bean.setGroupAddress(groupAddress.toString());
+			bean.setDataSize(dataSize);
+
+			addressToBean.put(groupAddress, bean);
 
 			String path = nodeAndPath.substring(
 					subDirectories[0].length() + 1 + subDirectories[1].length() + 1 + subDirectories[2].length() + 1);
@@ -72,7 +78,6 @@ public class OpcFileParser {
 				ArrayList<GroupAddress> nodes = new ArrayList<>();
 				nodes.add(groupAddress);
 				pathToNodes.put(path, nodes);
-
 			} else {
 				ArrayList<GroupAddress> nodes = pathToNodes.get(path);
 				nodes.add(groupAddress);
@@ -92,10 +97,8 @@ public class OpcFileParser {
 
 			ArrayList<GroupAddress> nodes = (ArrayList<GroupAddress>) pair.getValue();
 			for (GroupAddress groupAddress : nodes) {
-				String dataType = addressToDataType.get(groupAddress);
-				String name = addressToName.get(groupAddress);
-				folder.buildDataPoint(lastNode, groupAddress, dataType, mainGroup, middleGroup, address);
-				LOGGER.info(name + " : " + groupAddress.toString());
+				GroupAddressBean bean = addressToBean.get(groupAddress);
+				folder.buildDataPoint(lastNode, bean);
 			}
 		}
 	}

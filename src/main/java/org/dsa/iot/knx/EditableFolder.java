@@ -174,8 +174,7 @@ public abstract class EditableFolder {
 
 	protected abstract void importProjectByEsf(ActionResult event);
 
-	public void buildDataPoint(Node parent, GroupAddress address, String measurement, String mainGroupName,
-			String middleGroupName, String groupAddressName) {
+	public void buildDataPoint(Node parent, GroupAddressBean addressBean) {
 
 	}
 

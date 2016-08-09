@@ -10,13 +10,13 @@ import org.dsa.iot.dslink.node.actions.ActionResult;
 import org.dsa.iot.dslink.node.value.Value;
 import org.dsa.iot.dslink.node.value.ValueType;
 import org.dsa.iot.knx.project.EtsProjectParser;
-import org.dsa.iot.knx.project.GroupAddressBean;
 import org.dsa.iot.knx.project.OpcFileParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 import tuwien.auto.calimero.GroupAddress;
+import tuwien.auto.calimero.exception.KNXFormatException;
 
 public class DeviceFolder extends EditableFolder {
 	private static final Logger LOGGER;
@@ -145,22 +145,27 @@ public class DeviceFolder extends EditableFolder {
 			return parent;
 		}
 	}
-
-	public void buildDataPoint(Node parent, GroupAddress address, String dataSize, String mainGroupName,
-			String middleGroupName, String subGroupName) {
+    
+	@Override
+	public void buildDataPoint(Node parent, GroupAddressBean addressBean) {
+		GroupAddress address = null;
+		try {
+			address = new GroupAddress(addressBean.getGroupAddress());
+		} catch (KNXFormatException e) {
+			e.printStackTrace();
+		}
 		int mainGroupAddress = address.getMainGroup();
 		int middleGroupAddress = address.getMiddleGroup();
-		int subGroupAddress = address.getSubGroup11();
+		int subGroupAddress = address.getSubGroup8();
+       // TBD: default case is for three levels, will add two level case later
 
-		PointType type = getDataTypeByDataSize(dataSize);
-		String name = mainGroupName + "_" + middleGroupName + "_" + subGroupName;
+		PointType type = getDataTypeByDataSize(addressBean.getDataSize());
+		String name = address.toString();
 		ValueType valueType = getValueType(type);
 
 		Node pointNode = parent.createChild(name).setValueType(valueType).build();
 		pointNode.setAttribute(ATTR_POINT_TYPE, new Value(type.toString()));
-		pointNode.setAttribute(ATTR_MAIN_GROUP_NAME, new Value(mainGroupName));
-		pointNode.setAttribute(ATTR_MIDDLE_GROUP_NAME, new Value(middleGroupName));
-		pointNode.setAttribute(ATTR_SUB_GROUP_NAME, new Value(subGroupName));
+
 		pointNode.setAttribute(ATTR_MAIN_GROUP_ADDRESS, new Value(mainGroupAddress));
 		pointNode.setAttribute(ATTR_MIDDLE_GROUP_ADDRESS, new Value(middleGroupAddress));
 		pointNode.setAttribute(ATTR_SUB_GROUP_ADDRESS, new Value(subGroupAddress));
@@ -168,7 +173,7 @@ public class DeviceFolder extends EditableFolder {
 
 		KnxConnection conn = getConnection();
 		DevicePoint knxPoint = new DevicePoint(conn, this, pointNode);
-		conn.getGroupToPoint().put(middleGroupName, knxPoint);
+		conn.getGroupToPoint().put(String.valueOf(mainGroupAddress) + "/" + String.valueOf(middleGroupAddress), knxPoint);
 	}
 
 	private PointType getDataTypeByDataSize(String measurement) {

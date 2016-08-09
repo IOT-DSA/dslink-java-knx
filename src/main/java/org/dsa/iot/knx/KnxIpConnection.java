@@ -115,7 +115,6 @@ public class KnxIpConnection extends KnxConnection {
 			e.printStackTrace();
 		}
 		communicator.addProcessListener(new ProcessCommunicatorListener());
-
 	}
 
 	public void init() {
