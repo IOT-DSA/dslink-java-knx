@@ -17,10 +17,10 @@ public abstract class KnxConnection {
 	static {
 		LOGGER = LoggerFactory.getLogger(KnxConnection.class);
 	}
-	
+
 	static final String ACTION_REMOVE = "remove";
 	static final String ACTION_EDIT = "edit";
-	
+
 	KnxLink link;
 	Node node;
 	Map<String, EditablePoint> groupToPoint;
@@ -40,7 +40,7 @@ public abstract class KnxConnection {
 		else
 			actionNode.setAction(act);
 	};
-	
+
 	private class RemoveHandler implements Handler<ActionResult> {
 		public void handle(ActionResult event) {
 			remove();
@@ -59,11 +59,11 @@ public abstract class KnxConnection {
 	}
 
 	public void stopPolling() {
-		
+
 	}
 
 	public void startPolling() {
-	
+
 	}
 
 	public Map<String, EditablePoint> getGroupToPoint() {

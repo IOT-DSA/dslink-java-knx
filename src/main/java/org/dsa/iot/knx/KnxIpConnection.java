@@ -63,17 +63,18 @@ public class KnxIpConnection extends KnxConnection {
 
 	static final int SEARCH_TIMEOUT = 5;
 	static final int DEFAULT_INTERVAL = 5;
+	static final int DEFAULT_DELAY = 5;
 
 	boolean useNat = false;
 	static ScheduledThreadPoolExecutor stpe;
 	static ScheduledFuture<?> future;
 
-	KNXNetworkLink knxLink;
-	ProcessCommunicator pc;
+	KNXNetworkLink networkLink;
+	ProcessCommunicator communicator;
 	InetSocketAddress localEP;
 	InetSocketAddress remoteEP;
 	String groupAddress;
-	int serviceMode;
+	TransmissionType transType;
 	String localHost;
 	String remoteHost;
 	int port;
@@ -86,9 +87,7 @@ public class KnxIpConnection extends KnxConnection {
 	public KnxIpConnection(KnxLink link, Node node) {
 		super(link, node);
 
-		this.knxLink = null;
-		this.pc = null;
-		this.serviceMode = KNXNetworkLinkIP.ROUTING;		
+		this.transType = TransmissionType.parseType(node.getAttribute(ATTR_TRANSMISSION).getString());
 		this.groupAddress = node.getAttribute(ATTR_GROUP_ADDRESS).getString();
 		this.localHost = node.getAttribute(ATTR_LOCAL_HOST).getString();
 		this.localEP = (null == localHost || localHost.isEmpty()) ? null : new InetSocketAddress(localHost, 0);
@@ -100,6 +99,23 @@ public class KnxIpConnection extends KnxConnection {
 		groupToPoint = new HashMap<String, EditablePoint>();
 		stpe = Objects.createDaemonThreadPool();
 		addressToDeviceDIB = new HashMap<String, DeviceDIB>();
+
+		try {
+			networkLink = new KNXNetworkLinkIP(TransmissionType.parseServiceMode(transType), localEP, remoteEP, useNat, TPSettings.TP1);
+		} catch (KNXException e) {
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		networkLink.addLinkListener(new NetworkListener());
+
+		try {
+			communicator = new ProcessCommunicatorImpl(networkLink);
+		} catch (KNXLinkClosedException e) {
+			e.printStackTrace();
+		}
+		communicator.addProcessListener(new ProcessCommunicatorListener());
+
 	}
 
 	public void init() {
@@ -115,8 +131,7 @@ public class KnxIpConnection extends KnxConnection {
 	public void makeEditAction() {
 		Action act = new Action(Permission.READ, new EditHandler());
 		act.addParameter(new Parameter(ATTR_NAME, ValueType.STRING, new Value(node.getName())));
-		act.addParameter(
-				new Parameter(ATTR_TRANSMISSION, ValueType.makeEnum(Utils.enumNames(TransmissionType.class))));
+		act.addParameter(new Parameter(ATTR_TRANSMISSION, ValueType.makeEnum(Utils.enumNames(TransmissionType.class))));
 		act.addParameter(
 				new Parameter(ATTR_GROUP_ADDRESS, ValueType.makeEnum(Utils.enumNames(GroupAddressType.class))));
 		act.addParameter(new Parameter(ATTR_LOCAL_HOST, ValueType.STRING, node.getAttribute(ATTR_LOCAL_HOST)));
@@ -170,6 +185,34 @@ public class KnxIpConnection extends KnxConnection {
 
 	}
 
+	private class NetworkListener implements NetworkLinkListener {
+
+		public void indication(FrameEvent e) {
+
+		}
+
+		public void linkClosed(CloseEvent e) {
+
+		}
+
+		public void confirmation(FrameEvent e) {
+
+		}
+
+	}
+
+	private class ProcessCommunicatorListener implements ProcessListener {
+
+		public void groupWrite(ProcessEvent e) {
+
+		}
+
+		public void detached(DetachEvent e) {
+
+		}
+
+	}
+
 	private class Poller implements Runnable {
 		KnxConnection listener;
 
@@ -180,51 +223,9 @@ public class KnxIpConnection extends KnxConnection {
 		@Override
 		public void run() {
 			try {
-				knxLink = new KNXNetworkLinkIP(serviceMode, localEP, remoteEP, useNat, TPSettings.TP1);
-				knxLink.addLinkListener(new NetworkLinkListener() {
-
-					public void indication(FrameEvent e) {
-						
-					}
-
-					public void linkClosed(CloseEvent e) {
-
-					}
-
-					public void confirmation(FrameEvent e) {
-
-					}
-
-				});
-			} catch (KNXException e1) {
-				LOGGER.debug("error:", e1);;
-			} catch (InterruptedException e1) {
-				LOGGER.debug("error:", e1);;
-			}
-
-			try {
-				pc = new ProcessCommunicatorImpl(knxLink);
-				pc.addProcessListener(new ProcessListener() {
-
-					public void groupWrite(ProcessEvent e) {
-
-					}
-
-					public void detached(DetachEvent e) {
-
-					}
-
-				});
-			} catch (KNXLinkClosedException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-
-			try {
-				poll(pc, groupToPoint);
-			} catch (InterruptedException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
+				poll(groupToPoint);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
 			}
 		}
 	}
@@ -306,13 +307,14 @@ public class KnxIpConnection extends KnxConnection {
 
 	public void stopPolling() {
 		if (future != null) {
-			LOGGER.debug("stopping polling for device " + node.getName());
+			LOGGER.info("stopping polling for device " + node.getName());
 			future.cancel(false);
 			future = null;
 		}
 	}
 
 	public void startPolling() {
+		LOGGER.info("Polling: ");
 		stpe = getDaemonThreadPool();
 		Poller poller = new Poller();
 		poller.addListener(getConnection());
@@ -320,72 +322,80 @@ public class KnxIpConnection extends KnxConnection {
 
 	}
 
-	private static void poll(ProcessCommunicator pc, Map<String, EditablePoint> groupToPoint)
-			throws InterruptedException {
+	private void readPoint(String group, EditablePoint point) {
+		PointType type = point.getType();
+		GroupAddress addr = point.getGroupAddress();
+		Node pointNode = point.node;
+		String valString = null;
 
-		LOGGER.info("Polling: ");
+		try {
+			switch (type) {
+			case BOOL: {
+				valString = Boolean.toString(communicator.readBool(addr));
+				break;
+			}
+			case CONTROL: {
+				valString = Integer.toString(communicator.readControl(addr));
+				break;
+			}
+			case FLOAT2: {
+				valString = Float.toString(communicator.readFloat(addr, false));
+				break;
+			}
+			case FLOAT4: {
+				valString = Float.toString(communicator.readFloat(addr, true));
+				break;
+			}
+			case UNSIGNED: {
+				// should be able to choose between UNSCALED, SCALING, and
+				// ANGLE
+				valString = Integer.toString(communicator.readUnsigned(addr, ProcessCommunicationBase.UNSCALED));
+				break;
+			}
+			default: {
+				break;
+			}
+
+			}
+
+			Value v = new Value(valString);
+			ValueType vt = ValueType.STRING;
+			if (valString.length() == 0) {
+				vt = pointNode.getValueType();
+				v = null;
+			}
+
+			if (type == PointType.BOOL) {
+				vt = ValueType.BOOL;
+				v = new Value(Boolean.parseBoolean(valString));
+			} else if (type == PointType.CONTROL) {
+				vt = ValueType.BOOL;
+				v = new Value(Boolean.parseBoolean(valString));
+			} else if (type == PointType.FLOAT2 || type == PointType.FLOAT4) {
+				vt = ValueType.BOOL;
+				v = new Value(Float.parseFloat(valString));
+			} else if (type == PointType.UNSIGNED) {
+				vt = ValueType.NUMBER;
+				v = new Value(Integer.parseInt(valString));
+			} else if (type == PointType.STRING) {
+				vt = ValueType.STRING;
+				v = new Value(valString);
+			}
+
+			pointNode.setValueType(vt);
+			pointNode.setValue(v);
+			LOGGER.debug("read and updated " + pointNode.getName());
+
+		} catch (KNXException | InterruptedException e) {
+			LOGGER.debug("error: ", e);
+		}
+	}
+
+	private void poll(Map<String, EditablePoint> groupToPoint) throws InterruptedException {
 		for (Entry<String, EditablePoint> entry : groupToPoint.entrySet()) {
 			String name = entry.getKey();
 			EditablePoint point = entry.getValue();
-
-			PointType type = point.getType();
-			GroupAddress addr = point.getGroupAddress();
-			String valString;
-
-			try {
-				switch (type) {
-				case BOOL: {
-					valString = Boolean.toString(pc.readBool(addr));
-					break;
-				}
-				case CONTROL: {
-					valString = Integer.toString(pc.readControl(addr));
-					break;
-				}
-				case FLOAT2: {
-					valString = Float.toString(pc.readFloat(addr, false));
-					break;
-				}
-				case FLOAT4: {
-					valString = Float.toString(pc.readFloat(addr, true));
-					break;
-				}
-				case UNSIGNED: {
-					// should be able to choose between UNSCALED, SCALING, and
-					// ANGLE
-					valString = Integer.toString(pc.readUnsigned(addr, ProcessCommunicationBase.UNSCALED));
-					break;
-				}
-				default: {
-					valString = pc.readString(addr);
-					break;
-				}
-
-				}
-				LOGGER.info(name + " : " + valString);
-				Node pointNode = point.node;
-				{
-					Value v = new Value(valString);
-					ValueType vt = ValueType.STRING;
-					if (valString.length() == 0) {
-						vt = pointNode.getValueType();
-						v = null;
-					}
-
-					if (type == PointType.BOOL) {
-						vt = ValueType.BOOL;
-						v = new Value(Boolean.parseBoolean(valString));
-					} else {
-						// TBD
-					}
-
-					pointNode.setValueType(vt);
-					pointNode.setValue(v);
-					LOGGER.debug("read and updated " + pointNode.getName());
-				}
-			} catch (KNXException e) {
-				LOGGER.debug("error: ", e);
-			}
+			readPoint(name, point);
 		}
 
 	}
@@ -401,31 +411,28 @@ public class KnxIpConnection extends KnxConnection {
 		try {
 			switch (type) {
 			case BOOL: {
-				pc.write(dst, val.getBool());
+				communicator.write(dst, val.getBool());
 				break;
 			}
 			case CONTROL: {
-
-				pc.write(dst, val.getBool(), stepcode);
+				communicator.write(dst, val.getBool(), stepcode);
 				break;
 			}
 			case FLOAT2: {
-
-				pc.write(dst, val.getNumber().floatValue(), !use4ByteFloat);
+				communicator.write(dst, val.getNumber().floatValue(), !use4ByteFloat);
 				break;
 			}
 			case FLOAT4: {
-				pc.write(dst, val.getNumber().floatValue(), use4ByteFloat);
+				communicator.write(dst, val.getNumber().floatValue(), use4ByteFloat);
 				break;
 			}
 			case UNSIGNED: {
 				// should be able to choose between UNSCALED, SCALING, and
 				// ANGLE
-				pc.write(dst, val.getNumber().intValue(), scale);
+				communicator.write(dst, val.getNumber().intValue(), scale);
 				break;
 			}
 			default: {
-
 				break;
 			}
 

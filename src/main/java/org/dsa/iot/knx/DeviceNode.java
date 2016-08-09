@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 
 public class DeviceNode extends DeviceFolder {
 	private static final Logger LOGGER;
-	
+
 	static {
 		LOGGER = LoggerFactory.getLogger(DeviceNode.class);
 	}
@@ -14,5 +14,5 @@ public class DeviceNode extends DeviceFolder {
 	public DeviceNode(KnxConnection conn, DeviceFolder root, Node node) {
 		super(conn, root, node);
 	}
-	
+
 }

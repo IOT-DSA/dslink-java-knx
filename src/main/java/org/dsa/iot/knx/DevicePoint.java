@@ -9,11 +9,11 @@ import tuwien.auto.calimero.GroupAddress;
 
 public class DevicePoint extends EditablePoint {
 	private static final Logger LOGGER;
-	
+
 	static {
 		LOGGER = LoggerFactory.getLogger(DevicePoint.class);
 	}
-	
+
 	public DevicePoint(KnxConnection conn, EditableFolder folder, Node node) {
 		super(conn, folder, node);
 
@@ -23,7 +23,6 @@ public class DevicePoint extends EditablePoint {
 	@Override
 	protected void handleSet(Value newVal) {
 		folder.getConnection().setPointValue(this, newVal);
-
 	}
 
 	@Override

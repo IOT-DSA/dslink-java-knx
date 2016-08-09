@@ -1,8 +1,10 @@
 package org.dsa.iot.knx;
 
+import tuwien.auto.calimero.link.KNXNetworkLinkIP;
+
 public enum TransmissionType {
 	Tunneling, Routing;
-	
+
 	public static TransmissionType parseType(String str) {
 		TransmissionType type;
 
@@ -18,5 +20,16 @@ public enum TransmissionType {
 		}
 
 		return type;
+	}
+	
+	public static int parseServiceMode(TransmissionType type){
+		switch (type){
+		case Tunneling:
+			return KNXNetworkLinkIP.TUNNELING;
+		case Routing: 
+			return KNXNetworkLinkIP.ROUTING;
+		default:
+			return KNXNetworkLinkIP.ROUTING;
+		}
 	}
 }
