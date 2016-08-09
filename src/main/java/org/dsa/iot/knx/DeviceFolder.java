@@ -9,7 +9,6 @@ import org.dsa.iot.dslink.node.Node;
 import org.dsa.iot.dslink.node.actions.ActionResult;
 import org.dsa.iot.dslink.node.value.Value;
 import org.dsa.iot.dslink.node.value.ValueType;
-import org.dsa.iot.knx.project.EtsProjectParser;
 import org.dsa.iot.knx.project.OpcFileParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,18 +91,7 @@ public class DeviceFolder extends EditableFolder {
 
 	@Override
 	protected void importProjectByXml(ActionResult event) {
-		String content = event.getParameter(ATTR_PROJECT_CONTENT, ValueType.STRING).getString();
-		EtsProjectParser parser = new EtsProjectParser(content);
-		List<GroupAddressBean> groupAddressBeans = new ArrayList<>();
-		try {
-			parser.parseItems(groupAddressBeans);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (SAXException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+
 	}
 
 	@Override

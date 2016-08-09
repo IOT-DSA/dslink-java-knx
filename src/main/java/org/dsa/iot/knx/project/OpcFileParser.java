@@ -23,7 +23,7 @@ public class OpcFileParser {
 	private static final Logger LOGGER;
 
 	static {
-		LOGGER = LoggerFactory.getLogger(EtsProjectParser.class);
+		LOGGER = LoggerFactory.getLogger(OpcFileParser.class);
 	}
 
 	private String content;
