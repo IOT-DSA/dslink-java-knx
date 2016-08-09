@@ -37,12 +37,12 @@ public class OpcFileParser {
 	public void parseItems() {
 		Map<String, ArrayList<GroupAddress>> pathToNodes = new HashMap<String, ArrayList<GroupAddress>>();
 		Map<GroupAddress, GroupAddressBean> addressToBean = new HashMap<GroupAddress, GroupAddressBean>();
-	
+
 		String[] lines = content.split(System.getProperty("line.separator"));
 		String mainGroup = null;
 		String middleGroup = null;
 		String address = null;
-		
+
 		// skip the title and build the hash map: path => nodes
 		for (int i = 1; i < lines.length; i++) {
 			String line = lines[i];
@@ -58,7 +58,7 @@ public class OpcFileParser {
 			} catch (KNXFormatException e) {
 				e.printStackTrace();
 			}
-			
+
 			String nodeAndPath = addressAndMore[1];
 			String[] subDirectories = nodeAndPath.split("_");
 			String nodeName = subDirectories[0] + ("_") + subDirectories[1] + ("_") + subDirectories[2];
@@ -68,7 +68,7 @@ public class OpcFileParser {
 			bean.setMiddleGroup(middleGroup);
 			bean.setGroupAddress(groupAddress.toString());
 			bean.setDataSize(dataSize);
-
+			bean.setName(nodeName);
 			addressToBean.put(groupAddress, bean);
 
 			String path = nodeAndPath.substring(
@@ -92,7 +92,6 @@ public class OpcFileParser {
 			String path = (String) pair.getKey();
 			String[] subDirectories = path.split("_");
 			Queue<String> queue = new LinkedList<>(Arrays.asList(subDirectories));
-
 			Node lastNode = folder.buildFolderTree(folder.getNode(), queue);
 
 			ArrayList<GroupAddress> nodes = (ArrayList<GroupAddress>) pair.getValue();

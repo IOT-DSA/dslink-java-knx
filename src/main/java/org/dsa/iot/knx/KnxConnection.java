@@ -1,5 +1,6 @@
 package org.dsa.iot.knx;
 
+import java.util.ArrayList;
 import java.util.Map;
 
 import org.dsa.iot.dslink.node.Node;
@@ -23,7 +24,7 @@ public abstract class KnxConnection {
 
 	KnxLink link;
 	Node node;
-	Map<String, EditablePoint> groupToPoint;
+	Map<String, ArrayList<EditablePoint>> groupToPoints;
 
 	public KnxConnection(KnxLink link, Node node) {
 		this.link = link;
@@ -58,16 +59,16 @@ public abstract class KnxConnection {
 		return this.link;
 	}
 
-	public void stopPolling() {
+	public void stopPolling(DevicePoint point) {
 
 	}
 
-	public void startPolling() {
+	public void startPolling(DevicePoint point) {
 
 	}
 
-	public Map<String, EditablePoint> getGroupToPoint() {
-		return this.groupToPoint;
+	public Map<String, ArrayList<EditablePoint>> getGroupToPoints() {
+		return this.groupToPoints;
 	}
 
 	public void setPointValue(EditablePoint point, Value newVal) {
@@ -75,6 +76,10 @@ public abstract class KnxConnection {
 
 	public void setupPointListener(DevicePoint devicePoint) {
 
+	}
+
+	public GroupAddressType getGroupLevel() {
+		return GroupAddressType.THREE_LEVEL;
 	}
 
 }

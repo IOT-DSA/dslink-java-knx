@@ -1,6 +1,7 @@
 package org.dsa.iot.knx;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -54,7 +55,7 @@ public class KnxIpConnection extends KnxConnection {
 	static final String ACTION_DISCOVER_DEVICES = "discover devices";
 	static final String ATTR_NAME = "name";
 	static final String ATTR_TRANSMISSION = "transmission type";
-	static final String ATTR_GROUP_ADDRESS = "group address type";
+	static final String ATTR_GROUP_LEVEL = "group address type";
 	static final String ATTR_LOCAL_HOST = "local host";
 	static final String ATTR_REMOTE_HOST = "remote host";
 	static final String ATTR_REMOTE_PORT = "remote port";
@@ -73,8 +74,9 @@ public class KnxIpConnection extends KnxConnection {
 	ProcessCommunicator communicator;
 	InetSocketAddress localEP;
 	InetSocketAddress remoteEP;
-	String groupAddress;
 	TransmissionType transType;
+	GroupAddressType groupLevel;
+
 	String localHost;
 	String remoteHost;
 	int port;
@@ -84,11 +86,13 @@ public class KnxIpConnection extends KnxConnection {
 	Map<String, DeviceDIB> addressToDeviceDIB;
 	Map<String, ServiceFamiliesDIB> addressToServiceFamiliesDIB;
 
+	Poller poller;
+
 	public KnxIpConnection(KnxLink link, Node node) {
 		super(link, node);
 
 		this.transType = TransmissionType.parseType(node.getAttribute(ATTR_TRANSMISSION).getString());
-		this.groupAddress = node.getAttribute(ATTR_GROUP_ADDRESS).getString();
+		this.groupLevel = GroupAddressType.parseType(node.getAttribute(ATTR_GROUP_LEVEL).getString());
 		this.localHost = node.getAttribute(ATTR_LOCAL_HOST).getString();
 		this.localEP = (null == localHost || localHost.isEmpty()) ? null : new InetSocketAddress(localHost, 0);
 		this.remoteHost = node.getAttribute(ATTR_REMOTE_HOST).getString();
@@ -96,12 +100,13 @@ public class KnxIpConnection extends KnxConnection {
 		this.port = node.getAttribute(ATTR_REMOTE_PORT).getNumber().intValue();
 		this.useNat = node.getAttribute(ATTR_USE_NAT).getBool();
 		this.interval = node.getAttribute(ATTR_POLLING_INTERVAL).getNumber().intValue();
-		groupToPoint = new HashMap<String, EditablePoint>();
+		groupToPoints = new HashMap<String, ArrayList<EditablePoint>>();
 		stpe = Objects.createDaemonThreadPool();
 		addressToDeviceDIB = new HashMap<String, DeviceDIB>();
 
 		try {
-			networkLink = new KNXNetworkLinkIP(TransmissionType.parseServiceMode(transType), localEP, remoteEP, useNat, TPSettings.TP1);
+			networkLink = new KNXNetworkLinkIP(TransmissionType.parseServiceMode(transType), localEP, remoteEP, useNat,
+					TPSettings.TP1);
 		} catch (KNXException e) {
 			e.printStackTrace();
 		} catch (InterruptedException e) {
@@ -131,8 +136,7 @@ public class KnxIpConnection extends KnxConnection {
 		Action act = new Action(Permission.READ, new EditHandler());
 		act.addParameter(new Parameter(ATTR_NAME, ValueType.STRING, new Value(node.getName())));
 		act.addParameter(new Parameter(ATTR_TRANSMISSION, ValueType.makeEnum(Utils.enumNames(TransmissionType.class))));
-		act.addParameter(
-				new Parameter(ATTR_GROUP_ADDRESS, ValueType.makeEnum(Utils.enumNames(GroupAddressType.class))));
+		act.addParameter(new Parameter(ATTR_GROUP_LEVEL, ValueType.makeEnum(Utils.enumNames(GroupAddressType.class))));
 		act.addParameter(new Parameter(ATTR_LOCAL_HOST, ValueType.STRING, node.getAttribute(ATTR_LOCAL_HOST)));
 		act.addParameter(new Parameter(ATTR_REMOTE_HOST, ValueType.STRING, node.getAttribute(ATTR_REMOTE_HOST)));
 		act.addParameter(new Parameter(ATTR_REMOTE_PORT, ValueType.NUMBER, node.getAttribute(ATTR_REMOTE_PORT)));
@@ -163,12 +167,12 @@ public class KnxIpConnection extends KnxConnection {
 			int port = event.getParameter(ATTR_REMOTE_PORT, ValueType.NUMBER).getNumber().intValue();
 			String localHost = event.getParameter(ATTR_LOCAL_HOST, ValueType.STRING).getString();
 			String transmission = event.getParameter(ATTR_TRANSMISSION, ValueType.STRING).getString();
-			String groupAddress = event.getParameter(ATTR_GROUP_ADDRESS, ValueType.STRING).getString();
+			String groupAddress = event.getParameter(ATTR_GROUP_LEVEL, ValueType.STRING).getString();
 			boolean useNat = event.getParameter(ATTR_USE_NAT, ValueType.BOOL).getBool();
 			int interval = event.getParameter(ATTR_POLLING_INTERVAL, ValueType.NUMBER).getNumber().intValue();
 
 			node.setAttribute(ATTR_TRANSMISSION, new Value(transmission));
-			node.setAttribute(ATTR_GROUP_ADDRESS, new Value(groupAddress));
+			node.setAttribute(ATTR_GROUP_LEVEL, new Value(groupAddress));
 			node.setAttribute(ATTR_REMOTE_PORT, new Value(port));
 			node.setAttribute(ATTR_LOCAL_HOST, new Value(localHost));
 			node.setAttribute(ATTR_REMOTE_HOST, new Value(remoteHost));
@@ -181,7 +185,6 @@ public class KnxIpConnection extends KnxConnection {
 		public void handle(ActionResult event) {
 			discover();
 		}
-
 	}
 
 	private class NetworkListener implements NetworkLinkListener {
@@ -197,7 +200,6 @@ public class KnxIpConnection extends KnxConnection {
 		public void confirmation(FrameEvent e) {
 
 		}
-
 	}
 
 	private class ProcessCommunicatorListener implements ProcessListener {
@@ -209,7 +211,6 @@ public class KnxIpConnection extends KnxConnection {
 		public void detached(DetachEvent e) {
 
 		}
-
 	}
 
 	private class Poller implements Runnable {
@@ -222,7 +223,7 @@ public class KnxIpConnection extends KnxConnection {
 		@Override
 		public void run() {
 			try {
-				poll(groupToPoint);
+				poll(groupToPoints);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -261,15 +262,12 @@ public class KnxIpConnection extends KnxConnection {
 				if (responses.length > 0) {
 					future.cancel(true);
 				}
-
 			} catch (KNXException e) {
 				LOGGER.debug("error: ", e);
 			} catch (InterruptedException e) {
 				LOGGER.debug("error: ", e);
 			}
-
 		}
-
 	}
 
 	private void discover() {
@@ -304,26 +302,30 @@ public class KnxIpConnection extends KnxConnection {
 		}
 	}
 
-	public void stopPolling() {
+	@Override
+	public void stopPolling(DevicePoint point) {
 		if (future != null) {
-			LOGGER.info("stopping polling for device " + node.getName());
 			future.cancel(false);
 			future = null;
 		}
 	}
 
-	public void startPolling() {
+	@Override
+	public void startPolling(DevicePoint point) {
 		LOGGER.info("Polling: ");
 		stpe = getDaemonThreadPool();
-		Poller poller = new Poller();
-		poller.addListener(getConnection());
-		future = stpe.scheduleWithFixedDelay(poller, 0, 5, TimeUnit.MILLISECONDS);
+		if (null == poller) {
+			poller = new Poller();
+			poller.addListener(getConnection());
+		}
 
+		future = stpe.scheduleWithFixedDelay(poller, 0, 5, TimeUnit.MILLISECONDS);
 	}
 
 	private void readPoint(String group, EditablePoint point) {
 		PointType type = point.getType();
 		GroupAddress addr = point.getGroupAddress();
+		LOGGER.info(group + " : " + addr.toString());
 		Node pointNode = point.node;
 		String valString = null;
 
@@ -390,11 +392,14 @@ public class KnxIpConnection extends KnxConnection {
 		}
 	}
 
-	private void poll(Map<String, EditablePoint> groupToPoint) throws InterruptedException {
-		for (Entry<String, EditablePoint> entry : groupToPoint.entrySet()) {
-			String name = entry.getKey();
-			EditablePoint point = entry.getValue();
-			readPoint(name, point);
+	private void poll(Map<String, ArrayList<EditablePoint>> groupToPoints) throws InterruptedException {
+		for (Entry<String, ArrayList<EditablePoint>> entry : groupToPoints.entrySet()) {
+			String group = entry.getKey();
+			ArrayList<EditablePoint> points = entry.getValue();
+			for (EditablePoint point : points) {
+				readPoint(group, point);
+			}
+
 		}
 
 	}
@@ -446,7 +451,7 @@ public class KnxIpConnection extends KnxConnection {
 
 	private void handleSub(final DevicePoint point, final Node event) {
 		// point.addToSub(event);
-		point.getConnection().startPolling();
+		point.getConnection().startPolling(point);
 		LOGGER.debug("subscribed to " + point.node.getName());
 	}
 
@@ -454,7 +459,7 @@ public class KnxIpConnection extends KnxConnection {
 		// point.removeFromSub(event);
 		// if (point.noneSubscribed())
 		{
-			point.getConnection().stopPolling();
+			point.getConnection().stopPolling(point);
 			LOGGER.debug("unsubscribed from " + point.node.getName());
 		}
 	}
@@ -474,5 +479,10 @@ public class KnxIpConnection extends KnxConnection {
 				handleUnsub(point, event);
 			}
 		});
+	}
+
+	@Override
+	public GroupAddressType getGroupLevel() {
+		return groupLevel;
 	}
 }
