@@ -12,6 +12,7 @@ import java.util.Queue;
 
 import org.dsa.iot.dslink.node.Node;
 import org.dsa.iot.knx.EditableFolder;
+import org.dsa.iot.knx.GroupAddressBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,7 +23,7 @@ public class OpcFileParser {
 	private static final Logger LOGGER;
 
 	static {
-		LOGGER = LoggerFactory.getLogger(EtsProjectParser.class);
+		LOGGER = LoggerFactory.getLogger(OpcFileParser.class);
 	}
 
 	private String content;
@@ -34,14 +35,14 @@ public class OpcFileParser {
 	}
 
 	public void parseItems() {
-		Map<String, ArrayList<GroupAddress>> pathToNodes = new HashMap<String, ArrayList<GroupAddress>>();
-		Map<GroupAddress, String> addressToName = new HashMap<GroupAddress, String>();
-		Map<GroupAddress, String> addressToDataType = new HashMap<GroupAddress, String>();
+		Map<String, List<GroupAddress>> pathToNodes = new HashMap<>();
+		Map<GroupAddress, GroupAddressBean> addressToBean = new HashMap<>();
+
 		String[] lines = content.split(System.getProperty("line.separator"));
 		String mainGroup = null;
 		String middleGroup = null;
 		String address = null;
-		
+
 		// skip the title and build the hash map: path => nodes
 		for (int i = 1; i < lines.length; i++) {
 			String line = lines[i];
@@ -55,26 +56,30 @@ public class OpcFileParser {
 			try {
 				groupAddress = new GroupAddress(address);
 			} catch (KNXFormatException e) {
-
 				e.printStackTrace();
 			}
+
 			String nodeAndPath = addressAndMore[1];
 			String[] subDirectories = nodeAndPath.split("_");
 			String nodeName = subDirectories[0] + ("_") + subDirectories[1] + ("_") + subDirectories[2];
 
-			addressToName.put(groupAddress, nodeName);
-			addressToDataType.put(groupAddress, dataSize);
+			GroupAddressBean bean = new GroupAddressBean();
+			bean.setMainGroup(mainGroup);
+			bean.setMiddleGroup(middleGroup);
+			bean.setGroupAddress(groupAddress.toString());
+			bean.setDataSize(dataSize);
+			bean.setName(nodeName);
+			addressToBean.put(groupAddress, bean);
 
 			String path = nodeAndPath.substring(
 					subDirectories[0].length() + 1 + subDirectories[1].length() + 1 + subDirectories[2].length() + 1);
 
 			if (!pathToNodes.containsKey(path)) {
-				ArrayList<GroupAddress> nodes = new ArrayList<>();
+				List<GroupAddress> nodes = new ArrayList<>();
 				nodes.add(groupAddress);
 				pathToNodes.put(path, nodes);
-
 			} else {
-				ArrayList<GroupAddress> nodes = pathToNodes.get(path);
+				List<GroupAddress> nodes = pathToNodes.get(path);
 				nodes.add(groupAddress);
 				pathToNodes.put(path, nodes);
 			}
@@ -87,15 +92,12 @@ public class OpcFileParser {
 			String path = (String) pair.getKey();
 			String[] subDirectories = path.split("_");
 			Queue<String> queue = new LinkedList<>(Arrays.asList(subDirectories));
-
 			Node lastNode = folder.buildFolderTree(folder.getNode(), queue);
 
-			ArrayList<GroupAddress> nodes = (ArrayList<GroupAddress>) pair.getValue();
+			List<GroupAddress> nodes = (ArrayList<GroupAddress>) pair.getValue();
 			for (GroupAddress groupAddress : nodes) {
-				String dataType = addressToDataType.get(groupAddress);
-				String name = addressToName.get(groupAddress);
-				folder.buildDataPoint(lastNode, groupAddress, dataType, mainGroup, middleGroup, address);
-				LOGGER.info(name + " : " + groupAddress.toString());
+				GroupAddressBean bean = addressToBean.get(groupAddress);
+				folder.buildDataPoint(lastNode, bean);
 			}
 		}
 	}

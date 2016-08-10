@@ -34,7 +34,7 @@ public class KnxLink {
 	static final String ATTR_POLLING_INTERVAL = "polling interval";
 	static final int DEFAULT_KNX_PORT = 3671;
 	static final int DEFAULT_POLLING_INTERVAL = 5;
-	static final String DEFAULT_MULTICAST_ADDRESS = "239.255.255.255";
+	static final String DEFAULT_MULTICAST_ADDRESS = "";
 
 	Node node;
 	Serializer copySerializer;

@@ -1,22 +1,19 @@
 package org.dsa.iot.knx;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 
 import org.dsa.iot.dslink.node.Node;
 import org.dsa.iot.dslink.node.actions.ActionResult;
 import org.dsa.iot.dslink.node.value.Value;
 import org.dsa.iot.dslink.node.value.ValueType;
-import org.dsa.iot.knx.project.EtsProjectParser;
-import org.dsa.iot.knx.project.GroupAddressBean;
 import org.dsa.iot.knx.project.OpcFileParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
 
 import tuwien.auto.calimero.GroupAddress;
+import tuwien.auto.calimero.exception.KNXFormatException;
 
 public class DeviceFolder extends EditableFolder {
 	private static final Logger LOGGER;
@@ -87,23 +84,12 @@ public class DeviceFolder extends EditableFolder {
 		pointNode.setAttribute(ATTR_RESTORE_TYPE, new Value(ATTR_EDITBALE_POINT));
 
 		DevicePoint knxPoint = new DevicePoint(conn, this, pointNode);
-		getConnection().getGroupToPoint().put(middleGroupName, knxPoint);
+		getConnection().updateGroupToPoints(middleGroupName, knxPoint);
 	}
 
 	@Override
 	protected void importProjectByXml(ActionResult event) {
-		String content = event.getParameter(ATTR_PROJECT_CONTENT, ValueType.STRING).getString();
-		EtsProjectParser parser = new EtsProjectParser(content);
-		List<GroupAddressBean> groupAddressBeans = new ArrayList<>();
-		try {
-			parser.parseItems(groupAddressBeans);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (SAXException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+
 	}
 
 	@Override
@@ -146,55 +132,36 @@ public class DeviceFolder extends EditableFolder {
 		}
 	}
 
-	public void buildDataPoint(Node parent, GroupAddress address, String dataSize, String mainGroupName,
-			String middleGroupName, String subGroupName) {
+	@Override
+	public void buildDataPoint(Node parent, GroupAddressBean addressBean) {
+		GroupAddress address = null;
+		try {
+			address = new GroupAddress(addressBean.getGroupAddress());
+		} catch (KNXFormatException e) {
+			e.printStackTrace();
+		}
 		int mainGroupAddress = address.getMainGroup();
 		int middleGroupAddress = address.getMiddleGroup();
-		int subGroupAddress = address.getSubGroup11();
+		GroupAddressType groupLevel = getConnection().getGroupLevel();
+		int subGroupAddress = 0;
+		if (groupLevel == GroupAddressType.THREE_LEVEL) {
+			subGroupAddress = address.getSubGroup8();
+		} else if (groupLevel == GroupAddressType.TWO_LEVEL) {
+			subGroupAddress = address.getSubGroup11();
+		}
 
-		PointType type = getDataTypeByDataSize(dataSize);
-		String name = mainGroupName + "_" + middleGroupName + "_" + subGroupName;
+		PointType type = PointType.getDataTypeByDataSize(addressBean.getDataSize());
 		ValueType valueType = getValueType(type);
 
-		Node pointNode = parent.createChild(name).setValueType(valueType).build();
+		Node pointNode = parent.createChild(addressBean.getName()).setValueType(valueType).build();
 		pointNode.setAttribute(ATTR_POINT_TYPE, new Value(type.toString()));
-		pointNode.setAttribute(ATTR_MAIN_GROUP_NAME, new Value(mainGroupName));
-		pointNode.setAttribute(ATTR_MIDDLE_GROUP_NAME, new Value(middleGroupName));
-		pointNode.setAttribute(ATTR_SUB_GROUP_NAME, new Value(subGroupName));
 		pointNode.setAttribute(ATTR_MAIN_GROUP_ADDRESS, new Value(mainGroupAddress));
 		pointNode.setAttribute(ATTR_MIDDLE_GROUP_ADDRESS, new Value(middleGroupAddress));
 		pointNode.setAttribute(ATTR_SUB_GROUP_ADDRESS, new Value(subGroupAddress));
 		pointNode.setAttribute(ATTR_RESTORE_TYPE, new Value(ATTR_EDITBALE_POINT));
 
-		KnxConnection conn = getConnection();
 		DevicePoint knxPoint = new DevicePoint(conn, this, pointNode);
-		conn.getGroupToPoint().put(middleGroupName, knxPoint);
-	}
-
-	private PointType getDataTypeByDataSize(String measurement) {
-		PointType type;
-		switch (measurement) {
-		case "1 Bit":
-			type = PointType.BOOL;
-			break;
-		case "4 Bit":
-			type = PointType.CONTROL;
-			break;
-		case "1 Byte":
-			type = PointType.UNSIGNED;
-			break;
-		case "2 Byte":
-			type = PointType.UNSIGNED;
-			break;
-		case "4 Byte":
-			type = PointType.UNSIGNED;
-			break;
-		default:
-			type = PointType.STRING;
-			break;
-		}
-
-		return type;
+		getConnection().updateGroupToPoints(addressBean.getMiddleGroup(), knxPoint);
 	}
 
 }
