@@ -84,7 +84,7 @@ public class DeviceFolder extends EditableFolder {
 		pointNode.setAttribute(ATTR_RESTORE_TYPE, new Value(ATTR_EDITBALE_POINT));
 
 		DevicePoint knxPoint = new DevicePoint(conn, this, pointNode);
-		updateGroupToPoints(middleGroupName, knxPoint);
+		getConnection().updateGroupToPoints(middleGroupName, knxPoint);
 	}
 
 	@Override
@@ -150,7 +150,7 @@ public class DeviceFolder extends EditableFolder {
 			subGroupAddress = address.getSubGroup11();
 		}
 
-		PointType type = getDataTypeByDataSize(addressBean.getDataSize());
+		PointType type = PointType.getDataTypeByDataSize(addressBean.getDataSize());
 		ValueType valueType = getValueType(type);
 
 		Node pointNode = parent.createChild(addressBean.getName()).setValueType(valueType).build();
@@ -161,45 +161,7 @@ public class DeviceFolder extends EditableFolder {
 		pointNode.setAttribute(ATTR_RESTORE_TYPE, new Value(ATTR_EDITBALE_POINT));
 
 		DevicePoint knxPoint = new DevicePoint(conn, this, pointNode);
-		updateGroupToPoints(addressBean.getMiddleGroup(), knxPoint);
-	}
-
-	private void updateGroupToPoints(String group, DevicePoint point) {
-		ArrayList<EditablePoint> points = null;
-		Map<String, ArrayList<EditablePoint>> groupToPoints = getConnection().getGroupToPoints();
-		if (!groupToPoints.containsKey(group)) {
-			points = new ArrayList<>();
-		} else {
-			points = groupToPoints.get(group);
-		}
-		points.add(point);
-		getConnection().getGroupToPoints().put(group, points);
-	}
-
-	private PointType getDataTypeByDataSize(String measurement) {
-		PointType type;
-		switch (measurement) {
-		case "1 Bit":
-			type = PointType.BOOL;
-			break;
-		case "4 Bit":
-			type = PointType.CONTROL;
-			break;
-		case "1 Byte":
-			type = PointType.UNSIGNED;
-			break;
-		case "2 Byte":
-			type = PointType.UNSIGNED;
-			break;
-		case "4 Byte":
-			type = PointType.UNSIGNED;
-			break;
-		default:
-			type = PointType.STRING;
-			break;
-		}
-
-		return type;
+		getConnection().updateGroupToPoints(addressBean.getMiddleGroup(), knxPoint);
 	}
 
 }

@@ -139,4 +139,8 @@ public abstract class EditablePoint {
 
 	public abstract GroupAddress getGroupAddress();
 
+	public boolean isSubscribed() {
+		return false;
+	}
+
 }

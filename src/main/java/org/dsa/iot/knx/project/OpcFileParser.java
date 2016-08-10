@@ -35,8 +35,8 @@ public class OpcFileParser {
 	}
 
 	public void parseItems() {
-		Map<String, ArrayList<GroupAddress>> pathToNodes = new HashMap<String, ArrayList<GroupAddress>>();
-		Map<GroupAddress, GroupAddressBean> addressToBean = new HashMap<GroupAddress, GroupAddressBean>();
+		Map<String, List<GroupAddress>> pathToNodes = new HashMap<>();
+		Map<GroupAddress, GroupAddressBean> addressToBean = new HashMap<>();
 
 		String[] lines = content.split(System.getProperty("line.separator"));
 		String mainGroup = null;
@@ -75,11 +75,11 @@ public class OpcFileParser {
 					subDirectories[0].length() + 1 + subDirectories[1].length() + 1 + subDirectories[2].length() + 1);
 
 			if (!pathToNodes.containsKey(path)) {
-				ArrayList<GroupAddress> nodes = new ArrayList<>();
+				List<GroupAddress> nodes = new ArrayList<>();
 				nodes.add(groupAddress);
 				pathToNodes.put(path, nodes);
 			} else {
-				ArrayList<GroupAddress> nodes = pathToNodes.get(path);
+				List<GroupAddress> nodes = pathToNodes.get(path);
 				nodes.add(groupAddress);
 				pathToNodes.put(path, nodes);
 			}
@@ -94,7 +94,7 @@ public class OpcFileParser {
 			Queue<String> queue = new LinkedList<>(Arrays.asList(subDirectories));
 			Node lastNode = folder.buildFolderTree(folder.getNode(), queue);
 
-			ArrayList<GroupAddress> nodes = (ArrayList<GroupAddress>) pair.getValue();
+			List<GroupAddress> nodes = (ArrayList<GroupAddress>) pair.getValue();
 			for (GroupAddress groupAddress : nodes) {
 				GroupAddressBean bean = addressToBean.get(groupAddress);
 				folder.buildDataPoint(lastNode, bean);

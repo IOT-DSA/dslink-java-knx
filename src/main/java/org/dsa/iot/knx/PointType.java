@@ -28,4 +28,31 @@ public enum PointType {
 
 		return type;
 	}
+
+	public static PointType getDataTypeByDataSize(String measurement) {
+		PointType type;
+
+		switch (measurement) {
+		case "1 Bit":
+			type = PointType.BOOL;
+			break;
+		case "4 Bit":
+			type = PointType.CONTROL;
+			break;
+		case "1 Byte":
+			type = PointType.UNSIGNED;
+			break;
+		case "2 Byte":
+			type = PointType.UNSIGNED;
+			break;
+		case "4 Byte":
+			type = PointType.UNSIGNED;
+			break;
+		default:
+			type = PointType.STRING;
+			break;
+		}
+
+		return type;
+	}
 }
