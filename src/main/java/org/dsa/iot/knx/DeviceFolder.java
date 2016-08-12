@@ -164,12 +164,12 @@ public class DeviceFolder extends EditableFolder {
 
 		for (Node child : children.values()) {
 			Value restype = child.getAttribute(ATTR_RESTORE_TYPE);
-			if (null != restype && restype.getString().equals(ATTR_EDITABLE_FOLDER)) {
+			if (null != restype && ATTR_EDITABLE_FOLDER.equals(restype.getString())) {
 				DeviceFolder folder = new DeviceFolder(this.getConnection(), root, child);
 				folder.restoreLastSession();
-			} else if ( null != restype && restype.getString().equals(ATTR_EDITABLE_POINT)) {
+			} else if ( null != restype && ATTR_EDITABLE_POINT.equals(restype.getString())) {
 				new DevicePoint(this.getConnection(), this, child);
-			} else if (null == child.getAction() && !child.getName().equals(NODE_STATUS)) {
+			} else if (null == child.getAction() && !NODE_STATUS.equals(child.getName())) {
 				node.removeChild(child);
 			}
 		}

@@ -488,7 +488,7 @@ public class KnxIpConnection extends KnxConnection {
 			}
 
 			}
-			LOGGER.info(point.getGroupAddress() + " : " + val.getString());
+			LOGGER.debug(point.getGroupAddress() + " : " + val.getString());
 
 		} catch (KNXException e) {
 			LOGGER.debug("error: ", e);
@@ -561,7 +561,7 @@ public class KnxIpConnection extends KnxConnection {
 		boolean isRestore = true;
 		if (null != macAddress && null != individualAddress && null != medium && null != restType) {
 			discover(isRestore);
-		} else if (null == child.getAction() && !child.getName().equals("STATUS")) {
+		} else if (null == child.getAction() && !NODE_STATUS.equals(child.getName())) {
 			node.removeChild(child);
 		}
 	}

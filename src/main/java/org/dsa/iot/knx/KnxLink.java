@@ -124,7 +124,7 @@ public class KnxLink {
 					&& useNat != null && interval != null && timeout != null) {
 				KnxIpConnection ipConnection = new KnxIpConnection(getLink(), child);
 				ipConnection.restoreLastSession();
-			} else if (!child.getName().equals(NODE_DEFS)) {
+			} else if (!NODE_DEFS.equals(child.getName())) {
 				node.removeChild(child);
 			}
 		}
