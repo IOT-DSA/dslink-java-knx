@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import tuwien.auto.calimero.GroupAddress;
+import tuwien.auto.calimero.IndividualAddress;
 import tuwien.auto.calimero.exception.KNXFormatException;
 
 public class DeviceFolder extends EditableFolder {
@@ -22,23 +23,14 @@ public class DeviceFolder extends EditableFolder {
 		LOGGER = LoggerFactory.getLogger(DeviceFolder.class);
 	}
 
-	static final String ATTR_POINT_TYPE = "point type";
-	static final String ATTR_EDITBALE_POINT = "editable point";
-
-	DeviceFolder root;
-
 	public DeviceFolder(KnxConnection conn, Node node) {
 		super(conn, node);
 	}
 
-	public DeviceFolder(KnxConnection conn, DeviceFolder root, Node node) {
+	public DeviceFolder(KnxConnection conn, EditableFolder root, Node node) {
 		super(conn, node);
 
 		this.root = root;
-	}
-
-	public DeviceFolder getRoot() {
-		return this.root;
 	}
 
 	@Override
@@ -62,6 +54,8 @@ public class DeviceFolder extends EditableFolder {
 		int middleGroupAddress = event.getParameter(ATTR_MIDDLE_GROUP_ADDRESS, ValueType.NUMBER).getNumber().intValue();
 		int subGroupAddress = event.getParameter(ATTR_SUB_GROUP_ADDRESS, ValueType.NUMBER).getNumber().intValue();
 
+		IndividualAddress individualAddress = new IndividualAddress(mainGroupAddress, middleGroupAddress,
+				subGroupAddress);
 		PointType type;
 		try {
 			type = PointType.valueOf(event.getParameter(ATTR_POINT_TYPE, ValueType.STRING).getString().toUpperCase());
@@ -78,10 +72,7 @@ public class DeviceFolder extends EditableFolder {
 		pointNode.setAttribute(ATTR_MAIN_GROUP_NAME, new Value(mainGroupName));
 		pointNode.setAttribute(ATTR_MIDDLE_GROUP_NAME, new Value(middleGroupName));
 		pointNode.setAttribute(ATTR_SUB_GROUP_NAME, new Value(subGroupName));
-		pointNode.setAttribute(ATTR_MAIN_GROUP_ADDRESS, new Value(mainGroupAddress));
-		pointNode.setAttribute(ATTR_MIDDLE_GROUP_ADDRESS, new Value(middleGroupAddress));
-		pointNode.setAttribute(ATTR_SUB_GROUP_ADDRESS, new Value(subGroupAddress));
-		pointNode.setAttribute(ATTR_RESTORE_TYPE, new Value(ATTR_EDITBALE_POINT));
+		pointNode.setAttribute(ATTR_INDIVIDUAL_ADDRESS, new Value(individualAddress.toString()));
 
 		DevicePoint knxPoint = new DevicePoint(conn, this, pointNode);
 		getConnection().updateGroupToPoints(middleGroupName, knxPoint);
@@ -122,8 +113,7 @@ public class DeviceFolder extends EditableFolder {
 		if (path.size() > 0) {
 			String name = path.poll();
 			Node child = parent.createChild(name).build();
-			KnxConnection conn = getConnection();
-			DeviceFolder folder = new DeviceFolder(conn, child);
+			DeviceFolder folder = new DeviceFolder(getConnection(), child);
 			LOGGER.info(folder.node.getName());
 			Node node = buildFolderTree(child, path);
 			return node;
@@ -134,34 +124,54 @@ public class DeviceFolder extends EditableFolder {
 
 	@Override
 	public void buildDataPoint(Node parent, GroupAddressBean addressBean) {
-		GroupAddress address = null;
+		GroupAddress groupAddress = null;
 		try {
-			address = new GroupAddress(addressBean.getGroupAddress());
+			groupAddress = new GroupAddress(addressBean.getGroupAddress());
 		} catch (KNXFormatException e) {
 			e.printStackTrace();
+		} finally {
+			if(null == groupAddress)
+				return;
 		}
-		int mainGroupAddress = address.getMainGroup();
-		int middleGroupAddress = address.getMiddleGroup();
+		
+		int mainGroupAddress = groupAddress.getMainGroup();
+		int middleGroupAddress = groupAddress.getMiddleGroup();
 		GroupAddressType groupLevel = getConnection().getGroupLevel();
 		int subGroupAddress = 0;
 		if (groupLevel == GroupAddressType.THREE_LEVEL) {
-			subGroupAddress = address.getSubGroup8();
+			subGroupAddress = groupAddress.getSubGroup8();
 		} else if (groupLevel == GroupAddressType.TWO_LEVEL) {
-			subGroupAddress = address.getSubGroup11();
+			subGroupAddress = groupAddress.getSubGroup11();
 		}
-
+		IndividualAddress individualAddress = new IndividualAddress(mainGroupAddress, middleGroupAddress,
+				subGroupAddress);
 		PointType type = PointType.getDataTypeByDataSize(addressBean.getDataSize());
 		ValueType valueType = getValueType(type);
 
 		Node pointNode = parent.createChild(addressBean.getName()).setValueType(valueType).build();
 		pointNode.setAttribute(ATTR_POINT_TYPE, new Value(type.toString()));
-		pointNode.setAttribute(ATTR_MAIN_GROUP_ADDRESS, new Value(mainGroupAddress));
-		pointNode.setAttribute(ATTR_MIDDLE_GROUP_ADDRESS, new Value(middleGroupAddress));
-		pointNode.setAttribute(ATTR_SUB_GROUP_ADDRESS, new Value(subGroupAddress));
-		pointNode.setAttribute(ATTR_RESTORE_TYPE, new Value(ATTR_EDITBALE_POINT));
+		pointNode.setAttribute(ATTR_INDIVIDUAL_ADDRESS, new Value(individualAddress.toString()));
 
 		DevicePoint knxPoint = new DevicePoint(conn, this, pointNode);
 		getConnection().updateGroupToPoints(addressBean.getMiddleGroup(), knxPoint);
 	}
 
+	@Override
+	void restoreLastSession() {
+		Map<String, Node> children = node.getChildren();
+		if (null == children)
+			return;
+
+		for (Node child : children.values()) {
+			Value restype = child.getAttribute(ATTR_RESTORE_TYPE);
+			if (null != restype && ATTR_EDITABLE_FOLDER.equals(restype.getString())) {
+				DeviceFolder folder = new DeviceFolder(this.getConnection(), root, child);
+				folder.restoreLastSession();
+			} else if ( null != restype && ATTR_EDITABLE_POINT.equals(restype.getString())) {
+				new DevicePoint(this.getConnection(), this, child);
+			} else if (null == child.getAction() && !NODE_STATUS.equals(child.getName())) {
+				node.removeChild(child);
+			}
+		}
+	}
 }

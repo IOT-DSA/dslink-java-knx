@@ -24,27 +24,25 @@ public abstract class EditablePoint {
 
 	static final String ATTR_NAME = "name";
 	static final String ATTR_POINT_TYPE = "point type";
-	static final String ATTR_RESTORE_TYPE = "restore type";
 	static final String ATTR_MAIN_GROUP_NAME = "main group name";
 	static final String ATTR_MIDDLE_GROUP_NAME = "middle group name";
 	static final String ATTR_SUB_GROUP_NAME = "sub group name";
 	static final String ATTR_MAIN_GROUP_ADDRESS = "main group address";
 	static final String ATTR_MIDDLE_GROUP_ADDRESS = "middle group address";
 	static final String ATTR_SUB_GROUP_ADDRESS = "sub group address";
+	static final String ATTR_INDIVIDUAL_ADDRESS = "individual address";
+	static final String ATTR_RESTORE_TYPE = "restore type";
+	static final String RESTORE_EDITABLE_POINT = "editable point";
 
 	static final String ACTION_REMOVE = "remove";
 	static final String ACTION_EDIT = "edit";
+
 	static final String DEFAULT_GROUP_ADDRESS = "0";
-	static final String RESTORE_EDITABLE_POINT = "editable point";
 
 	KnxConnection conn;
 	EditableFolder folder;
 	Node node;
 
-	int mainGroupAddress;
-	int middleGroupAddress;
-	int subGroupAddress;
-	GroupAddress groupAddress;
 	ValueType valType;
 	PointType type;
 
@@ -52,16 +50,13 @@ public abstract class EditablePoint {
 		this.conn = conn;
 		this.folder = folder;
 		this.node = node;
+		this.node.setAttribute(ATTR_RESTORE_TYPE, new Value(RESTORE_EDITABLE_POINT));
 
 		makeEditAction();
 		makeRemoveAction();
 		makeSetAction();
 
 		this.type = PointType.parseType(node.getAttribute(ATTR_POINT_TYPE).getString());
-		this.mainGroupAddress = node.getAttribute(ATTR_MAIN_GROUP_ADDRESS).getNumber().intValue();
-		this.middleGroupAddress = node.getAttribute(ATTR_MIDDLE_GROUP_ADDRESS).getNumber().intValue();
-		this.subGroupAddress = node.getAttribute(ATTR_SUB_GROUP_ADDRESS).getNumber().intValue();
-		this.groupAddress = new GroupAddress(mainGroupAddress, middleGroupAddress, subGroupAddress);
 	}
 
 	protected void makeEditAction() {
@@ -78,7 +73,7 @@ public abstract class EditablePoint {
 		act.addParameter(new Parameter(ATTR_SUB_GROUP_ADDRESS, ValueType.STRING, new Value(DEFAULT_GROUP_ADDRESS)));
 
 		Node actionNode = node.getChild(ACTION_EDIT);
-		if (actionNode == null)
+		if (null == actionNode)
 			node.createChild(ACTION_EDIT).setAction(act).build().setSerializable(false);
 		else
 			actionNode.setAction(act);
@@ -87,7 +82,7 @@ public abstract class EditablePoint {
 	public void makeRemoveAction() {
 		Action act = new Action(Permission.READ, new RemoveHandler());
 		Node actionNode = node.getChild(ACTION_REMOVE);
-		if (actionNode == null)
+		if (null == actionNode)
 			node.createChild(ACTION_REMOVE).setAction(act).build().setSerializable(false);
 		else
 			actionNode.setAction(act);
@@ -96,7 +91,7 @@ public abstract class EditablePoint {
 	protected class EditHandler implements Handler<ActionResult> {
 		public void handle(ActionResult event) {
 			String newname = event.getParameter("name", ValueType.STRING).getString();
-			if (newname != null && !newname.isEmpty() && !newname.equals(node.getName())) {
+			if ( null != newname && !newname.isEmpty() && !newname.equals(node.getName())) {
 				Node parent = node.getParent();
 				parent.removeChild(node);
 				node = parent.createChild(newname).build();
