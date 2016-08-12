@@ -129,7 +129,11 @@ public class DeviceFolder extends EditableFolder {
 			groupAddress = new GroupAddress(addressBean.getGroupAddress());
 		} catch (KNXFormatException e) {
 			e.printStackTrace();
+		} finally {
+			if(null == groupAddress)
+				return;
 		}
+		
 		int mainGroupAddress = groupAddress.getMainGroup();
 		int middleGroupAddress = groupAddress.getMiddleGroup();
 		GroupAddressType groupLevel = getConnection().getGroupLevel();
@@ -160,12 +164,12 @@ public class DeviceFolder extends EditableFolder {
 
 		for (Node child : children.values()) {
 			Value restype = child.getAttribute(ATTR_RESTORE_TYPE);
-			if (restype != null && restype.getString().equals(ATTR_EDITABLE_FOLDER)) {
+			if (null != restype && restype.getString().equals(ATTR_EDITABLE_FOLDER)) {
 				DeviceFolder folder = new DeviceFolder(this.getConnection(), root, child);
 				folder.restoreLastSession();
-			} else if (restype != null && restype.getString().equals(ATTR_EDITABLE_POINT)) {
+			} else if ( null != restype && restype.getString().equals(ATTR_EDITABLE_POINT)) {
 				new DevicePoint(this.getConnection(), this, child);
-			} else if (child.getAction() == null && child != root.getStatusNode()) {
+			} else if (null == child.getAction() && !child.getName().equals(NODE_STATUS)) {
 				node.removeChild(child);
 			}
 		}

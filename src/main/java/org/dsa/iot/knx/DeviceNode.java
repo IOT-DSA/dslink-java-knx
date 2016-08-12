@@ -27,7 +27,7 @@ public class DeviceNode extends DeviceFolder {
 		super(conn, node);
 
 		this.root = this;
-		if (node.getChild("STATUS") != null) {
+		if (null != node.getChild(NODE_STATUS)) {
 			this.statusNode = node.getChild(NODE_STATUS);
 
 		} else {
@@ -46,10 +46,5 @@ public class DeviceNode extends DeviceFolder {
 		node.setAttribute(ATTR_INDIVIDUAL_ADDRESS, new Value(address.toString()));
 		node.setAttribute(ATTR_MEDIUM, new Value(mediumStr));
 		node.setAttribute(ATTR_MAC_ADDRESS, new Value(macStr));
-	}
-
-	@Override
-	public Node getStatusNode() {
-		return this.statusNode;
 	}
 }

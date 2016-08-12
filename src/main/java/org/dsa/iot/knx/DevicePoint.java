@@ -42,7 +42,12 @@ public class DevicePoint extends EditablePoint {
 			address = new IndividualAddress(addressStr);
 		} catch (KNXFormatException e) {
 			e.printStackTrace();
+		} finally {
+			if (null == address) {
+				return null;
+			}
 		}
+
 		int area = address.getArea();
 		int line = address.getLine();
 		int device = address.getDevice();

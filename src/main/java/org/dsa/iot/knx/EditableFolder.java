@@ -43,7 +43,8 @@ public abstract class EditableFolder {
 	static final String ACTION_ADD_FOLDER = "add folder";
 	static final String ACTION_IMPORT_PROJECT = "import by xml";
 	static final String ACTION_IMPORT_OPC = "import by esf";
-
+    static final String NODE_STATUS = "STATUS";
+    
 	KnxConnection conn;
 	Node node;
 	EditableFolder root;
@@ -155,9 +156,8 @@ public abstract class EditableFolder {
 	}
 
 	void restoreLastSession() {
-		if (node.getChildren() == null)
+		if (null == node.getChildren())
 			return;
-
 	}
 
 	public KnxConnection getConnection() {
@@ -183,10 +183,6 @@ public abstract class EditableFolder {
 	}
 
 	public Node buildFolderTree(Node node2, Queue<String> queue) {
-		return null;
-	}
-
-	public Node getStatusNode() {
 		return null;
 	}
 }

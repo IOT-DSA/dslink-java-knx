@@ -36,7 +36,7 @@ public abstract class KnxConnection {
 	public void makeRemoveAction() {
 		Action act = new Action(Permission.READ, new RemoveHandler());
 		Node actionNode = node.getChild(ACTION_REMOVE);
-		if (actionNode == null)
+		if (null == actionNode)
 			node.createChild(ACTION_REMOVE).setAction(act).build().setSerializable(false);
 		else
 			actionNode.setAction(act);

@@ -166,7 +166,7 @@ public class KnxIpConnection extends KnxConnection {
 				new Parameter(ATTR_POLLING_TIMEOUT, ValueType.NUMBER, node.getAttribute(ATTR_POLLING_TIMEOUT)));
 
 		Node actionNode = node.getChild(ACTION_EDIT);
-		if (actionNode == null)
+		if ( null == actionNode)
 			node.createChild(ACTION_EDIT).setAction(act).build().setSerializable(false);
 		else
 			actionNode.setAction(act);
@@ -175,7 +175,7 @@ public class KnxIpConnection extends KnxConnection {
 	public void makeDiscoverAction() {
 		Action act = new Action(Permission.READ, new DeviceDiscoveryHandler());
 		Node actionNode = node.getChild(ACTION_DISCOVER_DEVICES);
-		if (actionNode == null)
+		if ( null == actionNode)
 			node.createChild(ACTION_DISCOVER_DEVICES).setAction(act).build().setSerializable(false);
 		else
 			actionNode.setAction(act);
@@ -344,7 +344,7 @@ public class KnxIpConnection extends KnxConnection {
 		String address = point.getGroupAddress().toString();
 		ScheduledFuture<?> future = pointToFutures.remove(address);
 		if (!point.isSubscribed) {
-			if (future != null) {
+			if ( null != future) {
 				future.cancel(false);
 				future = null;
 			}
@@ -561,7 +561,7 @@ public class KnxIpConnection extends KnxConnection {
 		boolean isRestore = true;
 		if (null != macAddress && null != individualAddress && null != medium && null != restType) {
 			discover(isRestore);
-		} else if (child.getAction() == null && !child.getName().equals("STATUS")) {
+		} else if (null == child.getAction() && !child.getName().equals("STATUS")) {
 			node.removeChild(child);
 		}
 	}

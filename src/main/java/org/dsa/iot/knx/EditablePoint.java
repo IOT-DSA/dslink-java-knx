@@ -73,7 +73,7 @@ public abstract class EditablePoint {
 		act.addParameter(new Parameter(ATTR_SUB_GROUP_ADDRESS, ValueType.STRING, new Value(DEFAULT_GROUP_ADDRESS)));
 
 		Node actionNode = node.getChild(ACTION_EDIT);
-		if (actionNode == null)
+		if (null == actionNode)
 			node.createChild(ACTION_EDIT).setAction(act).build().setSerializable(false);
 		else
 			actionNode.setAction(act);
@@ -82,7 +82,7 @@ public abstract class EditablePoint {
 	public void makeRemoveAction() {
 		Action act = new Action(Permission.READ, new RemoveHandler());
 		Node actionNode = node.getChild(ACTION_REMOVE);
-		if (actionNode == null)
+		if (null == actionNode)
 			node.createChild(ACTION_REMOVE).setAction(act).build().setSerializable(false);
 		else
 			actionNode.setAction(act);
@@ -91,7 +91,7 @@ public abstract class EditablePoint {
 	protected class EditHandler implements Handler<ActionResult> {
 		public void handle(ActionResult event) {
 			String newname = event.getParameter("name", ValueType.STRING).getString();
-			if (newname != null && !newname.isEmpty() && !newname.equals(node.getName())) {
+			if ( null != newname && !newname.isEmpty() && !newname.equals(node.getName())) {
 				Node parent = node.getParent();
 				parent.removeChild(node);
 				node = parent.createChild(newname).build();
