@@ -8,6 +8,7 @@ import org.dsa.iot.dslink.node.actions.Action;
 import org.dsa.iot.dslink.node.actions.ActionResult;
 import org.dsa.iot.dslink.node.actions.EditorType;
 import org.dsa.iot.dslink.node.actions.Parameter;
+import org.dsa.iot.dslink.node.value.Value;
 import org.dsa.iot.dslink.node.value.ValueType;
 import org.dsa.iot.dslink.util.handler.Handler;
 import org.slf4j.Logger;
@@ -29,9 +30,11 @@ public abstract class EditableFolder {
 	static final String ATTR_MAIN_GROUP_ADDRESS = "main group address";
 	static final String ATTR_MIDDLE_GROUP_ADDRESS = "middle group address";
 	static final String ATTR_SUB_GROUP_ADDRESS = "sub group address";
+	static final String ATTR_INDIVIDUAL_ADDRESS = "individual address";
 	static final String ATTR_POINT_TYPE = "point type";
-	static final String ATTR_RESTORE_TYPE = "restoreType";
+	static final String ATTR_RESTORE_TYPE = "restore type";
 	static final String ATTR_EDITABLE_FOLDER = "editable folder";
+	static final String ATTR_EDITABLE_POINT = "editable point";
 	static final String ATTR_PROJECT_CONTENT = "project content";
 
 	static final String ACTION_REMOVE = "remove";
@@ -48,6 +51,7 @@ public abstract class EditableFolder {
 	public EditableFolder(KnxConnection conn, Node node) {
 		this.conn = conn;
 		this.node = node;
+		this.node.setAttribute(ATTR_RESTORE_TYPE, new Value(ATTR_EDITABLE_FOLDER));
 
 		makeEditAction();
 		makeRemoveAction();
@@ -85,7 +89,7 @@ public abstract class EditableFolder {
 		act.addParameter(new Parameter(ATTR_MAIN_GROUP_ADDRESS, ValueType.NUMBER));
 		act.addParameter(new Parameter(ATTR_MIDDLE_GROUP_ADDRESS, ValueType.NUMBER));
 		act.addParameter(new Parameter(ATTR_SUB_GROUP_ADDRESS, ValueType.NUMBER));
-		
+
 		node.createChild(ACTION_ADD_POINT).setAction(act).build().setSerializable(false);
 	}
 
@@ -179,6 +183,10 @@ public abstract class EditableFolder {
 	}
 
 	public Node buildFolderTree(Node node2, Queue<String> queue) {
+		return null;
+	}
+
+	public Node getStatusNode() {
 		return null;
 	}
 }

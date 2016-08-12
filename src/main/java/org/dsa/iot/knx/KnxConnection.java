@@ -1,6 +1,5 @@
 package org.dsa.iot.knx;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -36,9 +35,9 @@ public abstract class KnxConnection {
 
 	public void makeRemoveAction() {
 		Action act = new Action(Permission.READ, new RemoveHandler());
-		Node actionNode = node.getChild(ACTION_EDIT);
+		Node actionNode = node.getChild(ACTION_REMOVE);
 		if (actionNode == null)
-			node.createChild(ACTION_EDIT).setAction(act).build().setSerializable(false);
+			node.createChild(ACTION_REMOVE).setAction(act).build().setSerializable(false);
 		else
 			actionNode.setAction(act);
 	};
@@ -54,7 +53,7 @@ public abstract class KnxConnection {
 		node.getParent().removeChild(node);
 	}
 
-	public abstract void onDiscovered();
+	public abstract void onDiscovered(boolean isRestore);
 
 	public KnxLink getLink() {
 		return this.link;

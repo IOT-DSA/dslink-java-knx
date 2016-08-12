@@ -6,6 +6,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import tuwien.auto.calimero.GroupAddress;
+import tuwien.auto.calimero.IndividualAddress;
+import tuwien.auto.calimero.exception.KNXFormatException;
 
 public class DevicePoint extends EditablePoint {
 	private static final Logger LOGGER;
@@ -14,7 +16,8 @@ public class DevicePoint extends EditablePoint {
 		LOGGER = LoggerFactory.getLogger(DevicePoint.class);
 	}
 
-    boolean isSubscribed;
+	boolean isSubscribed;
+
 	public DevicePoint(KnxConnection conn, EditableFolder folder, Node node) {
 		super(conn, folder, node);
 
@@ -33,7 +36,17 @@ public class DevicePoint extends EditablePoint {
 
 	@Override
 	public GroupAddress getGroupAddress() {
-		return this.groupAddress;
+		String addressStr = node.getAttribute(ATTR_INDIVIDUAL_ADDRESS).getString();
+		IndividualAddress address = null;
+		try {
+			address = new IndividualAddress(addressStr);
+		} catch (KNXFormatException e) {
+			e.printStackTrace();
+		}
+		int area = address.getArea();
+		int line = address.getLine();
+		int device = address.getDevice();
+		return new GroupAddress(area, line, device);
 	}
 
 	public void startPolling() {
@@ -45,9 +58,9 @@ public class DevicePoint extends EditablePoint {
 		isSubscribed = false;
 		getConnection().stopPolling(this);
 	}
-	
+
 	@Override
-	public boolean isSubscribed(){
+	public boolean isSubscribed() {
 		return this.isSubscribed;
 	}
 }

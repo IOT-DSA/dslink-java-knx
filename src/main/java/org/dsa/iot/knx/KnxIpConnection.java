@@ -3,10 +3,12 @@ package org.dsa.iot.knx;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -55,16 +57,20 @@ public class KnxIpConnection extends KnxConnection {
 	static final String ACTION_ADD_DEVICE = "add device";
 	static final String ACTION_DISCOVER_DEVICES = "discover devices";
 	static final String ATTR_NAME = "name";
-	static final String ATTR_TRANSMISSION = "transmission type";
+	static final String ATTR_TRANSMISSION_TYPE = "transmission type";
 	static final String ATTR_GROUP_LEVEL = "group address type";
 	static final String ATTR_LOCAL_HOST = "local host";
 	static final String ATTR_REMOTE_HOST = "remote host";
 	static final String ATTR_REMOTE_PORT = "remote port";
 	static final String ATTR_USE_NAT = "use NAT";
 	static final String ATTR_POLLING_INTERVAL = "polling interval";
+	static final String ATTR_POLLING_TIMEOUT = "polling timeout";
+	static final String NODE_STATUS = "STATUS";
+	static final String STATUS_CONNECTED = "connected";
 
 	static final int SEARCH_TIMEOUT = 5;
-	static final int DEFAULT_INTERVAL = 5;
+	static final int POLLING_INTERVAL = 5;
+	static final int POLLING_TIMEOUT = 5;
 	static final int DEFAULT_DELAY = 5;
 	static final int INITIAL_DELAY = 0;
 
@@ -83,19 +89,23 @@ public class KnxIpConnection extends KnxConnection {
 	String remoteHost;
 	int port;
 	int interval;
+	int timeout;
 
 	Map<String, HPAI> addressToHPAI;
 	Map<String, DeviceDIB> addressToDeviceDIB;
 	Map<String, ServiceFamiliesDIB> addressToServiceFamiliesDIB;
+	Set<DeviceNode> deviceSet;
 
 	Poller poller;
 	Discoverer discoverer;
 	ScheduledFuture<?> discoverFuture;
 
+	private Node statusNode;
+
 	public KnxIpConnection(KnxLink link, Node node) {
 		super(link, node);
 
-		this.transType = TransmissionType.parseType(node.getAttribute(ATTR_TRANSMISSION).getString());
+		this.transType = TransmissionType.parseType(node.getAttribute(ATTR_TRANSMISSION_TYPE).getString());
 		this.groupLevel = GroupAddressType.parseType(node.getAttribute(ATTR_GROUP_LEVEL).getString());
 		this.localHost = node.getAttribute(ATTR_LOCAL_HOST).getString();
 		this.localEP = (null == localHost || localHost.isEmpty()) ? null : new InetSocketAddress(localHost, 0);
@@ -104,18 +114,21 @@ public class KnxIpConnection extends KnxConnection {
 		this.port = node.getAttribute(ATTR_REMOTE_PORT).getNumber().intValue();
 		this.useNat = node.getAttribute(ATTR_USE_NAT).getBool();
 		this.interval = node.getAttribute(ATTR_POLLING_INTERVAL).getNumber().intValue();
+		this.timeout = node.getAttribute(ATTR_POLLING_TIMEOUT).getNumber().intValue();
+
 		groupToPoints = new HashMap<>();
 		pointToFutures = new HashMap<>();
 		stpe = Objects.createDaemonThreadPool();
 		addressToDeviceDIB = new HashMap<String, DeviceDIB>();
-
+		deviceSet = new HashSet<DeviceNode>();
 		try {
 			networkLink = new KNXNetworkLinkIP(TransmissionType.parseServiceMode(transType), localEP, remoteEP, useNat,
 					TPSettings.TP1);
-		} catch (KNXException e) {
-			e.printStackTrace();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
+			this.statusNode = node.createChild(NODE_STATUS).setValueType(ValueType.STRING)
+					.setValue(new Value(STATUS_CONNECTED)).build();
+			this.statusNode.setSerializable(false);
+		} catch (KNXException | InterruptedException e) {
+			this.statusNode.setValue(new Value(e.getMessage()));
 		}
 		networkLink.addLinkListener(new NetworkListener());
 
@@ -140,7 +153,8 @@ public class KnxIpConnection extends KnxConnection {
 	public void makeEditAction() {
 		Action act = new Action(Permission.READ, new EditHandler());
 		act.addParameter(new Parameter(ATTR_NAME, ValueType.STRING, new Value(node.getName())));
-		act.addParameter(new Parameter(ATTR_TRANSMISSION, ValueType.makeEnum(Utils.enumNames(TransmissionType.class))));
+		act.addParameter(
+				new Parameter(ATTR_TRANSMISSION_TYPE, ValueType.makeEnum(Utils.enumNames(TransmissionType.class))));
 		act.addParameter(new Parameter(ATTR_GROUP_LEVEL, ValueType.makeEnum(Utils.enumNames(GroupAddressType.class))));
 		act.addParameter(new Parameter(ATTR_LOCAL_HOST, ValueType.STRING, node.getAttribute(ATTR_LOCAL_HOST)));
 		act.addParameter(new Parameter(ATTR_REMOTE_HOST, ValueType.STRING, node.getAttribute(ATTR_REMOTE_HOST)));
@@ -148,6 +162,8 @@ public class KnxIpConnection extends KnxConnection {
 		act.addParameter(new Parameter(ATTR_USE_NAT, ValueType.BOOL, node.getAttribute(ATTR_USE_NAT)));
 		act.addParameter(
 				new Parameter(ATTR_POLLING_INTERVAL, ValueType.NUMBER, node.getAttribute(ATTR_POLLING_INTERVAL)));
+		act.addParameter(
+				new Parameter(ATTR_POLLING_TIMEOUT, ValueType.NUMBER, node.getAttribute(ATTR_POLLING_TIMEOUT)));
 
 		Node actionNode = node.getChild(ACTION_EDIT);
 		if (actionNode == null)
@@ -171,12 +187,12 @@ public class KnxIpConnection extends KnxConnection {
 			String remoteHost = event.getParameter(ATTR_REMOTE_HOST, ValueType.STRING).getString();
 			int port = event.getParameter(ATTR_REMOTE_PORT, ValueType.NUMBER).getNumber().intValue();
 			String localHost = event.getParameter(ATTR_LOCAL_HOST, ValueType.STRING).getString();
-			String transmission = event.getParameter(ATTR_TRANSMISSION, ValueType.STRING).getString();
+			String transmission = event.getParameter(ATTR_TRANSMISSION_TYPE, ValueType.STRING).getString();
 			String groupAddress = event.getParameter(ATTR_GROUP_LEVEL, ValueType.STRING).getString();
 			boolean useNat = event.getParameter(ATTR_USE_NAT, ValueType.BOOL).getBool();
 			int interval = event.getParameter(ATTR_POLLING_INTERVAL, ValueType.NUMBER).getNumber().intValue();
 
-			node.setAttribute(ATTR_TRANSMISSION, new Value(transmission));
+			node.setAttribute(ATTR_TRANSMISSION_TYPE, new Value(transmission));
 			node.setAttribute(ATTR_GROUP_LEVEL, new Value(groupAddress));
 			node.setAttribute(ATTR_REMOTE_PORT, new Value(port));
 			node.setAttribute(ATTR_LOCAL_HOST, new Value(localHost));
@@ -188,7 +204,8 @@ public class KnxIpConnection extends KnxConnection {
 
 	private class DeviceDiscoveryHandler implements Handler<ActionResult> {
 		public void handle(ActionResult event) {
-			discover();
+			boolean isRestore = false;
+			discover(isRestore);
 		}
 	}
 
@@ -237,6 +254,11 @@ public class KnxIpConnection extends KnxConnection {
 
 	private class Discover implements Runnable {
 		KnxConnection listener;
+		boolean isRestore;
+
+		public Discover(boolean isRestore) {
+			this.isRestore = isRestore;
+		}
 
 		public void addListener(KnxConnection listener) {
 			this.listener = listener;
@@ -262,7 +284,7 @@ public class KnxIpConnection extends KnxConnection {
 					LOGGER.info("Family : " + fam.toString());
 
 					addressToDeviceDIB.put(hpai.getAddress().getHostAddress(), dib);
-					this.listener.onDiscovered();
+					this.listener.onDiscovered(isRestore);
 				}
 
 				if (responses.length > 0) {
@@ -276,17 +298,18 @@ public class KnxIpConnection extends KnxConnection {
 		}
 	}
 
-	private void discover() {
+	private void discover(boolean isRestore) {
 		stpe = getDaemonThreadPool();
-		Discover discover = new Discover();
+		Discover discover = new Discover(isRestore);
 		discover.addListener(getConnection());
-		discoverFuture = stpe.scheduleWithFixedDelay(discover, 0, getInterval(), TimeUnit.MILLISECONDS);
+		discoverFuture = stpe.schedule(discover, 0, TimeUnit.SECONDS);
 	}
 
-	protected void setupDeviceNode(String host, DeviceDIB dib) {
+	protected DeviceNode setupDeviceNode(String host, DeviceDIB dib) {
 		String name = dib.getName();
 		Node child = node.createChild(name).build();
-		DeviceNode deviceNode = new DeviceNode(getConnection(), null, child);
+		DeviceNode deviceNode = new DeviceNode(getConnection(), null, child, dib);
+		return deviceNode;
 	}
 
 	ScheduledThreadPoolExecutor getDaemonThreadPool() {
@@ -294,17 +317,25 @@ public class KnxIpConnection extends KnxConnection {
 	}
 
 	int getInterval() {
-		return DEFAULT_INTERVAL;
+		return POLLING_INTERVAL;
 	}
 
 	@Override
-	public void onDiscovered() {
+	public void onDiscovered(boolean isRestore) {
 		Iterator it = addressToDeviceDIB.entrySet().iterator();
+
 		while (it.hasNext()) {
 			Map.Entry pair = (Map.Entry) it.next();
 			String host = (String) pair.getKey();
 			DeviceDIB dib = (DeviceDIB) pair.getValue();
-			setupDeviceNode(host, dib);
+			DeviceNode device = setupDeviceNode(host, dib);
+			deviceSet.add(device);
+		}
+
+		if (isRestore && !deviceSet.isEmpty()) {
+			for (DeviceNode device : deviceSet) {
+				device.restoreLastSession();
+			}
 		}
 	}
 
@@ -318,7 +349,6 @@ public class KnxIpConnection extends KnxConnection {
 				future = null;
 			}
 		}
-
 	}
 
 	@Override
@@ -419,7 +449,6 @@ public class KnxIpConnection extends KnxConnection {
 				}
 			}
 		}
-
 	}
 
 	public void setPointValue(EditablePoint point, Value val) {
@@ -464,7 +493,6 @@ public class KnxIpConnection extends KnxConnection {
 		} catch (KNXException e) {
 			LOGGER.debug("error: ", e);
 		}
-
 	}
 
 	private void handleSub(final DevicePoint point, final Node event) {
@@ -510,5 +538,31 @@ public class KnxIpConnection extends KnxConnection {
 		}
 		points.add(point);
 		groupToPoints.put(group, points);
+	}
+
+	public void restoreLastSession() {
+		init();
+
+		Map<String, Node> children = node.getChildren();
+		if (null == children)
+			return;
+
+		for (Node child : children.values()) {
+			restoreDevice(child);
+		}
+
+	}
+
+	private void restoreDevice(Node child) {
+		final Value medium = child.getAttribute(DeviceNode.ATTR_MEDIUM);
+		final Value individualAddress = child.getAttribute(DeviceNode.ATTR_INDIVIDUAL_ADDRESS);
+		final Value macAddress = child.getAttribute(DeviceNode.ATTR_MAC_ADDRESS);
+		Value restType = child.getAttribute(EditableFolder.ATTR_RESTORE_TYPE);
+		boolean isRestore = true;
+		if (null != macAddress && null != individualAddress && null != medium && null != restType) {
+			discover(isRestore);
+		} else if (child.getAction() == null && !child.getName().equals("STATUS")) {
+			node.removeChild(child);
+		}
 	}
 }

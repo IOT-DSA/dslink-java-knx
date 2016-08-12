@@ -1,7 +1,9 @@
 package org.dsa.iot.knx;
 
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.util.Map;
 
 import org.dsa.iot.dslink.node.Node;
 import org.dsa.iot.dslink.node.Permission;
@@ -32,8 +34,13 @@ public class KnxLink {
 	static final String ATTR_REMOTE_PORT = "remote port";
 	static final String ATTR_USE_NAT = "use NAT";
 	static final String ATTR_POLLING_INTERVAL = "polling interval";
+	static final String ATTR_POLLING_TIMEOUT = "polling timeout";
+
+	static final String NODE_DEFS = "defs";
+
 	static final int DEFAULT_KNX_PORT = 3671;
 	static final int DEFAULT_POLLING_INTERVAL = 5;
+	static final int DEFAULT_POLLING_TIMEOUT = 5;
 	static final String DEFAULT_MULTICAST_ADDRESS = "";
 
 	Node node;
@@ -71,6 +78,7 @@ public class KnxLink {
 		act.addParameter(new Parameter(ATTR_REMOTE_PORT, ValueType.NUMBER, new Value(DEFAULT_KNX_PORT)));
 		act.addParameter(new Parameter(ATTR_USE_NAT, ValueType.BOOL, new Value(false)));
 		act.addParameter(new Parameter(ATTR_POLLING_INTERVAL, ValueType.NUMBER, new Value(DEFAULT_POLLING_INTERVAL)));
+		act.addParameter(new Parameter(ATTR_POLLING_TIMEOUT, ValueType.NUMBER, new Value(DEFAULT_POLLING_TIMEOUT)));
 		node.createChild(ACTION_ADD_IP_CONNECTION).setAction(act).build().setSerializable(false);
 	}
 
@@ -98,7 +106,28 @@ public class KnxLink {
 	}
 
 	public void restoreLastSession() {
+		Map<String, Node> children = node.getChildren();
+		if (node.getChildren() == null)
+			return;
 
+		for (Node child : children.values()) {
+			Value transType = child.getAttribute(ATTR_TRANSMISSION_TYPE);
+			Value groupLevel = child.getAttribute(ATTR_GROUP_LEVEL);
+			Value localHost = child.getAttribute(ATTR_LOCAL_HOST);
+			Value remoteHost = child.getAttribute(ATTR_REMOTE_HOST);
+			Value port = child.getAttribute(ATTR_REMOTE_PORT);
+			Value useNat = child.getAttribute(ATTR_USE_NAT);
+			Value interval = child.getAttribute(ATTR_POLLING_INTERVAL);
+			Value timeout = child.getAttribute(ATTR_POLLING_TIMEOUT);
+
+			if (transType != null && groupLevel != null && localHost != null && remoteHost != null && port != null
+					&& useNat != null && interval != null && timeout != null) {
+				KnxIpConnection ipConnection = new KnxIpConnection(getLink(), child);
+				ipConnection.restoreLastSession();
+			} else if (!child.getName().equals(NODE_DEFS)) {
+				node.removeChild(child);
+			}
+		}
 	}
 
 	private class AddIpConnectionHandler implements Handler<ActionResult> {
@@ -111,6 +140,7 @@ public class KnxLink {
 			int port = event.getParameter(ATTR_REMOTE_PORT, ValueType.NUMBER).getNumber().intValue();
 			boolean useNat = event.getParameter(ATTR_USE_NAT, ValueType.BOOL).getBool();
 			int interval = event.getParameter(ATTR_POLLING_INTERVAL, ValueType.NUMBER).getNumber().intValue();
+			int timeout = event.getParameter(ATTR_POLLING_TIMEOUT, ValueType.NUMBER).getNumber().intValue();
 
 			Node ipConnNode = node.createChild(name).build();
 			ipConnNode.setAttribute(ATTR_TRANSMISSION_TYPE, new Value(transmission));
@@ -120,6 +150,7 @@ public class KnxLink {
 			ipConnNode.setAttribute(ATTR_REMOTE_PORT, new Value(port));
 			ipConnNode.setAttribute(ATTR_USE_NAT, new Value(useNat));
 			ipConnNode.setAttribute(ATTR_POLLING_INTERVAL, new Value(interval));
+			ipConnNode.setAttribute(ATTR_POLLING_TIMEOUT, new Value(timeout));
 			KnxConnection conn = new KnxIpConnection(getLink(), ipConnNode);
 
 			conn.init();
