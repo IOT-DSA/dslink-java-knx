@@ -399,7 +399,10 @@ public class KnxIpConnection extends KnxConnection {
 				// ANGLE
 				valString = Integer.toString(communicator.readUnsigned(addr, ProcessCommunicationBase.UNSCALED));
 				break;
-			}
+				}
+			case STRING: 
+				valString = communicator.readString(addr);
+				break;			
 			default: {
 				break;
 			}
@@ -408,7 +411,7 @@ public class KnxIpConnection extends KnxConnection {
 
 			Value v = new Value(valString);
 			ValueType vt = ValueType.STRING;
-			if (valString.length() == 0) {
+			if (null != valString && valString.length() == 0) {
 				vt = pointNode.getValueType();
 				v = null;
 			}

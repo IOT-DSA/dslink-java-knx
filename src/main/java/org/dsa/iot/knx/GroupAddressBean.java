@@ -7,7 +7,7 @@ public class GroupAddressBean {
 	private String name;
 	private boolean settable;
 	private String dataType;
-	private String dataSize;
+	private String dataPointType;
 
 	public String getMainGroup() {
 		return mainGroup;
@@ -57,12 +57,12 @@ public class GroupAddressBean {
 		this.dataType = dataType;
 	}
 
-	public String getDataSize() {
-		return dataSize;
+	public String getDataPointType() {
+		return dataPointType;
 	}
 
-	public void setDataSize(String dataSize) {
-		this.dataSize = dataSize;
+	public void setDataPointType(String dataPointType) {
+		this.dataPointType = dataPointType;
 	}
 
 }
