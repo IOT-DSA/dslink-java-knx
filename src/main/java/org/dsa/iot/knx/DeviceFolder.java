@@ -118,7 +118,6 @@ public class DeviceFolder extends EditableFolder {
 			String name = path.poll();
 			Node child = parent.createChild(name).build();
 			DeviceFolder folder = new DeviceFolder(getConnection(), child);
-			LOGGER.info(folder.node.getName());
 			Node node = buildFolderTree(child, path);
 			return node;
 		} else {

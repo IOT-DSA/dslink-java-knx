@@ -53,7 +53,6 @@ public class EtsXmlParser extends KnxProjectParser {
 	static final String DATA_TYPE_SHORTNAME_UNDEFINED = "undefined";
 
 	Map<String, String> addressRefIdToTypeId;
-	Map<String, String> addressRefIdToDescription;
 
 	public EtsXmlParser(EditableFolder folder) {
 		super(folder);
@@ -103,8 +102,6 @@ public class EtsXmlParser extends KnxProjectParser {
 														String groupAddressRefId = send.getGroupAddressRefId();
 														if (null != dataTypeId && null != groupAddressRefId) {
 															addressRefIdToTypeId.put(groupAddressRefId, dataTypeId);
-															addressRefIdToDescription.put(groupAddressRefId,
-																	description);
 														}
 													}
 												}
