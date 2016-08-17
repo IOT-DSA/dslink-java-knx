@@ -1,0 +1,171 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="NewDataSet" targetNamespace="http://knx.org/xml/project/12" xmlns:mstns="http://knx.org/xml/project/12" xmlns="http://knx.org/xml/project/12" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" attributeFormDefault="qualified" elementFormDefault="qualified">
+  <xs:element name="GroupRange">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="GroupAddress" minOccurs="0" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:attribute name="Id" form="unqualified" type="xs:string" />
+            <xs:attribute name="Address" form="unqualified" type="xs:string" />
+            <xs:attribute name="Name" form="unqualified" type="xs:string" />
+            <xs:attribute name="Puid" form="unqualified" type="xs:string" />
+          </xs:complexType>
+        </xs:element>
+        <xs:element ref="GroupRange" minOccurs="0" maxOccurs="unbounded" />
+      </xs:sequence>
+      <xs:attribute name="Id" form="unqualified" type="xs:string" />
+      <xs:attribute name="Name" form="unqualified" type="xs:string" />
+      <xs:attribute name="RangeStart" form="unqualified" type="xs:string" />
+      <xs:attribute name="RangeEnd" form="unqualified" type="xs:string" />
+      <xs:attribute name="Puid" form="unqualified" type="xs:string" />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="KNX">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="Project" minOccurs="0" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Installations" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="Installation" minOccurs="0" maxOccurs="unbounded">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="Buildings" type="xs:string" minOccurs="0" msdata:Ordinal="1" />
+                          <xs:element name="Topology" minOccurs="0" maxOccurs="unbounded">
+                            <xs:complexType>
+                              <xs:sequence>
+                                <xs:element name="Area" minOccurs="0" maxOccurs="unbounded">
+                                  <xs:complexType>
+                                    <xs:sequence>
+                                      <xs:element name="Line" minOccurs="0" maxOccurs="unbounded">
+                                        <xs:complexType>
+                                          <xs:sequence>
+                                            <xs:element name="DeviceInstance" minOccurs="0" maxOccurs="unbounded">
+                                              <xs:complexType>
+                                                <xs:sequence>
+                                                  <xs:element name="ParameterInstanceRefs" minOccurs="0" maxOccurs="unbounded">
+                                                    <xs:complexType>
+                                                      <xs:sequence>
+                                                        <xs:element name="ParameterInstanceRef" minOccurs="0" maxOccurs="unbounded">
+                                                          <xs:complexType>
+                                                            <xs:attribute name="RefId" form="unqualified" type="xs:string" />
+                                                            <xs:attribute name="Value" form="unqualified" type="xs:string" />
+                                                            <xs:attribute name="Puid" form="unqualified" type="xs:string" />
+                                                          </xs:complexType>
+                                                        </xs:element>
+                                                      </xs:sequence>
+                                                    </xs:complexType>
+                                                  </xs:element>
+                                                  <xs:element name="ComObjectInstanceRefs" minOccurs="0" maxOccurs="unbounded">
+                                                    <xs:complexType>
+                                                      <xs:sequence>
+                                                        <xs:element name="ComObjectInstanceRef" minOccurs="0" maxOccurs="unbounded">
+                                                          <xs:complexType>
+                                                            <xs:sequence>
+                                                              <xs:element name="Connectors" minOccurs="0" maxOccurs="unbounded">
+                                                                <xs:complexType>
+                                                                  <xs:sequence>
+                                                                    <xs:element name="Send" minOccurs="0" maxOccurs="unbounded">
+                                                                      <xs:complexType>
+                                                                        <xs:attribute name="GroupAddressRefId" form="unqualified" type="xs:string" />
+                                                                      </xs:complexType>
+                                                                    </xs:element>
+                                                                  </xs:sequence>
+                                                                </xs:complexType>
+                                                              </xs:element>
+                                                            </xs:sequence>
+                                                            <xs:attribute name="RefId" form="unqualified" type="xs:string" />
+                                                            <xs:attribute name="IsActive" form="unqualified" type="xs:string" />
+                                                            <xs:attribute name="Puid" form="unqualified" type="xs:string" />
+                                                            <xs:attribute name="DatapointType" form="unqualified" type="xs:string" />
+                                                            <xs:attribute name="Description" form="unqualified" type="xs:string" />
+                                                          </xs:complexType>
+                                                        </xs:element>
+                                                      </xs:sequence>
+                                                    </xs:complexType>
+                                                  </xs:element>
+                                                </xs:sequence>
+                                                <xs:attribute name="Id" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="ProductRefId" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="Hardware2ProgramRefId" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="Address" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="LastModified" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="LastDownload" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="CompletionStatus" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="IndividualAddressLoaded" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="ApplicationProgramLoaded" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="ParametersLoaded" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="CommunicationPartLoaded" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="MediumConfigLoaded" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="IsCommunicationObjectVisibilityCalculated" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="Broken" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="Puid" form="unqualified" type="xs:string" />
+                                              </xs:complexType>
+                                            </xs:element>
+                                          </xs:sequence>
+                                          <xs:attribute name="Id" form="unqualified" type="xs:string" />
+                                          <xs:attribute name="Name" form="unqualified" type="xs:string" />
+                                          <xs:attribute name="Address" form="unqualified" type="xs:string" />
+                                          <xs:attribute name="MediumTypeRefId" form="unqualified" type="xs:string" />
+                                          <xs:attribute name="DomainAddress" form="unqualified" type="xs:string" />
+                                          <xs:attribute name="CompletionStatus" form="unqualified" type="xs:string" />
+                                          <xs:attribute name="Puid" form="unqualified" type="xs:string" />
+                                        </xs:complexType>
+                                      </xs:element>
+                                    </xs:sequence>
+                                    <xs:attribute name="Id" form="unqualified" type="xs:string" />
+                                    <xs:attribute name="Name" form="unqualified" type="xs:string" />
+                                    <xs:attribute name="Address" form="unqualified" type="xs:string" />
+                                    <xs:attribute name="CompletionStatus" form="unqualified" type="xs:string" />
+                                    <xs:attribute name="Puid" form="unqualified" type="xs:string" />
+                                  </xs:complexType>
+                                </xs:element>
+                              </xs:sequence>
+                            </xs:complexType>
+                          </xs:element>
+                          <xs:element name="GroupAddresses" minOccurs="0" maxOccurs="unbounded">
+                            <xs:complexType>
+                              <xs:sequence>
+                                <xs:element name="GroupRanges" minOccurs="0" maxOccurs="unbounded">
+                                  <xs:complexType>
+                                    <xs:sequence>
+                                      <xs:element ref="GroupRange" minOccurs="0" maxOccurs="unbounded" />
+                                    </xs:sequence>
+                                  </xs:complexType>
+                                </xs:element>
+                              </xs:sequence>
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                        <xs:attribute name="InstallationId" form="unqualified" type="xs:string" />
+                        <xs:attribute name="Name" form="unqualified" type="xs:string" />
+                        <xs:attribute name="BCUKey" form="unqualified" type="xs:string" />
+                        <xs:attribute name="DefaultLine" form="unqualified" type="xs:string" />
+                        <xs:attribute name="IPRoutingMulticastAddress" form="unqualified" type="xs:string" />
+                        <xs:attribute name="SplitType" form="unqualified" type="xs:string" />
+                        <xs:attribute name="CompletionStatus" form="unqualified" type="xs:string" />
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+            <xs:attribute name="Id" form="unqualified" type="xs:string" />
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+      <xs:attribute name="CreatedBy" form="unqualified" type="xs:string" />
+      <xs:attribute name="ToolVersion" form="unqualified" type="xs:string" />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="NewDataSet" msdata:IsDataSet="true" msdata:UseCurrentLocale="true">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="GroupRange" />
+        <xs:element ref="KNX" />
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

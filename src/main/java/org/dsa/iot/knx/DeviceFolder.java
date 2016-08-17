@@ -1,6 +1,5 @@
 package org.dsa.iot.knx;
 
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.Queue;
 
@@ -8,6 +7,8 @@ import org.dsa.iot.dslink.node.Node;
 import org.dsa.iot.dslink.node.actions.ActionResult;
 import org.dsa.iot.dslink.node.value.Value;
 import org.dsa.iot.dslink.node.value.ValueType;
+import org.dsa.iot.knx.project.EtsXmlParser;
+import org.dsa.iot.knx.project.KnxProjectParser;
 import org.dsa.iot.knx.project.OpcFileParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,15 +81,18 @@ public class DeviceFolder extends EditableFolder {
 
 	@Override
 	protected void importProjectByXml(ActionResult event) {
+		String content = event.getParameter(ATTR_PROJECT_CONTENT, ValueType.STRING).getString();
+		KnxProjectParser parser = new EtsXmlParser(this);
 
+		parser.parseItems(content);
 	}
 
 	@Override
 	protected void importProjectByEsf(ActionResult event) {
 		String content = event.getParameter(ATTR_PROJECT_CONTENT, ValueType.STRING).getString();
-		OpcFileParser parser = new OpcFileParser(this, content);
+		KnxProjectParser parser = new OpcFileParser(this);
 
-		parser.parseItems();
+		parser.parseItems(content);
 	}
 
 	private ValueType getValueType(PointType type) {
@@ -114,7 +118,6 @@ public class DeviceFolder extends EditableFolder {
 			String name = path.poll();
 			Node child = parent.createChild(name).build();
 			DeviceFolder folder = new DeviceFolder(getConnection(), child);
-			LOGGER.info(folder.node.getName());
 			Node node = buildFolderTree(child, path);
 			return node;
 		} else {
@@ -145,7 +148,7 @@ public class DeviceFolder extends EditableFolder {
 		}
 		IndividualAddress individualAddress = new IndividualAddress(mainGroupAddress, middleGroupAddress,
 				subGroupAddress);
-		PointType type = PointType.getDataTypeByDataSize(addressBean.getDataSize());
+		PointType type = PointType.getDataTypeByDataPointType(addressBean.getDataPointType());
 		ValueType valueType = getValueType(type);
 
 		Node pointNode = parent.createChild(addressBean.getName()).setValueType(valueType).build();

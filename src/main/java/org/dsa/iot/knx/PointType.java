@@ -1,10 +1,10 @@
 package org.dsa.iot.knx;
 
 public enum PointType {
-	BOOL, CONTROL, FLOAT2, FLOAT4, STRING, UNSIGNED;
+	BOOL, CONTROL, FLOAT2, FLOAT4, STRING, UNSIGNED, SIGNED;
 
 	public static PointType parseType(String str) {
-		PointType type;
+		PointType type = null;
 
 		switch (str) {
 		case "BOOL":
@@ -22,14 +22,20 @@ public enum PointType {
 		case "UNSIGNED":
 			type = PointType.UNSIGNED;
 			break;
-		default:
+		case "SIGNED":
+			type = PointType.SIGNED;
+			break;
+		case "STRING":
 			type = PointType.STRING;
+			break;
+		default:
+			break;
 		}
 
 		return type;
 	}
 
-	public static PointType getDataTypeByDataSize(String measurement) {
+	public static PointType getDataTypeByDataPointType(String measurement) {
 		PointType type;
 
 		switch (measurement) {
@@ -47,6 +53,30 @@ public enum PointType {
 			break;
 		case "4 Byte":
 			type = PointType.UNSIGNED;
+			break;
+		case "boolean":
+			type = PointType.BOOL;
+			break;
+		case "control":
+			type = PointType.CONTROL;
+			break;
+		case "8bitu":
+			type = PointType.UNSIGNED;
+			break;
+		case "2byteu":
+			type = PointType.UNSIGNED;
+			break;
+		case "2bytef":
+			type = PointType.FLOAT2;
+			break;
+		case "4byte":
+			type = PointType.SIGNED;
+			break;
+		case "4byteu":
+			type = PointType.UNSIGNED;
+			break;
+		case "4bytef":
+			type = PointType.FLOAT4;
 			break;
 		default:
 			type = PointType.STRING;

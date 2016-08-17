@@ -1,78 +1,56 @@
 package org.dsa.iot.knx.project;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-
-import org.dsa.iot.dslink.node.Node;
+import java.util.ArrayList;
 import org.dsa.iot.knx.EditableFolder;
-import org.dsa.iot.knx.GroupAddressBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import tuwien.auto.calimero.GroupAddress;
 import tuwien.auto.calimero.exception.KNXFormatException;
 
-public class OpcFileParser {
+public class OpcFileParser extends KnxProjectParser {
 	private static final Logger LOGGER;
 
 	static {
 		LOGGER = LoggerFactory.getLogger(OpcFileParser.class);
 	}
 
-	private String content;
-	private EditableFolder folder;
-
-	public OpcFileParser(EditableFolder folder, String content) {
-		this.folder = folder;
-		this.content = content;
+	public OpcFileParser(EditableFolder folder){
+		super(folder);
 	}
-
-	public void parseItems() {
-		Map<String, List<GroupAddress>> pathToNodes = new HashMap<>();
-		Map<GroupAddress, GroupAddressBean> addressToBean = new HashMap<>();
+	
+	public void parseItems(String content) {
 
 		String[] lines = content.split(System.getProperty("line.separator"));
-		String mainGroup = null;
-		String middleGroup = null;
-		String address = null;
 
 		// skip the title and build the hash map: path => nodes
 		for (int i = 1; i < lines.length; i++) {
 			String line = lines[i];
 			String[] records = line.split("\\.");
-			String dataSize = line.substring(line.indexOf("(") + 1, line.indexOf(")"));
-			mainGroup = records[0];
-			middleGroup = records[1];
+			String dataPointType = line.substring(line.indexOf("(") + 1, line.indexOf(")"));
+			mainGroupName = records[0];
+			middleGroupName = records[1];
 			String[] addressAndMore = records[2].split("\t");
-			address = addressAndMore[0];
+			addressStr = addressAndMore[0];
+			
 			GroupAddress groupAddress = null;
 			try {
-				groupAddress = new GroupAddress(address);
+				groupAddress = new GroupAddress(addressStr);
 			} catch (KNXFormatException e) {
 				e.printStackTrace();
+			} finally {
+				if (null == groupAddress){
+					return;
+				}
 			}
 
-			String nodeAndPath = addressAndMore[1];
-			String[] subDirectories = nodeAndPath.split("_");
-			String nodeName = subDirectories[0] + ("_") + subDirectories[1] + ("_") + subDirectories[2];
-
-			GroupAddressBean bean = new GroupAddressBean();
-			bean.setMainGroup(mainGroup);
-			bean.setMiddleGroup(middleGroup);
-			bean.setGroupAddress(groupAddress.toString());
-			bean.setDataSize(dataSize);
-			bean.setName(nodeName);
-			addressToBean.put(groupAddress, bean);
-
-			String path = nodeAndPath.substring(
-					subDirectories[0].length() + 1 + subDirectories[1].length() + 1 + subDirectories[2].length() + 1);
+			String subGroupName = addressAndMore[1];
+			int buidlingIndex = subGroupName.indexOf(BUILDING);
+			String path = subGroupName.substring(buidlingIndex);
+			String dataPointName = subGroupName.substring(0, buidlingIndex - 1);
+			
+            buildAddressToBean(subGroupName, subGroupName, groupAddress, dataPointType, dataPointName);
 
 			if (!pathToNodes.containsKey(path)) {
 				List<GroupAddress> nodes = new ArrayList<>();
@@ -84,21 +62,7 @@ public class OpcFileParser {
 				pathToNodes.put(path, nodes);
 			}
 		}
-
-		// build the folder tree from the hashMap
-		Iterator it = pathToNodes.entrySet().iterator();
-		while (it.hasNext()) {
-			Map.Entry pair = (Map.Entry) it.next();
-			String path = (String) pair.getKey();
-			String[] subDirectories = path.split("_");
-			Queue<String> queue = new LinkedList<>(Arrays.asList(subDirectories));
-			Node lastNode = folder.buildFolderTree(folder.getNode(), queue);
-
-			List<GroupAddress> nodes = (ArrayList<GroupAddress>) pair.getValue();
-			for (GroupAddress groupAddress : nodes) {
-				GroupAddressBean bean = addressToBean.get(groupAddress);
-				folder.buildDataPoint(lastNode, bean);
-			}
-		}
+		
+		buildGroupTree();     
 	}
 }
