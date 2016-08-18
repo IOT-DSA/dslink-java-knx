@@ -36,7 +36,6 @@ import tuwien.auto.calimero.knxnetip.servicetype.SearchResponse;
 import tuwien.auto.calimero.knxnetip.util.DeviceDIB;
 import tuwien.auto.calimero.knxnetip.util.HPAI;
 import tuwien.auto.calimero.knxnetip.util.ServiceFamiliesDIB;
-import tuwien.auto.calimero.link.KNXLinkClosedException;
 import tuwien.auto.calimero.link.KNXNetworkLink;
 import tuwien.auto.calimero.link.KNXNetworkLinkIP;
 import tuwien.auto.calimero.link.NetworkLinkListener;
@@ -67,6 +66,7 @@ public class KnxIpConnection extends KnxConnection {
 	static final String ATTR_POLLING_TIMEOUT = "polling timeout";
 	static final String NODE_STATUS = "STATUS";
 	static final String STATUS_CONNECTED = "connected";
+	static final String STATUS_TUNNELING_WARNNING = "invalid remote host for tunneling";
 
 	static final int SEARCH_TIMEOUT = 5;
 	static final int POLLING_INTERVAL = 5;
@@ -107,11 +107,12 @@ public class KnxIpConnection extends KnxConnection {
 
 		this.transType = TransmissionType.parseType(node.getAttribute(ATTR_TRANSMISSION_TYPE).getString());
 		this.groupLevel = GroupAddressType.parseType(node.getAttribute(ATTR_GROUP_LEVEL).getString());
+		this.port = node.getAttribute(ATTR_REMOTE_PORT).getNumber().intValue();
 		this.localHost = node.getAttribute(ATTR_LOCAL_HOST).getString();
-		this.localEP = (null == localHost || localHost.isEmpty()) ? null : new InetSocketAddress(localHost, 0);
+		this.localEP = (null == localHost || localHost.isEmpty()) ? null : new InetSocketAddress(localHost, port);
 		this.remoteHost = node.getAttribute(ATTR_REMOTE_HOST).getString();
 		this.remoteEP = (null == remoteHost || remoteHost.isEmpty()) ? null : new InetSocketAddress(remoteHost, port);
-		this.port = node.getAttribute(ATTR_REMOTE_PORT).getNumber().intValue();
+
 		this.useNat = node.getAttribute(ATTR_USE_NAT).getBool();
 		this.interval = node.getAttribute(ATTR_POLLING_INTERVAL).getNumber().intValue();
 		this.timeout = node.getAttribute(ATTR_POLLING_TIMEOUT).getNumber().intValue();
@@ -121,29 +122,49 @@ public class KnxIpConnection extends KnxConnection {
 		stpe = Objects.createDaemonThreadPool();
 		addressToDeviceDIB = new HashMap<String, DeviceDIB>();
 		deviceSet = new HashSet<DeviceNode>();
-		try {
-			networkLink = new KNXNetworkLinkIP(TransmissionType.parseServiceMode(transType), localEP, remoteEP, useNat,
-					TPSettings.TP1);
-			this.statusNode = node.createChild(NODE_STATUS).setValueType(ValueType.STRING)
-					.setValue(new Value(STATUS_CONNECTED)).build();
-			this.statusNode.setSerializable(false);
-		} catch (KNXException | InterruptedException e) {
-			this.statusNode.setValue(new Value(e.getMessage()));
-		}
-		networkLink.addLinkListener(new NetworkListener());
 
-		try {
-			communicator = new ProcessCommunicatorImpl(networkLink);
-		} catch (KNXLinkClosedException e) {
-			e.printStackTrace();
-		}
-		communicator.addProcessListener(new ProcessCommunicatorListener());
+		connect();
 	}
 
 	public void init() {
 		makeEditAction();
 		makeRemoveAction();
 		makeDiscoverAction();
+	}
+
+	private void connect() {
+		networkLink = null;
+		communicator = null;
+
+		this.statusNode = node.createChild(NODE_STATUS).setValueType(ValueType.STRING).build();
+		this.statusNode.setSerializable(false);
+
+		int serviceMode = TransmissionType.parseServiceMode(transType);
+		if (serviceMode == KNXNetworkLinkIP.TUNNELING && null == remoteEP) {
+			this.statusNode.setValue(new Value(STATUS_TUNNELING_WARNNING));
+		}
+
+		try {
+			if (serviceMode == KNXNetworkLinkIP.TUNNELING && null != remoteEP) {
+				networkLink = new KNXNetworkLinkIP(KNXNetworkLinkIP.TUNNELING, localEP, remoteEP, useNat,
+						TPSettings.TP1);
+			} else if (serviceMode == KNXNetworkLinkIP.ROUTING) {
+				networkLink = new KNXNetworkLinkIP(KNXNetworkLinkIP.ROUTING, localEP, null, useNat, TPSettings.TP1);
+			}
+
+			if (null != networkLink) {
+				networkLink.addLinkListener(new NetworkListener());
+				communicator = new ProcessCommunicatorImpl(networkLink);
+				communicator.addProcessListener(new ProcessCommunicatorListener());
+			}
+
+		} catch (KNXException | InterruptedException e) {
+			this.statusNode.setValue(new Value(e.getMessage()));
+		}
+
+		if (null != networkLink && null != communicator) {
+			statusNode.setValue(new Value(STATUS_CONNECTED));
+		}
 	}
 
 	public KnxConnection getConnection() {
@@ -154,8 +175,10 @@ public class KnxIpConnection extends KnxConnection {
 		Action act = new Action(Permission.READ, new EditHandler());
 		act.addParameter(new Parameter(ATTR_NAME, ValueType.STRING, new Value(node.getName())));
 		act.addParameter(
-				new Parameter(ATTR_TRANSMISSION_TYPE, ValueType.makeEnum(Utils.enumNames(TransmissionType.class))));
-		act.addParameter(new Parameter(ATTR_GROUP_LEVEL, ValueType.makeEnum(Utils.enumNames(GroupAddressType.class))));
+				new Parameter(ATTR_TRANSMISSION_TYPE, ValueType.makeEnum(Utils.enumNames(TransmissionType.class)),
+						node.getAttribute(ATTR_TRANSMISSION_TYPE)));
+		act.addParameter(new Parameter(ATTR_GROUP_LEVEL, ValueType.makeEnum(Utils.enumNames(GroupAddressType.class)),
+				node.getAttribute(ATTR_GROUP_LEVEL)));
 		act.addParameter(new Parameter(ATTR_LOCAL_HOST, ValueType.STRING, node.getAttribute(ATTR_LOCAL_HOST)));
 		act.addParameter(new Parameter(ATTR_REMOTE_HOST, ValueType.STRING, node.getAttribute(ATTR_REMOTE_HOST)));
 		act.addParameter(new Parameter(ATTR_REMOTE_PORT, ValueType.NUMBER, node.getAttribute(ATTR_REMOTE_PORT)));
@@ -166,7 +189,7 @@ public class KnxIpConnection extends KnxConnection {
 				new Parameter(ATTR_POLLING_TIMEOUT, ValueType.NUMBER, node.getAttribute(ATTR_POLLING_TIMEOUT)));
 
 		Node actionNode = node.getChild(ACTION_EDIT);
-		if ( null == actionNode)
+		if (null == actionNode)
 			node.createChild(ACTION_EDIT).setAction(act).build().setSerializable(false);
 		else
 			actionNode.setAction(act);
@@ -175,7 +198,7 @@ public class KnxIpConnection extends KnxConnection {
 	public void makeDiscoverAction() {
 		Action act = new Action(Permission.READ, new DeviceDiscoveryHandler());
 		Node actionNode = node.getChild(ACTION_DISCOVER_DEVICES);
-		if ( null == actionNode)
+		if (null == actionNode)
 			node.createChild(ACTION_DISCOVER_DEVICES).setAction(act).build().setSerializable(false);
 		else
 			actionNode.setAction(act);
@@ -183,22 +206,24 @@ public class KnxIpConnection extends KnxConnection {
 
 	private class EditHandler implements Handler<ActionResult> {
 		public void handle(ActionResult event) {
+			transType = TransmissionType
+					.parseType(event.getParameter(ATTR_TRANSMISSION_TYPE, ValueType.STRING).getString());
+			groupLevel = GroupAddressType.parseType(event.getParameter(ATTR_GROUP_LEVEL, ValueType.STRING).getString());
+			localHost = event.getParameter(ATTR_LOCAL_HOST, ValueType.STRING).getString();
+			remoteHost = event.getParameter(ATTR_REMOTE_HOST, ValueType.STRING).getString();
+			port = event.getParameter(ATTR_REMOTE_PORT, ValueType.NUMBER).getNumber().intValue();
+			useNat = event.getParameter(ATTR_USE_NAT, ValueType.BOOL).getBool();
+			interval = event.getParameter(ATTR_POLLING_INTERVAL, ValueType.NUMBER).getNumber().intValue();
 
-			String remoteHost = event.getParameter(ATTR_REMOTE_HOST, ValueType.STRING).getString();
-			int port = event.getParameter(ATTR_REMOTE_PORT, ValueType.NUMBER).getNumber().intValue();
-			String localHost = event.getParameter(ATTR_LOCAL_HOST, ValueType.STRING).getString();
-			String transmission = event.getParameter(ATTR_TRANSMISSION_TYPE, ValueType.STRING).getString();
-			String groupAddress = event.getParameter(ATTR_GROUP_LEVEL, ValueType.STRING).getString();
-			boolean useNat = event.getParameter(ATTR_USE_NAT, ValueType.BOOL).getBool();
-			int interval = event.getParameter(ATTR_POLLING_INTERVAL, ValueType.NUMBER).getNumber().intValue();
-
-			node.setAttribute(ATTR_TRANSMISSION_TYPE, new Value(transmission));
-			node.setAttribute(ATTR_GROUP_LEVEL, new Value(groupAddress));
-			node.setAttribute(ATTR_REMOTE_PORT, new Value(port));
+			node.setAttribute(ATTR_TRANSMISSION_TYPE, new Value(transType.toString()));
+			node.setAttribute(ATTR_GROUP_LEVEL, new Value(groupLevel.toString()));
 			node.setAttribute(ATTR_LOCAL_HOST, new Value(localHost));
 			node.setAttribute(ATTR_REMOTE_HOST, new Value(remoteHost));
+			node.setAttribute(ATTR_REMOTE_PORT, new Value(port));
 			node.setAttribute(ATTR_USE_NAT, new Value(useNat));
 			node.setAttribute(ATTR_POLLING_INTERVAL, new Value(interval));
+
+			connect();
 		}
 	}
 
@@ -344,7 +369,7 @@ public class KnxIpConnection extends KnxConnection {
 		String address = point.getGroupAddress().toString();
 		ScheduledFuture<?> future = pointToFutures.remove(address);
 		if (!point.isSubscribed) {
-			if ( null != future) {
+			if (null != future) {
 				future.cancel(false);
 				future = null;
 			}
@@ -399,10 +424,10 @@ public class KnxIpConnection extends KnxConnection {
 				// ANGLE
 				valString = Integer.toString(communicator.readUnsigned(addr, ProcessCommunicationBase.UNSCALED));
 				break;
-				}
-			case STRING: 
+			}
+			case STRING:
 				valString = communicator.readString(addr);
-				break;			
+				break;
 			default: {
 				break;
 			}
