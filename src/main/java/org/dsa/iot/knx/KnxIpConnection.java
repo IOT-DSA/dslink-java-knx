@@ -75,7 +75,7 @@ public class KnxIpConnection extends KnxConnection {
 	static final int INITIAL_DELAY = 0;
 
 	boolean useNat = false;
-	static ScheduledThreadPoolExecutor stpe;
+	private ScheduledThreadPoolExecutor stpe;
 	private final Map<String, ScheduledFuture<?>> pointToFutures;
 
 	KNXNetworkLink networkLink;
@@ -234,7 +234,7 @@ public class KnxIpConnection extends KnxConnection {
 		}
 	}
 
-	private class NetworkListener implements NetworkLinkListener {
+	private static class NetworkListener implements NetworkLinkListener {
 
 		public void indication(FrameEvent e) {
 
@@ -249,7 +249,7 @@ public class KnxIpConnection extends KnxConnection {
 		}
 	}
 
-	private class ProcessCommunicatorListener implements ProcessListener {
+	private static class ProcessCommunicatorListener implements ProcessListener {
 
 		public void groupWrite(ProcessEvent e) {
 
@@ -261,11 +261,6 @@ public class KnxIpConnection extends KnxConnection {
 	}
 
 	private class Poller implements Runnable {
-		KnxConnection listener;
-
-		public void addListener(KnxConnection listener) {
-			this.listener = listener;
-		}
 
 		@Override
 		public void run() {
@@ -387,7 +382,6 @@ public class KnxIpConnection extends KnxConnection {
 		stpe = getDaemonThreadPool();
 		if (null == poller) {
 			poller = new Poller();
-			poller.addListener(getConnection());
 		}
 
 		ScheduledFuture<?> future = stpe.scheduleWithFixedDelay(poller, INITIAL_DELAY, DEFAULT_DELAY, TimeUnit.SECONDS);

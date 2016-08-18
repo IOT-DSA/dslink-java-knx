@@ -117,7 +117,7 @@ public class DeviceFolder extends EditableFolder {
 		if (path.size() > 0) {
 			String name = path.poll();
 			Node child = parent.createChild(name).build();
-			DeviceFolder folder = new DeviceFolder(getConnection(), child);
+			new DeviceFolder(getConnection(), child);
 			Node node = buildFolderTree(child, path);
 			return node;
 		} else {
@@ -133,10 +133,10 @@ public class DeviceFolder extends EditableFolder {
 		} catch (KNXFormatException e) {
 			e.printStackTrace();
 		} finally {
-			if(null == groupAddress)
+			if (null == groupAddress)
 				return;
 		}
-		
+
 		int mainGroupAddress = groupAddress.getMainGroup();
 		int middleGroupAddress = groupAddress.getMiddleGroup();
 		GroupAddressType groupLevel = getConnection().getGroupLevel();
@@ -170,7 +170,7 @@ public class DeviceFolder extends EditableFolder {
 			if (null != restype && ATTR_EDITABLE_FOLDER.equals(restype.getString())) {
 				DeviceFolder folder = new DeviceFolder(this.getConnection(), root, child);
 				folder.restoreLastSession();
-			} else if ( null != restype && ATTR_EDITABLE_POINT.equals(restype.getString())) {
+			} else if (null != restype && ATTR_EDITABLE_POINT.equals(restype.getString())) {
 				new DevicePoint(this.getConnection(), this, child);
 			} else if (null == child.getAction() && !NODE_STATUS.equals(child.getName())) {
 				node.removeChild(child);
