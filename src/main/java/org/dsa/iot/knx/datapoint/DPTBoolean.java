@@ -16,5 +16,4 @@ public class DPTBoolean extends DPT {
     public int getDataTypeId() {
         return DataTypes.BINARY.ordinal();
     }
-
 }
