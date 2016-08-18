@@ -11,6 +11,4 @@ public class DPTUndefined extends DPT {
     public int getDataTypeId() {
         return DataTypes.BINARY.ordinal();
     }
-
-
 }
