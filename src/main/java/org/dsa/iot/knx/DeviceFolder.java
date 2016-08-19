@@ -50,13 +50,16 @@ public class DeviceFolder extends EditableFolder {
 		String mainGroupName = event.getParameter(ATTR_MAIN_GROUP_NAME, ValueType.STRING).getString();
 		String middleGroupName = event.getParameter(ATTR_MIDDLE_GROUP_NAME, ValueType.STRING).getString();
 		String subGroupName = event.getParameter(ATTR_SUB_GROUP_NAME, ValueType.STRING).getString();
+		String addressStr = event.getParameter(ATTR_INDIVIDUAL_ADDRESS).getString();
 
-		int mainGroupAddress = event.getParameter(ATTR_MAIN_GROUP_ADDRESS, ValueType.NUMBER).getNumber().intValue();
-		int middleGroupAddress = event.getParameter(ATTR_MIDDLE_GROUP_ADDRESS, ValueType.NUMBER).getNumber().intValue();
-		int subGroupAddress = event.getParameter(ATTR_SUB_GROUP_ADDRESS, ValueType.NUMBER).getNumber().intValue();
+		IndividualAddress individualAddress = null;
+		try {
+			individualAddress = new IndividualAddress(addressStr);
+		} catch (KNXFormatException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 
-		IndividualAddress individualAddress = new IndividualAddress(mainGroupAddress, middleGroupAddress,
-				subGroupAddress);
 		PointType type;
 		try {
 			type = PointType.valueOf(event.getParameter(ATTR_POINT_TYPE, ValueType.STRING).getString().toUpperCase());

@@ -30,6 +30,7 @@ import tuwien.auto.calimero.CloseEvent;
 import tuwien.auto.calimero.DetachEvent;
 import tuwien.auto.calimero.FrameEvent;
 import tuwien.auto.calimero.GroupAddress;
+import tuwien.auto.calimero.IndividualAddress;
 import tuwien.auto.calimero.exception.KNXException;
 import tuwien.auto.calimero.knxnetip.Discoverer;
 import tuwien.auto.calimero.knxnetip.servicetype.SearchResponse;
@@ -62,6 +63,7 @@ public class KnxIpConnection extends KnxConnection {
 	static final String ATTR_REMOTE_HOST = "remote host";
 	static final String ATTR_REMOTE_PORT = "remote port";
 	static final String ATTR_USE_NAT = "use NAT";
+	static final String ATTR_DEVICE_ADDRESS = "device address";
 	static final String ATTR_POLLING_INTERVAL = "polling interval";
 	static final String ATTR_POLLING_TIMEOUT = "polling timeout";
 	static final String NODE_STATUS = "STATUS";
@@ -74,7 +76,6 @@ public class KnxIpConnection extends KnxConnection {
 	static final int DEFAULT_DELAY = 5;
 	static final int INITIAL_DELAY = 0;
 
-	boolean useNat = false;
 	private ScheduledThreadPoolExecutor stpe;
 	private final Map<String, ScheduledFuture<?>> pointToFutures;
 
@@ -84,7 +85,8 @@ public class KnxIpConnection extends KnxConnection {
 	InetSocketAddress remoteEP;
 	TransmissionType transType;
 	GroupAddressType groupLevel;
-
+	boolean useNat = false;
+	String deviceAddress;
 	String localHost;
 	String remoteHost;
 	int port;
@@ -114,6 +116,7 @@ public class KnxIpConnection extends KnxConnection {
 		this.remoteEP = (null == remoteHost || remoteHost.isEmpty()) ? null : new InetSocketAddress(remoteHost, port);
 
 		this.useNat = node.getAttribute(ATTR_USE_NAT).getBool();
+		this.deviceAddress = node.getAttribute(ATTR_DEVICE_ADDRESS).getString();
 		this.interval = node.getAttribute(ATTR_POLLING_INTERVAL).getNumber().intValue();
 		this.timeout = node.getAttribute(ATTR_POLLING_TIMEOUT).getNumber().intValue();
 
@@ -129,7 +132,14 @@ public class KnxIpConnection extends KnxConnection {
 	public void init() {
 		makeEditAction();
 		makeRemoveAction();
-		makeDiscoverAction();
+		if (KNXNetworkLinkIP.ROUTING == TransmissionType.parseServiceMode(transType)) {
+			makeDiscoverAction();
+		} else {
+			Node discoverAction = node.getChild(ACTION_DISCOVER_DEVICES);
+			if (null != discoverAction) {
+				node.removeChild(discoverAction);
+			}
+		}
 	}
 
 	private void connect() {
@@ -147,7 +157,7 @@ public class KnxIpConnection extends KnxConnection {
 		try {
 			if (serviceMode == KNXNetworkLinkIP.TUNNELING && null != remoteEP) {
 				networkLink = new KNXNetworkLinkIP(KNXNetworkLinkIP.TUNNELING, localEP, remoteEP, useNat,
-						TPSettings.TP1);
+						new TPSettings(new IndividualAddress(deviceAddress), true));
 			} else if (serviceMode == KNXNetworkLinkIP.ROUTING) {
 				networkLink = new KNXNetworkLinkIP(KNXNetworkLinkIP.ROUTING, localEP, null, useNat, TPSettings.TP1);
 			}
@@ -183,6 +193,7 @@ public class KnxIpConnection extends KnxConnection {
 		act.addParameter(new Parameter(ATTR_REMOTE_HOST, ValueType.STRING, node.getAttribute(ATTR_REMOTE_HOST)));
 		act.addParameter(new Parameter(ATTR_REMOTE_PORT, ValueType.NUMBER, node.getAttribute(ATTR_REMOTE_PORT)));
 		act.addParameter(new Parameter(ATTR_USE_NAT, ValueType.BOOL, node.getAttribute(ATTR_USE_NAT)));
+		act.addParameter(new Parameter(ATTR_DEVICE_ADDRESS, ValueType.STRING, node.getAttribute(ATTR_DEVICE_ADDRESS)));
 		act.addParameter(
 				new Parameter(ATTR_POLLING_INTERVAL, ValueType.NUMBER, node.getAttribute(ATTR_POLLING_INTERVAL)));
 		act.addParameter(
@@ -213,6 +224,7 @@ public class KnxIpConnection extends KnxConnection {
 			remoteHost = event.getParameter(ATTR_REMOTE_HOST, ValueType.STRING).getString();
 			port = event.getParameter(ATTR_REMOTE_PORT, ValueType.NUMBER).getNumber().intValue();
 			useNat = event.getParameter(ATTR_USE_NAT, ValueType.BOOL).getBool();
+			deviceAddress = event.getParameter(ATTR_DEVICE_ADDRESS, ValueType.STRING).getString();
 			interval = event.getParameter(ATTR_POLLING_INTERVAL, ValueType.NUMBER).getNumber().intValue();
 
 			node.setAttribute(ATTR_TRANSMISSION_TYPE, new Value(transType.toString()));
@@ -221,8 +233,10 @@ public class KnxIpConnection extends KnxConnection {
 			node.setAttribute(ATTR_REMOTE_HOST, new Value(remoteHost));
 			node.setAttribute(ATTR_REMOTE_PORT, new Value(port));
 			node.setAttribute(ATTR_USE_NAT, new Value(useNat));
+			node.setAttribute(ATTR_DEVICE_ADDRESS, new Value(deviceAddress));
 			node.setAttribute(ATTR_POLLING_INTERVAL, new Value(interval));
 
+			init();
 			connect();
 		}
 	}

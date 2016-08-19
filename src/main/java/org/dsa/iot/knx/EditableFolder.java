@@ -27,9 +27,6 @@ public abstract class EditableFolder {
 	static final String ATTR_MAIN_GROUP_NAME = "main group name";
 	static final String ATTR_MIDDLE_GROUP_NAME = "middle group name";
 	static final String ATTR_SUB_GROUP_NAME = "sub group name";
-	static final String ATTR_MAIN_GROUP_ADDRESS = "main group address";
-	static final String ATTR_MIDDLE_GROUP_ADDRESS = "middle group address";
-	static final String ATTR_SUB_GROUP_ADDRESS = "sub group address";
 	static final String ATTR_INDIVIDUAL_ADDRESS = "individual address";
 	static final String ATTR_POINT_TYPE = "point type";
 	static final String ATTR_RESTORE_TYPE = "restore type";
@@ -39,12 +36,13 @@ public abstract class EditableFolder {
 
 	static final String ACTION_REMOVE = "remove";
 	static final String ACTION_EDIT = "edit";
-	static final String ACTION_ADD_POINT = "add datapoint";
+	static final String ACTION_ADD_POINT = "add group address";
 	static final String ACTION_ADD_FOLDER = "add folder";
 	static final String ACTION_IMPORT_PROJECT = "import by xml";
 	static final String ACTION_IMPORT_OPC = "import by esf";
-    static final String NODE_STATUS = "STATUS";
-    
+	static final String NODE_STATUS = "STATUS";
+	static final String DEFAULT_GROUP_ADDRESS = "0.0.0";
+
 	KnxConnection conn;
 	Node node;
 	EditableFolder root;
@@ -87,9 +85,7 @@ public abstract class EditableFolder {
 		act.addParameter(new Parameter(ATTR_MAIN_GROUP_NAME, ValueType.STRING));
 		act.addParameter(new Parameter(ATTR_MIDDLE_GROUP_NAME, ValueType.STRING));
 		act.addParameter(new Parameter(ATTR_SUB_GROUP_NAME, ValueType.STRING));
-		act.addParameter(new Parameter(ATTR_MAIN_GROUP_ADDRESS, ValueType.NUMBER));
-		act.addParameter(new Parameter(ATTR_MIDDLE_GROUP_ADDRESS, ValueType.NUMBER));
-		act.addParameter(new Parameter(ATTR_SUB_GROUP_ADDRESS, ValueType.NUMBER));
+		act.addParameter(new Parameter(ATTR_INDIVIDUAL_ADDRESS, ValueType.STRING, new Value(DEFAULT_GROUP_ADDRESS)));
 
 		node.createChild(ACTION_ADD_POINT).setAction(act).build().setSerializable(false);
 	}
