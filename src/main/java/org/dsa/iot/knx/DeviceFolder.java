@@ -52,14 +52,6 @@ public class DeviceFolder extends EditableFolder {
 		String subGroupName = event.getParameter(ATTR_SUB_GROUP_NAME, ValueType.STRING).getString();
 		String addressStr = event.getParameter(ATTR_INDIVIDUAL_ADDRESS).getString();
 
-		IndividualAddress individualAddress = null;
-		try {
-			individualAddress = new IndividualAddress(addressStr);
-		} catch (KNXFormatException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-
 		PointType type;
 		try {
 			type = PointType.valueOf(event.getParameter(ATTR_POINT_TYPE, ValueType.STRING).getString().toUpperCase());
@@ -76,7 +68,7 @@ public class DeviceFolder extends EditableFolder {
 		pointNode.setAttribute(ATTR_MAIN_GROUP_NAME, new Value(mainGroupName));
 		pointNode.setAttribute(ATTR_MIDDLE_GROUP_NAME, new Value(middleGroupName));
 		pointNode.setAttribute(ATTR_SUB_GROUP_NAME, new Value(subGroupName));
-		pointNode.setAttribute(ATTR_INDIVIDUAL_ADDRESS, new Value(individualAddress.toString()));
+		pointNode.setAttribute(ATTR_INDIVIDUAL_ADDRESS, new Value(addressStr));
 
 		DevicePoint knxPoint = new DevicePoint(conn, this, pointNode);
 		getConnection().updateGroupToPoints(middleGroupName, knxPoint);
