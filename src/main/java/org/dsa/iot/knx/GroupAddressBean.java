@@ -4,7 +4,7 @@ public class GroupAddressBean {
 	private String mainGroup;
 	private String middleGroup;
 	private String groupAddress;
-	private String name;
+	private String dataPointName;
 	private boolean settable;
 	private String dataType;
 	private String dataPointType;
@@ -33,12 +33,12 @@ public class GroupAddressBean {
 		this.groupAddress = groupAddress;
 	}
 
-	public String getName() {
-		return name;
+	public String getDataPointName() {
+		return dataPointName;
 	}
 
-	public void setName(String name) {
-		this.name = name;
+	public void setDataPointName(String name) {
+		this.dataPointName = name;
 	}
 
 	public boolean isSettable() {

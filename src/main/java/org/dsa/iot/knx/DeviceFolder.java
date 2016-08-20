@@ -23,7 +23,10 @@ public class DeviceFolder extends EditableFolder {
 	static {
 		LOGGER = LoggerFactory.getLogger(DeviceFolder.class);
 	}
-
+	
+	static final String GROUP_ADDRESS_SEPARATOR = "/";
+	static final String INDIVIDUAL_ADDRESS_SEPARATOR = ".";
+	
 	public DeviceFolder(KnxConnection conn, Node node) {
 		super(conn, node);
 	}
@@ -50,8 +53,9 @@ public class DeviceFolder extends EditableFolder {
 		String mainGroupName = event.getParameter(ATTR_MAIN_GROUP_NAME, ValueType.STRING).getString();
 		String middleGroupName = event.getParameter(ATTR_MIDDLE_GROUP_NAME, ValueType.STRING).getString();
 		String subGroupName = event.getParameter(ATTR_SUB_GROUP_NAME, ValueType.STRING).getString();
-		String addressStr = event.getParameter(ATTR_INDIVIDUAL_ADDRESS).getString();
-
+		String individualAddress = event.getParameter(ATTR_INDIVIDUAL_ADDRESS).getString();
+		String groupAddress = individualAddress.replace(INDIVIDUAL_ADDRESS_SEPARATOR, GROUP_ADDRESS_SEPARATOR);
+		
 		PointType type;
 		try {
 			type = PointType.valueOf(event.getParameter(ATTR_POINT_TYPE, ValueType.STRING).getString().toUpperCase());
@@ -61,14 +65,14 @@ public class DeviceFolder extends EditableFolder {
 			return;
 		}
 
-		String name = mainGroupName + "_" + middleGroupName + "_" + subGroupName;
-		Node pointNode = node.createChild(name).setValueType(ValueType.BOOL).build();
+		ValueType valType = PointType.getValueType(type);
+		Node pointNode = node.createChild(groupAddress).setValueType(valType).build();
 
 		pointNode.setAttribute(ATTR_POINT_TYPE, new Value(type.toString()));
 		pointNode.setAttribute(ATTR_MAIN_GROUP_NAME, new Value(mainGroupName));
 		pointNode.setAttribute(ATTR_MIDDLE_GROUP_NAME, new Value(middleGroupName));
 		pointNode.setAttribute(ATTR_SUB_GROUP_NAME, new Value(subGroupName));
-		pointNode.setAttribute(ATTR_INDIVIDUAL_ADDRESS, new Value(addressStr));
+		pointNode.setAttribute(ATTR_INDIVIDUAL_ADDRESS, new Value(individualAddress));
 
 		DevicePoint knxPoint = new DevicePoint(conn, this, pointNode);
 		getConnection().updateGroupToPoints(middleGroupName, knxPoint);
@@ -88,24 +92,6 @@ public class DeviceFolder extends EditableFolder {
 		KnxProjectParser parser = new OpcFileParser(this);
 
 		parser.parseItems(content);
-	}
-
-	private ValueType getValueType(PointType type) {
-		ValueType vt = ValueType.STRING;
-
-		if (type == PointType.BOOL) {
-			vt = ValueType.BOOL;
-		} else if (type == PointType.CONTROL) {
-			vt = ValueType.BOOL;
-		} else if (type == PointType.FLOAT2 || type == PointType.FLOAT4) {
-			vt = ValueType.NUMBER;
-		} else if (type == PointType.UNSIGNED) {
-			vt = ValueType.NUMBER;
-		} else if (type == PointType.STRING) {
-			vt = ValueType.STRING;
-		}
-
-		return vt;
 	}
 
 	public Node buildFolderTree(Node parent, Queue<String> path) {
@@ -144,9 +130,9 @@ public class DeviceFolder extends EditableFolder {
 		IndividualAddress individualAddress = new IndividualAddress(mainGroupAddress, middleGroupAddress,
 				subGroupAddress);
 		PointType type = PointType.getDataTypeByDataPointType(addressBean.getDataPointType());
-		ValueType valueType = getValueType(type);
+		ValueType valueType = PointType.getValueType(type);
 
-		Node pointNode = parent.createChild(addressBean.getName()).setValueType(valueType).build();
+		Node pointNode = parent.createChild(groupAddress.toString()).setValueType(valueType).build();
 		pointNode.setAttribute(ATTR_POINT_TYPE, new Value(type.toString()));
 		pointNode.setAttribute(ATTR_INDIVIDUAL_ADDRESS, new Value(individualAddress.toString()));
 

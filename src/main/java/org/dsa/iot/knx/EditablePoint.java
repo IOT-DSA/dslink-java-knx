@@ -62,11 +62,11 @@ public abstract class EditablePoint {
 		act.addParameter(new Parameter(ATTR_NAME, ValueType.STRING, new Value(node.getName())));
 		act.addParameter(new Parameter(ATTR_POINT_TYPE, ValueType.makeEnum(Utils.enumNames(PointType.class)),
 				node.getAttribute(ATTR_POINT_TYPE)));
-		act.addParameter(new Parameter(ATTR_MAIN_GROUP_NAME, ValueType.STRING));
-		act.addParameter(new Parameter(ATTR_MIDDLE_GROUP_NAME, ValueType.STRING));
-		act.addParameter(new Parameter(ATTR_SUB_GROUP_NAME, ValueType.STRING, new Value(DEFAULT_ADDRESS)));
-
-		act.addParameter(new Parameter(ATTR_INDIVIDUAL_ADDRESS, ValueType.STRING, new Value(DEFAULT_ADDRESS)));
+		act.addParameter(new Parameter(ATTR_MAIN_GROUP_NAME, ValueType.STRING, node.getAttribute(ATTR_MAIN_GROUP_NAME)));
+		act.addParameter(new Parameter(ATTR_MIDDLE_GROUP_NAME, ValueType.STRING, node.getAttribute(ATTR_MIDDLE_GROUP_NAME)));
+		act.addParameter(new Parameter(ATTR_SUB_GROUP_NAME, ValueType.STRING, node.getAttribute(ATTR_SUB_GROUP_NAME)));
+		act.addParameter(new Parameter(ATTR_INDIVIDUAL_ADDRESS, ValueType.STRING, node.getAttribute(ATTR_INDIVIDUAL_ADDRESS)));
+	
 		Node actionNode = node.getChild(ACTION_EDIT);
 		if (null == actionNode)
 			node.createChild(ACTION_EDIT).setAction(act).build().setSerializable(false);

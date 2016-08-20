@@ -416,7 +416,14 @@ public class KnxIpConnection extends KnxConnection {
 				break;
 			}
 			case CONTROL: {
+				//read a 3 bit controlled datapoint value
 				valString = Integer.toString(communicator.readControl(addr));
+				break;
+			}
+			case UNSIGNED: {
+				// read an unsiged 8 bit datapoint value, should be able to choose between UNSCALED, SCALING, and
+				// ANGLE
+				valString = Integer.toString(communicator.readUnsigned(addr, ProcessCommunicationBase.UNSCALED));
 				break;
 			}
 			case FLOAT2: {
@@ -425,12 +432,6 @@ public class KnxIpConnection extends KnxConnection {
 			}
 			case FLOAT4: {
 				valString = Float.toString(communicator.readFloat(addr, true));
-				break;
-			}
-			case UNSIGNED: {
-				// should be able to choose between UNSCALED, SCALING, and
-				// ANGLE
-				valString = Integer.toString(communicator.readUnsigned(addr, ProcessCommunicationBase.UNSCALED));
 				break;
 			}
 			case STRING:
@@ -453,15 +454,15 @@ public class KnxIpConnection extends KnxConnection {
 				vt = ValueType.BOOL;
 				v = new Value(Boolean.parseBoolean(valString));
 			} else if (type == PointType.CONTROL) {
-				vt = ValueType.BOOL;
-				v = new Value(Boolean.parseBoolean(valString));
-			} else if (type == PointType.FLOAT2 || type == PointType.FLOAT4) {
-				vt = ValueType.BOOL;
-				v = new Value(Float.parseFloat(valString));
+				vt = ValueType.NUMBER;
+				v = new Value(Integer.parseInt(valString));
 			} else if (type == PointType.UNSIGNED) {
 				vt = ValueType.NUMBER;
 				v = new Value(Integer.parseInt(valString));
-			} else if (type == PointType.STRING) {
+			} else if (type == PointType.FLOAT2 || type == PointType.FLOAT4) {
+				vt = ValueType.NUMBER;
+				v = new Value(Float.parseFloat(valString));
+			}  else if (type == PointType.STRING) {
 				vt = ValueType.STRING;
 				v = new Value(valString);
 			}

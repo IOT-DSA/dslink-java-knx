@@ -50,7 +50,7 @@ public class OpcFileParser extends KnxProjectParser {
 			String path = subGroupName.substring(buidlingIndex);
 			String dataPointName = subGroupName.substring(0, buidlingIndex - 1);
 			
-            buildAddressToBean(subGroupName, subGroupName, groupAddress, dataPointType, dataPointName);
+            buildAddressToBean(mainGroupName, middleGroupName, groupAddress, dataPointType, dataPointName);
 
 			if (!pathToNodes.containsKey(path)) {
 				List<GroupAddress> nodes = new ArrayList<>();

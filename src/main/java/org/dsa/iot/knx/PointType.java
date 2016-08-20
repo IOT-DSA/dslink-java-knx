@@ -1,7 +1,9 @@
 package org.dsa.iot.knx;
 
+import org.dsa.iot.dslink.node.value.ValueType;
+
 public enum PointType {
-	BOOL, CONTROL, FLOAT2, FLOAT4, STRING, UNSIGNED, SIGNED;
+	BOOL, CONTROL, UNSIGNED, FLOAT2, FLOAT4, STRING;
 
 	public static PointType parseType(String str) {
 		PointType type = null;
@@ -13,17 +15,14 @@ public enum PointType {
 		case "CONTROL":
 			type = PointType.CONTROL;
 			break;
+		case "UNSIGNED":
+			type = PointType.UNSIGNED;
+			break;
 		case "FLOAT2":
 			type = PointType.FLOAT2;
 			break;
 		case "FLOAT4":
 			type = PointType.FLOAT4;
-			break;
-		case "UNSIGNED":
-			type = PointType.UNSIGNED;
-			break;
-		case "SIGNED":
-			type = PointType.SIGNED;
 			break;
 		case "STRING":
 			type = PointType.STRING;
@@ -49,10 +48,10 @@ public enum PointType {
 			type = PointType.UNSIGNED;
 			break;
 		case "2 Byte":
-			type = PointType.UNSIGNED;
+			type = PointType.FLOAT2;
 			break;
 		case "4 Byte":
-			type = PointType.UNSIGNED;
+			type = PointType.FLOAT4;
 			break;
 		case "boolean":
 			type = PointType.BOOL;
@@ -64,16 +63,16 @@ public enum PointType {
 			type = PointType.UNSIGNED;
 			break;
 		case "2byteu":
-			type = PointType.UNSIGNED;
+			type = PointType.FLOAT2;
 			break;
 		case "2bytef":
 			type = PointType.FLOAT2;
 			break;
 		case "4byte":
-			type = PointType.SIGNED;
+			type = PointType.FLOAT4;
 			break;
 		case "4byteu":
-			type = PointType.UNSIGNED;
+			type = PointType.FLOAT4;
 			break;
 		case "4bytef":
 			type = PointType.FLOAT4;
@@ -84,5 +83,23 @@ public enum PointType {
 		}
 
 		return type;
+	}
+
+	public static ValueType getValueType(PointType type) {
+		ValueType vt = ValueType.STRING;
+
+		if (type == PointType.BOOL) {
+			vt = ValueType.BOOL;
+		} else if (type == PointType.CONTROL) {
+			vt = ValueType.NUMBER;
+		} else if (type == PointType.FLOAT2 || type == PointType.FLOAT4) {
+			vt = ValueType.NUMBER;
+		} else if (type == PointType.UNSIGNED) {
+			vt = ValueType.NUMBER;
+		} else if (type == PointType.STRING) {
+			vt = ValueType.STRING;
+		}
+
+		return vt;
 	}
 }
