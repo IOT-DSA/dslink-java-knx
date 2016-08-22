@@ -46,7 +46,7 @@ public abstract class KnxProjectParser {
 		bean.setMiddleGroup(middleGroupName);
 		bean.setGroupAddress(groupAddress.toString());
 		bean.setDataPointType(dataPointType);
-		bean.setName(dataPointName);
+		bean.setDataPointName(dataPointName);
 		addressToBean.put(groupAddress, bean);
 	}
 	
