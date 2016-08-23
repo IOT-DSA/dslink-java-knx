@@ -2,7 +2,7 @@ apply plugin: 'java'
 apply plugin: 'findbugs'
 apply plugin: 'application'
 
-version '0.0.10-SNAPSHOT'
+version '0.0.11-SNAPSHOT'
 
 mainClassName = 'org.dsa.iot.knx.Main'
 sourceCompatibility = 1.7
@@ -14,8 +14,8 @@ repositories {
 
 dependencies {
     compile 'org.iot-dsa:dslink:0.14.1'
-    compile 'com.github.calimero:calimero-core:2.2'
-    compile 'com.github.calimero:calimero-tools:2.2' 
+    compile 'com.github.calimero:calimero-core:2.3-beta'
+    compile 'com.github.calimero:calimero-tools:2.3-beta' 
 }
 
 tasks.withType(FindBugs) {

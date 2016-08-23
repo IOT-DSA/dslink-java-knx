@@ -9,8 +9,6 @@ import org.dsa.iot.knx.datapoint.DatapointType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import tuwien.auto.calimero.GroupAddress;
-
 import java.nio.charset.StandardCharsets;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -74,7 +72,7 @@ public class EtsXmlParser extends KnxProjectParser {
 				for (KNX.Project.Installations installations : installationsList) {
 					List<KNX.Project.Installations.Installation> installationList = installations.getInstallation();
 					for (KNX.Project.Installations.Installation installation : installationList) {
-						// handle topology
+						// 1. handle topology
 						List<KNX.Project.Installations.Installation.Topology> topologyList = installation.getTopology();
 						for (KNX.Project.Installations.Installation.Topology topology : topologyList) {
 							List<KNX.Project.Installations.Installation.Topology.Area> areaList = topology.getArea();
@@ -113,7 +111,14 @@ public class EtsXmlParser extends KnxProjectParser {
 							}
 						}
 
-						// handle group addresses
+						// 2. handle building parts
+						List<KNX.Project.Installations.Installation.Buildings> buildingsList = installation
+								.getBuildings();
+						for (KNX.Project.Installations.Installation.Buildings buildings : buildingsList) {
+							// TBD
+						}
+
+						// 3. handle group addresses
 						List<KNX.Project.Installations.Installation.GroupAddresses> groupAddressesList = installation
 								.getGroupAddresses();
 						for (KNX.Project.Installations.Installation.GroupAddresses groupAddresses : groupAddressesList) {
@@ -126,43 +131,44 @@ public class EtsXmlParser extends KnxProjectParser {
 									List<GroupRange> middleRangeList = mainRange.getGroupRange();
 									for (GroupRange middleRange : middleRangeList) {
 										this.middleGroupName = middleRange.getName();
-										List<GroupRange.GroupAddress> subGroupAddressList = middleRange
-												.getGroupAddress();
-										for (GroupRange.GroupAddress subGroupAddress : subGroupAddressList) {
+										List<GroupAddress> subGroupAddressList = middleRange.getGroupAddress();
+										for (GroupAddress subGroupAddress : subGroupAddressList) {
 											String rawAddressStr = subGroupAddress.getAddress();
 											int rawAddress = Integer.parseInt(rawAddressStr);
 
-											GroupAddress groupAddress = null;
-											groupAddress = new GroupAddress(rawAddress);
+											tuwien.auto.calimero.GroupAddress groupAddress = null;
+											groupAddress = new tuwien.auto.calimero.GroupAddress(rawAddress);
 											String addressRefId = subGroupAddress.getId();
 											String typeId = addressRefIdToTypeId.get(addressRefId);
+											if (null != typeId) {
+												String subGroupName = subGroupAddress.getName();
+												String[] nameArray = subGroupName.split("_");
+												String dataPointName = nameArray[0] + "_" + nameArray[1] + "_"
+														+ nameArray[2];
+												String path = subGroupName.substring(dataPointName.length() + 1);
 
-											String subGroupName = subGroupAddress.getName();
-											int buildingIndex = subGroupName.indexOf(BUILDING);
-											String path = subGroupName.substring(buildingIndex);
-											String dataPointName = subGroupName.substring(0, buildingIndex - 1);
-											String dataPointType = getDataPointTypeByTypeId(typeId);
+												String dataPointType = getDataPointTypeByTypeId(typeId);
 
-											buildAddressToBean(mainGroupName, middleGroupName, groupAddress,
-													dataPointType, dataPointName);
+												buildAddressToBean(mainGroupName, middleGroupName, groupAddress,
+														dataPointType, dataPointName);
 
-											if (!pathToNodes.containsKey(path)) {
-												List<GroupAddress> nodes = new ArrayList<>();
-												nodes.add(groupAddress);
-												pathToNodes.put(path, nodes);
-											} else {
-												List<GroupAddress> nodes = pathToNodes.get(path);
-												nodes.add(groupAddress);
-												pathToNodes.put(path, nodes);
+												if (!pathToNodes.containsKey(path)) {
+													List<tuwien.auto.calimero.GroupAddress> nodes = new ArrayList<>();
+													nodes.add(groupAddress);
+													pathToNodes.put(path, nodes);
+												} else {
+													List<tuwien.auto.calimero.GroupAddress> nodes = pathToNodes
+															.get(path);
+													nodes.add(groupAddress);
+													pathToNodes.put(path, nodes);
+												}
 											}
 										}
 									}
-
 								}
 							}
 						}
 					}
-
 				}
 				// build the folder tree from the hashMap
 				buildGroupTree();
