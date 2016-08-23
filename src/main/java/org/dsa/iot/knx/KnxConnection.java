@@ -53,7 +53,7 @@ public abstract class KnxConnection {
 		node.getParent().removeChild(node);
 	}
 
-	public abstract void onDiscovered(boolean isRestore);
+	public abstract void onDiscovered();
 
 	public KnxLink getLink() {
 		return this.link;
