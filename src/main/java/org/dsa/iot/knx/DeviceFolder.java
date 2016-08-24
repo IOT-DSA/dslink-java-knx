@@ -14,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import tuwien.auto.calimero.GroupAddress;
-import tuwien.auto.calimero.IndividualAddress;
 import tuwien.auto.calimero.exception.KNXFormatException;
 
 public class DeviceFolder extends EditableFolder {
@@ -23,10 +22,7 @@ public class DeviceFolder extends EditableFolder {
 	static {
 		LOGGER = LoggerFactory.getLogger(DeviceFolder.class);
 	}
-	
-	static final String GROUP_ADDRESS_SEPARATOR = "/";
-	static final String INDIVIDUAL_ADDRESS_SEPARATOR = ".";
-	
+
 	public DeviceFolder(KnxConnection conn, Node node) {
 		super(conn, node);
 	}
@@ -50,12 +46,9 @@ public class DeviceFolder extends EditableFolder {
 
 	@Override
 	protected void addPoint(ActionResult event) {
-		String mainGroupName = event.getParameter(ATTR_MAIN_GROUP_NAME, ValueType.STRING).getString();
-		String middleGroupName = event.getParameter(ATTR_MIDDLE_GROUP_NAME, ValueType.STRING).getString();
-		String subGroupName = event.getParameter(ATTR_SUB_GROUP_NAME, ValueType.STRING).getString();
-		String individualAddress = event.getParameter(ATTR_INDIVIDUAL_ADDRESS).getString();
-		String groupAddress = individualAddress.replace(INDIVIDUAL_ADDRESS_SEPARATOR, GROUP_ADDRESS_SEPARATOR);
-		
+		String pointName = event.getParameter(ATTR_POINT_NAME, ValueType.STRING).getString();
+		String groupAddressStr = event.getParameter(ATTR_GROUP_ADDRESS).getString();
+
 		PointType type;
 		try {
 			type = PointType.valueOf(event.getParameter(ATTR_POINT_TYPE, ValueType.STRING).getString().toUpperCase());
@@ -65,17 +58,27 @@ public class DeviceFolder extends EditableFolder {
 			return;
 		}
 
-		ValueType valType = PointType.getValueType(type);
-		Node pointNode = node.createChild(groupAddress).setValueType(valType).build();
+		GroupAddress groupAddress = null;
+		try {
+			groupAddress = new GroupAddress(groupAddressStr);
+		} catch (KNXFormatException e1) {
+			e1.printStackTrace();
+			return;
+		}
 
+		String middleGroup = null;
+		if (null != groupAddress) {
+			middleGroup = String.valueOf(groupAddress.getMiddleGroup());
+		}
+
+		ValueType valType = PointType.getValueType(type);
+		Node pointNode = node.createChild(pointName).setValueType(valType).build();
 		pointNode.setAttribute(ATTR_POINT_TYPE, new Value(type.toString()));
-		pointNode.setAttribute(ATTR_MAIN_GROUP_NAME, new Value(mainGroupName));
-		pointNode.setAttribute(ATTR_MIDDLE_GROUP_NAME, new Value(middleGroupName));
-		pointNode.setAttribute(ATTR_SUB_GROUP_NAME, new Value(subGroupName));
-		pointNode.setAttribute(ATTR_INDIVIDUAL_ADDRESS, new Value(individualAddress));
+		pointNode.setAttribute(ATTR_POINT_NAME, new Value(pointName));
+		pointNode.setAttribute(ATTR_GROUP_ADDRESS, new Value(groupAddress.toString()));
 
 		DevicePoint knxPoint = new DevicePoint(conn, this, pointNode);
-		getConnection().updateGroupToPoints(middleGroupName, knxPoint);
+		getConnection().updateGroupToPoints(middleGroup, knxPoint);
 	}
 
 	@Override
@@ -118,23 +121,12 @@ public class DeviceFolder extends EditableFolder {
 				return;
 		}
 
-		int mainGroupAddress = groupAddress.getMainGroup();
-		int middleGroupAddress = groupAddress.getMiddleGroup();
-		GroupAddressType groupLevel = getConnection().getGroupLevel();
-		int subGroupAddress = 0;
-		if (groupLevel == GroupAddressType.THREE_LEVEL) {
-			subGroupAddress = groupAddress.getSubGroup8();
-		} else if (groupLevel == GroupAddressType.TWO_LEVEL) {
-			subGroupAddress = groupAddress.getSubGroup11();
-		}
-		IndividualAddress individualAddress = new IndividualAddress(mainGroupAddress, middleGroupAddress,
-				subGroupAddress);
 		PointType type = PointType.getDataTypeByDataPointType(addressBean.getDataPointType());
 		ValueType valueType = PointType.getValueType(type);
-
-		Node pointNode = parent.createChild(groupAddress.toString()).setValueType(valueType).build();
+		String dataPointName = addressBean.getDataPointName();
+		Node pointNode = parent.createChild(dataPointName).setValueType(valueType).build();
 		pointNode.setAttribute(ATTR_POINT_TYPE, new Value(type.toString()));
-		pointNode.setAttribute(ATTR_INDIVIDUAL_ADDRESS, new Value(individualAddress.toString()));
+		pointNode.setAttribute(ATTR_GROUP_ADDRESS, new Value(groupAddress.toString()));
 
 		DevicePoint knxPoint = new DevicePoint(conn, this, pointNode);
 		getConnection().updateGroupToPoints(addressBean.getMiddleGroup(), knxPoint);

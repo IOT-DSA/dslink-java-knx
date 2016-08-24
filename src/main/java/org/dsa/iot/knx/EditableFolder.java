@@ -14,8 +14,6 @@ import org.dsa.iot.dslink.util.handler.Handler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import tuwien.auto.calimero.GroupAddress;
-
 public abstract class EditableFolder {
 	private static final Logger LOGGER;
 
@@ -24,10 +22,8 @@ public abstract class EditableFolder {
 	}
 
 	static final String ATTR_NAME = "name";
-	static final String ATTR_MAIN_GROUP_NAME = "main group name";
-	static final String ATTR_MIDDLE_GROUP_NAME = "middle group name";
-	static final String ATTR_SUB_GROUP_NAME = "sub group name";
-	static final String ATTR_INDIVIDUAL_ADDRESS = "individual address";
+	static final String ATTR_POINT_NAME = "point name";
+	static final String ATTR_GROUP_ADDRESS = "group address";
 	static final String ATTR_POINT_TYPE = "point type";
 	static final String ATTR_RESTORE_TYPE = "restore type";
 	static final String ATTR_EDITABLE_FOLDER = "editable folder";
@@ -41,8 +37,7 @@ public abstract class EditableFolder {
 	static final String ACTION_IMPORT_PROJECT = "import by xml";
 	static final String ACTION_IMPORT_OPC = "import by esf";
 	static final String NODE_STATUS = "STATUS";
-	static final String DEFAULT_GROUP_ADDRESS = "0.0.0";
-
+	static final String DEFAULT_GROUP_ADDRESS = "0/0/0";
 	KnxConnection conn;
 	Node node;
 	EditableFolder root;
@@ -82,10 +77,8 @@ public abstract class EditableFolder {
 		Action act;
 		act = new Action(Permission.READ, new AddPointHandler());
 		act.addParameter(new Parameter(ATTR_POINT_TYPE, ValueType.makeEnum(Utils.enumNames(PointType.class))));
-		act.addParameter(new Parameter(ATTR_MAIN_GROUP_NAME, ValueType.STRING));
-		act.addParameter(new Parameter(ATTR_MIDDLE_GROUP_NAME, ValueType.STRING));
-		act.addParameter(new Parameter(ATTR_SUB_GROUP_NAME, ValueType.STRING));
-		act.addParameter(new Parameter(ATTR_INDIVIDUAL_ADDRESS, ValueType.STRING, new Value(DEFAULT_GROUP_ADDRESS)));
+		act.addParameter(new Parameter(ATTR_POINT_NAME, ValueType.STRING));
+		act.addParameter(new Parameter(ATTR_GROUP_ADDRESS, ValueType.STRING, new Value(DEFAULT_GROUP_ADDRESS)));
 
 		node.createChild(ACTION_ADD_POINT).setAction(act).build().setSerializable(false);
 	}
@@ -164,6 +157,14 @@ public abstract class EditableFolder {
 		return node;
 	}
 
+	public void buildDataPoint(Node parent, GroupAddressBean addressBean) {
+
+	}
+
+	public Node buildFolderTree(Node node2, Queue<String> queue) {
+		return null;
+	}
+
 	protected abstract void edit(ActionResult event);
 
 	protected abstract void addPoint(ActionResult event);
@@ -174,11 +175,4 @@ public abstract class EditableFolder {
 
 	protected abstract void importProjectByEsf(ActionResult event);
 
-	public void buildDataPoint(Node parent, GroupAddressBean addressBean) {
-
-	}
-
-	public Node buildFolderTree(Node node2, Queue<String> queue) {
-		return null;
-	}
 }
