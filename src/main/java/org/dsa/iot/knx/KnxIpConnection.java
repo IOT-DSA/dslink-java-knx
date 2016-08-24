@@ -68,6 +68,7 @@ public class KnxIpConnection extends KnxConnection {
 	static final String ATTR_POLLING_TIMEOUT = "polling timeout";
 	static final String NODE_STATUS = "STATUS";
 	static final String STATUS_CONNECTED = "connected";
+	static final String STATUS_RESTORING = "restoring the last session";	
 	static final String STATUS_TUNNELING_WARNNING = "invalid remote host for tunneling";
 
 	static final int SEARCH_TIMEOUT = 5;
@@ -103,6 +104,7 @@ public class KnxIpConnection extends KnxConnection {
 	ScheduledFuture<?> discoverFuture;
 
 	private Node statusNode;
+	private boolean isRestoring;
 
 	public KnxIpConnection(KnxLink link, Node node) {
 		super(link, node);
@@ -243,8 +245,7 @@ public class KnxIpConnection extends KnxConnection {
 
 	private class DeviceDiscoveryHandler implements Handler<ActionResult> {
 		public void handle(ActionResult event) {
-			boolean isRestore = false;
-			discover(isRestore);
+			discover();
 		}
 	}
 
@@ -288,11 +289,6 @@ public class KnxIpConnection extends KnxConnection {
 
 	private class Discover implements Runnable {
 		KnxConnection listener;
-		boolean isRestore;
-
-		public Discover(boolean isRestore) {
-			this.isRestore = isRestore;
-		}
 
 		public void addListener(KnxConnection listener) {
 			this.listener = listener;
@@ -318,7 +314,7 @@ public class KnxIpConnection extends KnxConnection {
 					LOGGER.info("Family : " + fam.toString());
 
 					addressToDeviceDIB.put(hpai.getAddress().getHostAddress(), dib);
-					this.listener.onDiscovered(isRestore);
+					this.listener.onDiscovered();
 				}
 
 				if (responses.length > 0) {
@@ -332,9 +328,9 @@ public class KnxIpConnection extends KnxConnection {
 		}
 	}
 
-	private void discover(boolean isRestore) {
+	private void discover() {
 		stpe = getDaemonThreadPool();
-		Discover discover = new Discover(isRestore);
+		Discover discover = new Discover();
 		discover.addListener(getConnection());
 		discoverFuture = stpe.schedule(discover, 0, TimeUnit.SECONDS);
 	}
@@ -355,7 +351,7 @@ public class KnxIpConnection extends KnxConnection {
 	}
 
 	@Override
-	public void onDiscovered(boolean isRestore) {
+	public void onDiscovered() {
 		Iterator it = addressToDeviceDIB.entrySet().iterator();
 
 		while (it.hasNext()) {
@@ -366,10 +362,12 @@ public class KnxIpConnection extends KnxConnection {
 			deviceSet.add(device);
 		}
 
-		if (isRestore && !deviceSet.isEmpty()) {
+		if (isRestoring && !deviceSet.isEmpty()) {
 			for (DeviceNode device : deviceSet) {
 				device.restoreLastSession();
 			}
+	        isRestoring = false;
+	        statusNode.setValue(new Value(STATUS_CONNECTED));
 		}
 	}
 
@@ -579,7 +577,7 @@ public class KnxIpConnection extends KnxConnection {
 
 	public void restoreLastSession() {
 		init();
-
+        
 		Map<String, Node> children = node.getChildren();
 		if (null == children)
 			return;
@@ -587,7 +585,6 @@ public class KnxIpConnection extends KnxConnection {
 		for (Node child : children.values()) {
 			restoreDevice(child);
 		}
-
 	}
 
 	private void restoreDevice(Node child) {
@@ -595,11 +592,15 @@ public class KnxIpConnection extends KnxConnection {
 		final Value individualAddress = child.getAttribute(DeviceNode.ATTR_INDIVIDUAL_ADDRESS);
 		final Value macAddress = child.getAttribute(DeviceNode.ATTR_MAC_ADDRESS);
 		Value restType = child.getAttribute(EditableFolder.ATTR_RESTORE_TYPE);
-		boolean isRestore = true;
+
 		if (null != macAddress && null != individualAddress && null != medium && null != restType) {
-			discover(isRestore);
+	        isRestoring = true;
+			discover();
+		} else if (NODE_STATUS.equals(child.getName())){
+			child.setValue(new Value(STATUS_RESTORING));
 		} else if (null == child.getAction() && !NODE_STATUS.equals(child.getName())) {
 			node.removeChild(child);
-		}
+		} 
 	}
+
 }

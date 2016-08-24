@@ -28,15 +28,13 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element ref="{http://knx.org/xml/project/13}GroupAddress" maxOccurs="unbounded" minOccurs="0"/>
- *         &lt;element ref="{http://knx.org/xml/project/13}GroupRange" maxOccurs="unbounded" minOccurs="0"/>
+ *         &lt;element ref="{http://knx.org/xml/project/13}Trade" maxOccurs="unbounded" minOccurs="0"/>
  *       &lt;/sequence>
  *       &lt;attribute name="Id" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="RangeStart" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="RangeEnd" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="Name" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="Puid" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="Description" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *       &lt;attribute name="CompletionStatus" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *       &lt;attribute name="Puid" type="{http://www.w3.org/2001/XMLSchema}string" />
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -46,85 +44,51 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
-    "groupAddress",
-    "groupRange"
+    "trade"
 })
-@XmlRootElement(name = "GroupRange")
-public class GroupRange {
+@XmlRootElement(name = "Trade")
+public class Trade {
 
-    @XmlElement(name = "GroupAddress")
-    protected List<GroupAddress> groupAddress;
-    @XmlElement(name = "GroupRange")
-    protected List<GroupRange> groupRange;
+    @XmlElement(name = "Trade")
+    protected List<Trade> trade;
     @XmlAttribute(name = "Id")
     protected String id;
-    @XmlAttribute(name = "RangeStart")
-    protected String rangeStart;
-    @XmlAttribute(name = "RangeEnd")
-    protected String rangeEnd;
     @XmlAttribute(name = "Name")
     protected String name;
-    @XmlAttribute(name = "Puid")
-    protected String puid;
     @XmlAttribute(name = "Description")
     protected String description;
+    @XmlAttribute(name = "CompletionStatus")
+    protected String completionStatus;
+    @XmlAttribute(name = "Puid")
+    protected String puid;
 
     /**
-     * Gets the value of the groupAddress property.
+     * Gets the value of the trade property.
      * 
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the groupAddress property.
+     * This is why there is not a <CODE>set</CODE> method for the trade property.
      * 
      * <p>
      * For example, to add a new item, do as follows:
      * <pre>
-     *    getGroupAddress().add(newItem);
+     *    getTrade().add(newItem);
      * </pre>
      * 
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link GroupAddress }
+     * {@link Trade }
      * 
      * 
      */
-    public List<GroupAddress> getGroupAddress() {
-        if (groupAddress == null) {
-            groupAddress = new ArrayList<GroupAddress>();
+    public List<Trade> getTrade() {
+        if (trade == null) {
+            trade = new ArrayList<Trade>();
         }
-        return this.groupAddress;
-    }
-
-    /**
-     * Gets the value of the groupRange property.
-     * 
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the groupRange property.
-     * 
-     * <p>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getGroupRange().add(newItem);
-     * </pre>
-     * 
-     * 
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link GroupRange }
-     * 
-     * 
-     */
-    public List<GroupRange> getGroupRange() {
-        if (groupRange == null) {
-            groupRange = new ArrayList<GroupRange>();
-        }
-        return this.groupRange;
+        return this.trade;
     }
 
     /**
@@ -152,54 +116,6 @@ public class GroupRange {
     }
 
     /**
-     * Gets the value of the rangeStart property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getRangeStart() {
-        return rangeStart;
-    }
-
-    /**
-     * Sets the value of the rangeStart property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setRangeStart(String value) {
-        this.rangeStart = value;
-    }
-
-    /**
-     * Gets the value of the rangeEnd property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getRangeEnd() {
-        return rangeEnd;
-    }
-
-    /**
-     * Sets the value of the rangeEnd property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setRangeEnd(String value) {
-        this.rangeEnd = value;
-    }
-
-    /**
      * Gets the value of the name property.
      * 
      * @return
@@ -224,30 +140,6 @@ public class GroupRange {
     }
 
     /**
-     * Gets the value of the puid property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getPuid() {
-        return puid;
-    }
-
-    /**
-     * Sets the value of the puid property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setPuid(String value) {
-        this.puid = value;
-    }
-
-    /**
      * Gets the value of the description property.
      * 
      * @return
@@ -269,6 +161,54 @@ public class GroupRange {
      */
     public void setDescription(String value) {
         this.description = value;
+    }
+
+    /**
+     * Gets the value of the completionStatus property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getCompletionStatus() {
+        return completionStatus;
+    }
+
+    /**
+     * Sets the value of the completionStatus property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setCompletionStatus(String value) {
+        this.completionStatus = value;
+    }
+
+    /**
+     * Gets the value of the puid property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getPuid() {
+        return puid;
+    }
+
+    /**
+     * Sets the value of the puid property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setPuid(String value) {
+        this.puid = value;
     }
 
 }

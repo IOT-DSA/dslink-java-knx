@@ -17,6 +17,8 @@ import org.dsa.iot.dslink.util.handler.Handler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import tuwien.auto.calimero.knxnetip.KNXnetIPConnection;
+
 public class KnxLink {
 	private static final Logger LOGGER;
 
@@ -38,7 +40,6 @@ public class KnxLink {
 
 	static final String NODE_DEFS = "defs";
 
-	static final int DEFAULT_KNX_PORT = 3671;
 	static final int DEFAULT_POLLING_INTERVAL = 5;
 	static final int DEFAULT_POLLING_TIMEOUT = 5;
 	static final String DEFAULT_MULTICAST_ADDRESS = "";
@@ -75,7 +76,7 @@ public class KnxLink {
 		act.addParameter(new Parameter(ATTR_GROUP_LEVEL, ValueType.makeEnum(Utils.enumNames(GroupAddressType.class))));
 		act.addParameter(new Parameter(ATTR_LOCAL_HOST, ValueType.STRING, new Value(getLocalHost())));
 		act.addParameter(new Parameter(ATTR_REMOTE_HOST, ValueType.STRING, new Value(DEFAULT_MULTICAST_ADDRESS)));
-		act.addParameter(new Parameter(ATTR_REMOTE_PORT, ValueType.NUMBER, new Value(DEFAULT_KNX_PORT)));
+		act.addParameter(new Parameter(ATTR_REMOTE_PORT, ValueType.NUMBER, new Value(KNXnetIPConnection.DEFAULT_PORT)));
 		act.addParameter(new Parameter(ATTR_USE_NAT, ValueType.BOOL, new Value(false)));
 		act.addParameter(new Parameter(ATTR_DEVICE_ADDRESS, ValueType.STRING, new Value(DEFAULT_DEVICE_ADDRESS)));
 		act.addParameter(new Parameter(ATTR_POLLING_INTERVAL, ValueType.NUMBER, new Value(DEFAULT_POLLING_INTERVAL)));
