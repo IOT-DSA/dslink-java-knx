@@ -36,22 +36,16 @@ public class DevicePoint extends EditablePoint {
 
 	@Override
 	public GroupAddress getGroupAddress() {
-		String addressStr = node.getAttribute(ATTR_INDIVIDUAL_ADDRESS).getString();
-		IndividualAddress address = null;
+		String addressStr = node.getAttribute(ATTR_GROUP_ADDRESS).getString();
+		GroupAddress groupAddress = null;
 		try {
-			address = new IndividualAddress(addressStr);
+			groupAddress = new GroupAddress(addressStr);
 		} catch (KNXFormatException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} finally {
-			if (null == address) {
-				return null;
-			}
 		}
 
-		int area = address.getArea();
-		int line = address.getLine();
-		int device = address.getDevice();
-		return new GroupAddress(area, line, device);
+		return groupAddress;
 	}
 
 	public void startPolling() {

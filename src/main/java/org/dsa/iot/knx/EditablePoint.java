@@ -27,14 +27,14 @@ public abstract class EditablePoint {
 	static final String ATTR_MAIN_GROUP_NAME = "main group name";
 	static final String ATTR_MIDDLE_GROUP_NAME = "middle group name";
 	static final String ATTR_SUB_GROUP_NAME = "sub group name";
-	static final String ATTR_INDIVIDUAL_ADDRESS = "individual address";
+	static final String ATTR_GROUP_ADDRESS = "group address";
 	static final String ATTR_RESTORE_TYPE = "restore type";
 	static final String RESTORE_EDITABLE_POINT = "editable point";
 
 	static final String ACTION_REMOVE = "remove";
 	static final String ACTION_EDIT = "edit";
 
-	static final String DEFAULT_ADDRESS = "0.0.0";
+	static final String DEFAULT_GROUP_ADDRESS = "0/0/0";
 
 	KnxConnection conn;
 	EditableFolder folder;
@@ -62,11 +62,13 @@ public abstract class EditablePoint {
 		act.addParameter(new Parameter(ATTR_NAME, ValueType.STRING, new Value(node.getName())));
 		act.addParameter(new Parameter(ATTR_POINT_TYPE, ValueType.makeEnum(Utils.enumNames(PointType.class)),
 				node.getAttribute(ATTR_POINT_TYPE)));
-		act.addParameter(new Parameter(ATTR_MAIN_GROUP_NAME, ValueType.STRING, node.getAttribute(ATTR_MAIN_GROUP_NAME)));
-		act.addParameter(new Parameter(ATTR_MIDDLE_GROUP_NAME, ValueType.STRING, node.getAttribute(ATTR_MIDDLE_GROUP_NAME)));
+		act.addParameter(
+				new Parameter(ATTR_MAIN_GROUP_NAME, ValueType.STRING, node.getAttribute(ATTR_MAIN_GROUP_NAME)));
+		act.addParameter(
+				new Parameter(ATTR_MIDDLE_GROUP_NAME, ValueType.STRING, node.getAttribute(ATTR_MIDDLE_GROUP_NAME)));
 		act.addParameter(new Parameter(ATTR_SUB_GROUP_NAME, ValueType.STRING, node.getAttribute(ATTR_SUB_GROUP_NAME)));
-		act.addParameter(new Parameter(ATTR_INDIVIDUAL_ADDRESS, ValueType.STRING, node.getAttribute(ATTR_INDIVIDUAL_ADDRESS)));
-	
+		act.addParameter(new Parameter(ATTR_GROUP_ADDRESS, ValueType.STRING, node.getAttribute(ATTR_GROUP_ADDRESS)));
+
 		Node actionNode = node.getChild(ACTION_EDIT);
 		if (null == actionNode)
 			node.createChild(ACTION_EDIT).setAction(act).build().setSerializable(false);
@@ -109,7 +111,6 @@ public abstract class EditablePoint {
 	}
 
 	private class setValueHandler implements Handler<ValuePair> {
-
 		public void handle(ValuePair event) {
 			if (!event.isFromExternalSource()) {
 				return;
@@ -123,14 +124,13 @@ public abstract class EditablePoint {
 		return this.conn;
 	}
 
+	public boolean isSubscribed() {
+		return false;
+	}
+
 	protected abstract void handleSet(Value val);
 
 	public abstract PointType getType();
 
 	public abstract GroupAddress getGroupAddress();
-
-	public boolean isSubscribed() {
-		return false;
-	}
-
 }
