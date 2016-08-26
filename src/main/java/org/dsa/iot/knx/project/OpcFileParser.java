@@ -16,10 +16,10 @@ public class OpcFileParser extends KnxProjectParser {
 		LOGGER = LoggerFactory.getLogger(OpcFileParser.class);
 	}
 
-	public OpcFileParser(EditableFolder folder){
+	public OpcFileParser(EditableFolder folder) {
 		super(folder);
 	}
-	
+
 	public void parseItems(String content) {
 
 		String[] lines = content.split(System.getProperty("line.separator"));
@@ -31,26 +31,26 @@ public class OpcFileParser extends KnxProjectParser {
 			String dataPointType = line.substring(line.indexOf("(") + 1, line.indexOf(")"));
 			mainGroupName = records[0];
 			middleGroupName = records[1];
-			String[] addressAndMore = records[2].split("\t");
-			addressStr = addressAndMore[0];
-			
+			String[] addressAndNames = records[2].split("\t");
+			addressStr = addressAndNames[0];
+
 			GroupAddress groupAddress = null;
 			try {
 				groupAddress = new GroupAddress(addressStr);
 			} catch (KNXFormatException e) {
 				e.printStackTrace();
 			} finally {
-				if (null == groupAddress){
+				if (null == groupAddress) {
 					return;
 				}
 			}
 
-			String subGroupName = addressAndMore[1];
-			int buidlingIndex = subGroupName.indexOf(BUILDING);
-			String path = subGroupName.substring(buidlingIndex);
-			String dataPointName = subGroupName.substring(0, buidlingIndex - 1);
-			
-            buildAddressToBean(mainGroupName, middleGroupName, groupAddress, dataPointType, dataPointName);
+			String subGroupName = addressAndNames[1];
+			String[] dataPointAndPath = parseGroupAddress(subGroupName);
+			String dataPointName = dataPointAndPath[0];
+			String path = dataPointAndPath[1];
+
+			buildAddressToBean(mainGroupName, middleGroupName, groupAddress, dataPointType, dataPointName);
 
 			if (!pathToNodes.containsKey(path)) {
 				List<GroupAddress> nodes = new ArrayList<>();
@@ -62,7 +62,7 @@ public class OpcFileParser extends KnxProjectParser {
 				pathToNodes.put(path, nodes);
 			}
 		}
-		
-		buildGroupTree();     
+
+		buildGroupTree();
 	}
 }
