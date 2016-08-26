@@ -24,8 +24,6 @@ public abstract class KnxProjectParser {
 		LOGGER = LoggerFactory.getLogger(KnxProjectParser.class);
 	}
 
-	static final String BUILDING = "Building";
-
 	EditableFolder folder;
 
 	Map<String, List<GroupAddress>> pathToNodes = new HashMap<>();
