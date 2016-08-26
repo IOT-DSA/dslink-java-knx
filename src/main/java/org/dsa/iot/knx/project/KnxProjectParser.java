@@ -23,25 +23,26 @@ public abstract class KnxProjectParser {
 	static {
 		LOGGER = LoggerFactory.getLogger(KnxProjectParser.class);
 	}
-	
+
 	static final String BUILDING = "Building";
-	
+
 	EditableFolder folder;
-	
+
 	Map<String, List<GroupAddress>> pathToNodes = new HashMap<>();
 	Map<GroupAddress, GroupAddressBean> addressToBean = new HashMap<>();
-	
+
 	String mainGroupName = null;
 	String middleGroupName = null;
 	String addressStr = null;
-	
-	public KnxProjectParser(EditableFolder folder){
+
+	public KnxProjectParser(EditableFolder folder) {
 		this.folder = folder;
 	}
 
-	public void buildAddressToBean(String mainGroupName, String middleGroupName, GroupAddress groupAddress, String dataPointType, String dataPointName){
+	public void buildAddressToBean(String mainGroupName, String middleGroupName, GroupAddress groupAddress,
+			String dataPointType, String dataPointName) {
 		GroupAddressBean bean = new GroupAddressBean();
-		
+
 		bean.setMainGroup(mainGroupName);
 		bean.setMiddleGroup(middleGroupName);
 		bean.setGroupAddress(groupAddress.toString());
@@ -49,8 +50,8 @@ public abstract class KnxProjectParser {
 		bean.setDataPointName(dataPointName);
 		addressToBean.put(groupAddress, bean);
 	}
-	
-	public void buildGroupTree(){
+
+	public void buildGroupTree() {
 		Iterator it = pathToNodes.entrySet().iterator();
 		while (it.hasNext()) {
 			Map.Entry pair = (Map.Entry) it.next();
@@ -66,7 +67,15 @@ public abstract class KnxProjectParser {
 			}
 		}
 	}
-	
+
+	public String[] parseGroupAddress(String groupAddress) {
+		String[] nameArray = groupAddress.split("_");
+		String dataPointName = nameArray[0] + "_" + nameArray[1] + "_" + nameArray[2];
+		String path = groupAddress.substring(dataPointName.length() + 1);
+
+		return new String[] { dataPointName, path };
+	}
+
 	public abstract void parseItems(String content);
 
 }

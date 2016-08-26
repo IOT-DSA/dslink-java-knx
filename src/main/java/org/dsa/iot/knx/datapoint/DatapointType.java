@@ -277,4 +277,22 @@ public enum DatapointType {
         }
         return result;
     }
+    
+	public static DatapointType forMajorTypeId(String typeId, boolean isMajorId) {
+		for (DatapointType e : values()) {
+			if (getMajorTypeId(e.typeId, false).equals(getMajorTypeId(typeId, isMajorId)))
+				return e;
+		}
+		return UNDEFINED;
+	}
+
+	private static String getMajorTypeId(String typeId, boolean isMajorId) {
+		String majorTypeId = typeId;
+
+		int lastIdx = typeId.lastIndexOf('-');
+		if (!isMajorId && lastIdx >= 0) {
+			majorTypeId = typeId.substring(0, lastIdx);
+		}
+		return majorTypeId;
+	}
 }

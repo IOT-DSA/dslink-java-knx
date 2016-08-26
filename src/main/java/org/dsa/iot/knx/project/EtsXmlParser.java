@@ -4,6 +4,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
+import org.apache.commons.lang3.StringUtils;
 import org.dsa.iot.knx.EditableFolder;
 import org.dsa.iot.knx.datapoint.DatapointType;
 import org.slf4j.Logger;
@@ -50,6 +51,8 @@ public class EtsXmlParser extends KnxProjectParser {
 	static final String DATA_TYPE_SHORTNAME_STRING = "string";
 	static final String DATA_TYPE_SHORTNAME_UNDEFINED = "undefined";
 
+	static final String VERSION_SEPARATOR = "-";
+	
 	Map<String, String> addressRefIdToTypeId;
 
 	public EtsXmlParser(EditableFolder folder) {
@@ -142,10 +145,9 @@ public class EtsXmlParser extends KnxProjectParser {
 											String typeId = addressRefIdToTypeId.get(addressRefId);
 											if (null != typeId) {
 												String subGroupName = subGroupAddress.getName();
-												String[] nameArray = subGroupName.split("_");
-												String dataPointName = nameArray[0] + "_" + nameArray[1] + "_"
-														+ nameArray[2];
-												String path = subGroupName.substring(dataPointName.length() + 1);
+												String[] dataPointAndPath = parseGroupAddress(subGroupName);
+												String dataPointName = dataPointAndPath[0];
+												String path = dataPointAndPath[1];
 
 												String dataPointType = getDataPointTypeByTypeId(typeId);
 
@@ -184,7 +186,13 @@ public class EtsXmlParser extends KnxProjectParser {
 	}
 
 	private String getDataPointTypeByTypeId(String typeId) {
-		DatapointType type = DatapointType.forTypeId(typeId);
+		if (typeId.startsWith("DPT")) {
+			typeId = typeId.replaceFirst("DPT", "DPST");
+		}
+		int versions = StringUtils.countMatches(typeId, VERSION_SEPARATOR);
+		boolean isMajorId = versions == 1 ? true : false;
+
+		DatapointType type = DatapointType.forMajorTypeId(typeId, isMajorId);
 		String dataPointTypeNme = type.toString();
 		if (dataPointTypeNme.startsWith(DATA_TYPE_PREFIX_BOOLING)) {
 			return DATA_TYPE_SHORTNAME_BOOLING;
