@@ -161,7 +161,7 @@ public class KnxIpConnection extends KnxConnection {
 				networkLink = new KNXNetworkLinkIP(KNXNetworkLinkIP.TUNNELING, localEP, remoteEP, useNat,
 						new TPSettings(new IndividualAddress(deviceAddress), true));
 			} else if (serviceMode == KNXNetworkLinkIP.ROUTING) {
-				networkLink = new KNXNetworkLinkIP(KNXNetworkLinkIP.ROUTING, localEP, null, useNat, TPSettings.TP1);
+				networkLink = new KNXNetworkLinkIP(KNXNetworkLinkIP.ROUTING, null, null, false, TPSettings.TP1);
 			}
 
 			if (null != networkLink) {
