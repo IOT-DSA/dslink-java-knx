@@ -159,7 +159,7 @@ public class KnxIpConnection extends KnxConnection {
 		try {
 			if (serviceMode == KNXNetworkLinkIP.TUNNELING && null != remoteEP) {
 				networkLink = new KNXNetworkLinkIP(KNXNetworkLinkIP.TUNNELING, localEP, remoteEP, useNat,
-						new TPSettings(new IndividualAddress(deviceAddress), true));
+						new TPSettings(new IndividualAddress(deviceAddress)));
 			} else if (serviceMode == KNXNetworkLinkIP.ROUTING) {
 				networkLink = new KNXNetworkLinkIP(KNXNetworkLinkIP.ROUTING, null, null, false, TPSettings.TP1);
 			}
@@ -352,10 +352,10 @@ public class KnxIpConnection extends KnxConnection {
 
 	@Override
 	public void onDiscovered() {
-		Iterator it = addressToDeviceDIB.entrySet().iterator();
+		Iterator<Entry<String, DeviceDIB>> it = addressToDeviceDIB.entrySet().iterator();
 
 		while (it.hasNext()) {
-			Map.Entry pair = (Map.Entry) it.next();
+			Map.Entry<String, DeviceDIB> pair = (Map.Entry<String, DeviceDIB>) it.next();
 			String host = (String) pair.getKey();
 			DeviceDIB dib = (DeviceDIB) pair.getValue();
 			DeviceNode device = setupDeviceNode(host, dib);

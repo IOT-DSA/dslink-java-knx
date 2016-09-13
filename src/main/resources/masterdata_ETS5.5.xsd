@@ -1,0 +1,639 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="KNX" targetNamespace="http://knx.org/xml/project/13" xmlns:mstns="http://knx.org/xml/project/13" xmlns="http://knx.org/xml/project/13" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" attributeFormDefault="qualified" elementFormDefault="qualified">
+  <xs:element name="Location">
+    <xs:complexType>
+      <xs:attribute name="AddressSpace" form="unqualified" type="xs:string" />
+      <xs:attribute name="StartAddress" form="unqualified" type="xs:string" />
+      <xs:attribute name="PtrResource" form="unqualified" type="xs:string" />
+      <xs:attribute name="InterfaceObjectRef" form="unqualified" type="xs:string" />
+      <xs:attribute name="PropertyID" form="unqualified" type="xs:string" />
+      <xs:attribute name="Occurrence" form="unqualified" type="xs:string" />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AccessRights">
+    <xs:complexType>
+      <xs:attribute name="Read" form="unqualified" type="xs:string" />
+      <xs:attribute name="Write" form="unqualified" type="xs:string" />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Language">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="TranslationUnit" minOccurs="0" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="TranslationElement" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="Translation" minOccurs="0" maxOccurs="unbounded">
+                      <xs:complexType>
+                        <xs:attribute name="AttributeName" form="unqualified" type="xs:string" />
+                        <xs:attribute name="Text" form="unqualified" type="xs:string" />
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                  <xs:attribute name="RefId" form="unqualified" type="xs:string" />
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+            <xs:attribute name="RefId" form="unqualified" type="xs:string" />
+            <xs:attribute name="Version" form="unqualified" type="xs:string" />
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+      <xs:attribute name="Identifier" form="unqualified" type="xs:string" />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="KNX" msdata:IsDataSet="true" msdata:Locale="en-US">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="Location" />
+        <xs:element ref="AccessRights" />
+        <xs:element ref="Language" />
+        <xs:element name="MasterData">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="DatapointTypes" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="DatapointType" minOccurs="0" maxOccurs="unbounded">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="DatapointSubtypes" minOccurs="0" maxOccurs="unbounded">
+                            <xs:complexType>
+                              <xs:sequence>
+                                <xs:element name="DatapointSubtype" minOccurs="0" maxOccurs="unbounded">
+                                  <xs:complexType>
+                                    <xs:sequence>
+                                      <xs:element name="Format" minOccurs="0" maxOccurs="unbounded">
+                                        <xs:complexType>
+                                          <xs:sequence>
+                                            <xs:element name="Float" minOccurs="0" maxOccurs="unbounded">
+                                              <xs:complexType>
+                                                <xs:attribute name="Id" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="Width" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="Unit" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="MinValue" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="MaxValue" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="Name" form="unqualified" type="xs:string" />
+                                              </xs:complexType>
+                                            </xs:element>
+                                            <xs:element name="SignedInteger" minOccurs="0" maxOccurs="unbounded">
+                                              <xs:complexType>
+                                                <xs:attribute name="Id" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="Width" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="MinInclusive" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="MaxInclusive" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="Unit" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="Coefficient" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="Name" form="unqualified" type="xs:string" />
+                                              </xs:complexType>
+                                            </xs:element>
+                                            <xs:element name="String" minOccurs="0" maxOccurs="unbounded">
+                                              <xs:complexType>
+                                                <xs:attribute name="Id" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="Width" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="Encoding" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="Name" form="unqualified" type="xs:string" />
+                                              </xs:complexType>
+                                            </xs:element>
+                                            <xs:element name="Bit" minOccurs="0" maxOccurs="unbounded">
+                                              <xs:complexType>
+                                                <xs:attribute name="Id" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="Cleared" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="Set" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="Name" form="unqualified" type="xs:string" />
+                                              </xs:complexType>
+                                            </xs:element>
+                                            <xs:element name="Enumeration" minOccurs="0" maxOccurs="unbounded">
+                                              <xs:complexType>
+                                                <xs:sequence>
+                                                  <xs:element name="EnumValue" minOccurs="0" maxOccurs="unbounded">
+                                                    <xs:complexType>
+                                                      <xs:attribute name="Id" form="unqualified" type="xs:string" />
+                                                      <xs:attribute name="Value" form="unqualified" type="xs:string" />
+                                                      <xs:attribute name="Text" form="unqualified" type="xs:string" />
+                                                    </xs:complexType>
+                                                  </xs:element>
+                                                </xs:sequence>
+                                                <xs:attribute name="Id" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="Width" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="Name" form="unqualified" type="xs:string" />
+                                              </xs:complexType>
+                                            </xs:element>
+                                            <xs:element name="UnsignedInteger" minOccurs="0" maxOccurs="unbounded">
+                                              <xs:complexType>
+                                                <xs:attribute name="Id" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="Name" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="Width" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="Unit" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="Coefficient" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="MinInclusive" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="MaxInclusive" form="unqualified" type="xs:string" />
+                                              </xs:complexType>
+                                            </xs:element>
+                                            <xs:element name="Reserved" minOccurs="0" maxOccurs="unbounded">
+                                              <xs:complexType>
+                                                <xs:attribute name="Width" form="unqualified" type="xs:string" />
+                                              </xs:complexType>
+                                            </xs:element>
+                                            <xs:element name="RefType" minOccurs="0" maxOccurs="unbounded">
+                                              <xs:complexType>
+                                                <xs:attribute name="RefId" form="unqualified" type="xs:string" />
+                                              </xs:complexType>
+                                            </xs:element>
+                                          </xs:sequence>
+                                        </xs:complexType>
+                                      </xs:element>
+                                    </xs:sequence>
+                                    <xs:attribute name="Id" form="unqualified" type="xs:string" />
+                                    <xs:attribute name="Number" form="unqualified" type="xs:string" />
+                                    <xs:attribute name="Name" form="unqualified" type="xs:string" />
+                                    <xs:attribute name="Text" form="unqualified" type="xs:string" />
+                                    <xs:attribute name="Default" form="unqualified" type="xs:string" />
+                                    <xs:attribute name="PDT" form="unqualified" type="xs:string" />
+                                  </xs:complexType>
+                                </xs:element>
+                              </xs:sequence>
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                        <xs:attribute name="Id" form="unqualified" type="xs:string" />
+                        <xs:attribute name="Number" form="unqualified" type="xs:string" />
+                        <xs:attribute name="Name" form="unqualified" type="xs:string" />
+                        <xs:attribute name="Text" form="unqualified" type="xs:string" />
+                        <xs:attribute name="SizeInBit" form="unqualified" type="xs:string" />
+                        <xs:attribute name="PDT" form="unqualified" type="xs:string" />
+                        <xs:attribute name="Default" form="unqualified" type="xs:string" />
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="InterfaceObjectTypes" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="InterfaceObjectType" minOccurs="0" maxOccurs="unbounded">
+                      <xs:complexType>
+                        <xs:attribute name="Id" form="unqualified" type="xs:string" />
+                        <xs:attribute name="Number" form="unqualified" type="xs:string" />
+                        <xs:attribute name="Name" form="unqualified" type="xs:string" />
+                        <xs:attribute name="Text" form="unqualified" type="xs:string" />
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="InterfaceObjectProperties" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="InterfaceObjectProperty" minOccurs="0" maxOccurs="unbounded">
+                      <xs:complexType>
+                        <xs:attribute name="Id" form="unqualified" type="xs:string" />
+                        <xs:attribute name="Number" form="unqualified" type="xs:string" />
+                        <xs:attribute name="Name" form="unqualified" type="xs:string" />
+                        <xs:attribute name="Text" form="unqualified" type="xs:string" />
+                        <xs:attribute name="PDT" form="unqualified" type="xs:string" />
+                        <xs:attribute name="Array" form="unqualified" type="xs:string" />
+                        <xs:attribute name="ObjectType" form="unqualified" type="xs:string" />
+                        <xs:attribute name="DPT" form="unqualified" type="xs:string" />
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="PropertyDataTypes" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="PropertyDataType" minOccurs="0" maxOccurs="unbounded">
+                      <xs:complexType>
+                        <xs:attribute name="Id" form="unqualified" type="xs:string" />
+                        <xs:attribute name="Number" form="unqualified" type="xs:string" />
+                        <xs:attribute name="Name" form="unqualified" type="xs:string" />
+                        <xs:attribute name="Size" form="unqualified" type="xs:string" />
+                        <xs:attribute name="ReadSize" form="unqualified" type="xs:string" />
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="MediumTypes" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="MediumType" minOccurs="0" maxOccurs="unbounded">
+                      <xs:complexType>
+                        <xs:attribute name="Id" form="unqualified" type="xs:string" />
+                        <xs:attribute name="Number" form="unqualified" type="xs:string" />
+                        <xs:attribute name="Name" form="unqualified" type="xs:string" />
+                        <xs:attribute name="Text" form="unqualified" type="xs:string" />
+                        <xs:attribute name="DomainAddressLength" form="unqualified" type="xs:string" />
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="MaskVersions" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="MaskVersion" minOccurs="0" maxOccurs="unbounded">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="DownwardCompatibleMasks" minOccurs="0" maxOccurs="unbounded">
+                            <xs:complexType>
+                              <xs:sequence>
+                                <xs:element name="DownwardCompatibleMask" minOccurs="0" maxOccurs="unbounded">
+                                  <xs:complexType>
+                                    <xs:attribute name="RefId" form="unqualified" type="xs:string" />
+                                  </xs:complexType>
+                                </xs:element>
+                              </xs:sequence>
+                            </xs:complexType>
+                          </xs:element>
+                          <xs:element name="MaskEntries" minOccurs="0" maxOccurs="unbounded">
+                            <xs:complexType>
+                              <xs:sequence>
+                                <xs:element name="MaskEntry" minOccurs="0" maxOccurs="unbounded">
+                                  <xs:complexType>
+                                    <xs:attribute name="Id" form="unqualified" type="xs:string" />
+                                    <xs:attribute name="Name" form="unqualified" type="xs:string" />
+                                    <xs:attribute name="Address" form="unqualified" type="xs:string" />
+                                  </xs:complexType>
+                                </xs:element>
+                              </xs:sequence>
+                            </xs:complexType>
+                          </xs:element>
+                          <xs:element name="HawkConfigurationData" minOccurs="0" maxOccurs="unbounded">
+                            <xs:complexType>
+                              <xs:sequence>
+                                <xs:element name="Features" minOccurs="0" maxOccurs="unbounded">
+                                  <xs:complexType>
+                                    <xs:sequence>
+                                      <xs:element name="Feature" minOccurs="0" maxOccurs="unbounded">
+                                        <xs:complexType>
+                                          <xs:attribute name="Name" form="unqualified" type="xs:string" />
+                                          <xs:attribute name="Value" form="unqualified" type="xs:string" />
+                                        </xs:complexType>
+                                      </xs:element>
+                                    </xs:sequence>
+                                  </xs:complexType>
+                                </xs:element>
+                                <xs:element name="Resources" minOccurs="0" maxOccurs="unbounded">
+                                  <xs:complexType>
+                                    <xs:sequence>
+                                      <xs:element name="Resource" minOccurs="0" maxOccurs="unbounded">
+                                        <xs:complexType>
+                                          <xs:sequence>
+                                            <xs:element ref="Location" minOccurs="0" maxOccurs="unbounded" />
+                                            <xs:element name="ImgLocation" minOccurs="0" maxOccurs="unbounded">
+                                              <xs:complexType>
+                                                <xs:attribute name="AddressSpace" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="StartAddress" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="InterfaceObjectRef" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="PropertyID" form="unqualified" type="xs:string" />
+                                              </xs:complexType>
+                                            </xs:element>
+                                            <xs:element name="ResourceType" minOccurs="0" maxOccurs="unbounded">
+                                              <xs:complexType>
+                                                <xs:attribute name="Length" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="Flavour" form="unqualified" type="xs:string" />
+                                              </xs:complexType>
+                                            </xs:element>
+                                            <xs:element ref="AccessRights" minOccurs="0" maxOccurs="unbounded" />
+                                          </xs:sequence>
+                                          <xs:attribute name="Name" form="unqualified" type="xs:string" />
+                                          <xs:attribute name="Access" form="unqualified" type="xs:string" />
+                                          <xs:attribute name="MgmtStyle" form="unqualified" type="xs:string" />
+                                        </xs:complexType>
+                                      </xs:element>
+                                    </xs:sequence>
+                                  </xs:complexType>
+                                </xs:element>
+                                <xs:element name="Procedures" minOccurs="0" maxOccurs="unbounded">
+                                  <xs:complexType>
+                                    <xs:sequence>
+                                      <xs:element name="Procedure" minOccurs="0" maxOccurs="unbounded">
+                                        <xs:complexType>
+                                          <xs:sequence>
+                                            <xs:element name="LdCtrlConnect" type="xs:string" minOccurs="0" msdata:Ordinal="0" />
+                                            <xs:element name="LdCtrlRestart" type="xs:string" minOccurs="0" msdata:Ordinal="2" />
+                                            <xs:element name="LdCtrlDisconnect" type="xs:string" minOccurs="0" msdata:Ordinal="3" />
+                                            <xs:element name="LdCtrlSetControlVariable" minOccurs="0" maxOccurs="unbounded">
+                                              <xs:complexType>
+                                                <xs:attribute name="Name" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="Value" form="unqualified" type="xs:string" />
+                                              </xs:complexType>
+                                            </xs:element>
+                                            <xs:element name="LdCtrlWriteMem" minOccurs="0" maxOccurs="unbounded">
+                                              <xs:complexType>
+                                                <xs:attribute name="Address" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="Size" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="Verify" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="InlineData" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="AddressSpace" form="unqualified" type="xs:string" />
+                                              </xs:complexType>
+                                            </xs:element>
+                                            <xs:element name="LdCtrlLoadImageMem" minOccurs="0" maxOccurs="unbounded">
+                                              <xs:complexType>
+                                                <xs:attribute name="Address" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="Size" form="unqualified" type="xs:string" />
+                                              </xs:complexType>
+                                            </xs:element>
+                                            <xs:element name="LdCtrlUnload" minOccurs="0" maxOccurs="unbounded">
+                                              <xs:complexType>
+                                                <xs:attribute name="LsmIdx" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="ObjType" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="Occurrence" form="unqualified" type="xs:string" />
+                                              </xs:complexType>
+                                            </xs:element>
+                                            <xs:element name="LdCtrlLoad" minOccurs="0" maxOccurs="unbounded">
+                                              <xs:complexType>
+                                                <xs:attribute name="LsmIdx" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="ObjType" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="Occurrence" form="unqualified" type="xs:string" />
+                                              </xs:complexType>
+                                            </xs:element>
+                                            <xs:element name="LdCtrlAbsSegment" minOccurs="0" maxOccurs="unbounded">
+                                              <xs:complexType>
+                                                <xs:attribute name="LsmIdx" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="SegType" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="Address" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="Size" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="Access" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="MemType" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="SegFlags" form="unqualified" type="xs:string" />
+                                              </xs:complexType>
+                                            </xs:element>
+                                            <xs:element name="LdCtrlTaskSegment" minOccurs="0" maxOccurs="unbounded">
+                                              <xs:complexType>
+                                                <xs:attribute name="LsmIdx" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="Address" form="unqualified" type="xs:string" />
+                                              </xs:complexType>
+                                            </xs:element>
+                                            <xs:element name="LdCtrlTaskPtr" minOccurs="0" maxOccurs="unbounded">
+                                              <xs:complexType>
+                                                <xs:attribute name="LsmIdx" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="InitPtr" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="SavePtr" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="SerialPtr" form="unqualified" type="xs:string" />
+                                              </xs:complexType>
+                                            </xs:element>
+                                            <xs:element name="LdCtrlTaskCtrl1" minOccurs="0" maxOccurs="unbounded">
+                                              <xs:complexType>
+                                                <xs:attribute name="LsmIdx" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="Address" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="Count" form="unqualified" type="xs:string" />
+                                              </xs:complexType>
+                                            </xs:element>
+                                            <xs:element name="LdCtrlTaskCtrl2" minOccurs="0" maxOccurs="unbounded">
+                                              <xs:complexType>
+                                                <xs:attribute name="LsmIdx" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="Callback" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="Address" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="Seg0" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="Seg1" form="unqualified" type="xs:string" />
+                                              </xs:complexType>
+                                            </xs:element>
+                                            <xs:element name="LdCtrlLoadCompleted" minOccurs="0" maxOccurs="unbounded">
+                                              <xs:complexType>
+                                                <xs:attribute name="LsmIdx" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="ObjType" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="Occurrence" form="unqualified" type="xs:string" />
+                                              </xs:complexType>
+                                            </xs:element>
+                                            <xs:element name="LdCtrlDelay" minOccurs="0" maxOccurs="unbounded">
+                                              <xs:complexType>
+                                                <xs:attribute name="MilliSeconds" form="unqualified" type="xs:string" />
+                                              </xs:complexType>
+                                            </xs:element>
+                                            <xs:element name="LdCtrlCompareMem" minOccurs="0" maxOccurs="unbounded">
+                                              <xs:complexType>
+                                                <xs:attribute name="Address" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="Size" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="InlineData" form="unqualified" type="xs:string" />
+                                              </xs:complexType>
+                                            </xs:element>
+                                            <xs:element name="LdCtrlMerge" minOccurs="0" maxOccurs="unbounded">
+                                              <xs:complexType>
+                                                <xs:attribute name="MergeId" form="unqualified" type="xs:string" />
+                                              </xs:complexType>
+                                            </xs:element>
+                                            <xs:element name="LdCtrlMapError" minOccurs="0" maxOccurs="unbounded">
+                                              <xs:complexType>
+                                                <xs:attribute name="OriginalError" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="MappedError" form="unqualified" type="xs:string" />
+                                              </xs:complexType>
+                                            </xs:element>
+                                            <xs:element name="LdCtrlRelSegment" minOccurs="0" maxOccurs="unbounded">
+                                              <xs:complexType>
+                                                <xs:attribute name="LsmIdx" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="Size" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="Mode" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="Fill" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="ObjType" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="Occurrence" form="unqualified" type="xs:string" />
+                                              </xs:complexType>
+                                            </xs:element>
+                                            <xs:element name="LdCtrlWriteRelMem" minOccurs="0" maxOccurs="unbounded">
+                                              <xs:complexType>
+                                                <xs:attribute name="ObjIdx" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="Offset" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="Size" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="Verify" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="ObjType" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="Occurrence" form="unqualified" type="xs:string" />
+                                              </xs:complexType>
+                                            </xs:element>
+                                            <xs:element name="LdCtrlWriteProp" minOccurs="0" maxOccurs="unbounded">
+                                              <xs:complexType>
+                                                <xs:attribute name="ObjIdx" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="PropId" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="Verify" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="InlineData" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="ObjType" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="Count" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="Occurrence" form="unqualified" type="xs:string" />
+                                              </xs:complexType>
+                                            </xs:element>
+                                            <xs:element name="LdCtrlLoadImageProp" minOccurs="0" maxOccurs="unbounded">
+                                              <xs:complexType>
+                                                <xs:attribute name="ObjIdx" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="PropId" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="ObjType" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="Occurrence" form="unqualified" type="xs:string" />
+                                              </xs:complexType>
+                                            </xs:element>
+                                            <xs:element name="LdCtrlCompareProp" minOccurs="0" maxOccurs="unbounded">
+                                              <xs:complexType>
+                                                <xs:attribute name="ObjIdx" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="PropId" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="InlineData" form="unqualified" type="xs:string" />
+                                              </xs:complexType>
+                                            </xs:element>
+                                            <xs:element name="LdCtrlClearLCFilterTable" minOccurs="0" maxOccurs="unbounded">
+                                              <xs:complexType>
+                                                <xs:attribute name="UseFunctionProp" form="unqualified" type="xs:string" />
+                                              </xs:complexType>
+                                            </xs:element>
+                                            <xs:element name="LdCtrlMasterReset" minOccurs="0" maxOccurs="unbounded">
+                                              <xs:complexType>
+                                                <xs:attribute name="EraseCode" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="ChannelNumber" form="unqualified" type="xs:string" />
+                                              </xs:complexType>
+                                            </xs:element>
+                                          </xs:sequence>
+                                          <xs:attribute name="ProcedureType" form="unqualified" type="xs:string" />
+                                          <xs:attribute name="ProcedureSubType" form="unqualified" type="xs:string" />
+                                          <xs:attribute name="Access" form="unqualified" type="xs:string" />
+                                        </xs:complexType>
+                                      </xs:element>
+                                    </xs:sequence>
+                                  </xs:complexType>
+                                </xs:element>
+                                <xs:element name="MemorySegments" minOccurs="0" maxOccurs="unbounded">
+                                  <xs:complexType>
+                                    <xs:sequence>
+                                      <xs:element name="MemorySegment" minOccurs="0" maxOccurs="unbounded">
+                                        <xs:complexType>
+                                          <xs:sequence>
+                                            <xs:element ref="Location" minOccurs="0" maxOccurs="unbounded" />
+                                            <xs:element ref="AccessRights" minOccurs="0" maxOccurs="unbounded" />
+                                          </xs:sequence>
+                                          <xs:attribute name="MemoryType" form="unqualified" type="xs:string" />
+                                          <xs:attribute name="Length" form="unqualified" type="xs:string" />
+                                          <xs:attribute name="Optional" form="unqualified" type="xs:string" />
+                                        </xs:complexType>
+                                      </xs:element>
+                                    </xs:sequence>
+                                  </xs:complexType>
+                                </xs:element>
+                                <xs:element name="InterfaceObjects" minOccurs="0" maxOccurs="unbounded">
+                                  <xs:complexType>
+                                    <xs:sequence>
+                                      <xs:element name="InterfaceObject" minOccurs="0" maxOccurs="unbounded">
+                                        <xs:complexType>
+                                          <xs:sequence>
+                                            <xs:element name="Property" minOccurs="0" maxOccurs="unbounded">
+                                              <xs:complexType>
+                                                <xs:attribute name="PropertyID" form="unqualified" type="xs:string" />
+                                                <xs:attribute name="PropertyDataType" form="unqualified" type="xs:string" />
+                                              </xs:complexType>
+                                            </xs:element>
+                                          </xs:sequence>
+                                          <xs:attribute name="Index" form="unqualified" type="xs:string" />
+                                          <xs:attribute name="ObjectType" form="unqualified" type="xs:string" />
+                                        </xs:complexType>
+                                      </xs:element>
+                                    </xs:sequence>
+                                  </xs:complexType>
+                                </xs:element>
+                              </xs:sequence>
+                              <xs:attribute name="Ets3SystemPlugin" form="unqualified" type="xs:string" />
+                              <xs:attribute name="LegacyVersion" form="unqualified" type="xs:string" />
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                        <xs:attribute name="Id" form="unqualified" type="xs:string" />
+                        <xs:attribute name="MaskVersion" form="unqualified" type="xs:string" />
+                        <xs:attribute name="Name" form="unqualified" type="xs:string" />
+                        <xs:attribute name="ManagementModel" form="unqualified" type="xs:string" />
+                        <xs:attribute name="MediumTypeRefId" form="unqualified" type="xs:string" />
+                        <xs:attribute name="MgmtDescriptor01" form="unqualified" type="xs:string" />
+                        <xs:attribute name="OtherMediumTypeRefId" form="unqualified" type="xs:string" />
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="FunctionalBlocks" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="FunctionalBlock" minOccurs="0" maxOccurs="unbounded">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="Parameters" minOccurs="0" maxOccurs="unbounded">
+                            <xs:complexType>
+                              <xs:sequence>
+                                <xs:element name="Parameter" minOccurs="0" maxOccurs="unbounded">
+                                  <xs:complexType>
+                                    <xs:attribute name="Property" form="unqualified" type="xs:string" />
+                                    <xs:attribute name="Description" form="unqualified" type="xs:string" />
+                                  </xs:complexType>
+                                </xs:element>
+                              </xs:sequence>
+                              <xs:attribute name="ObjectType" form="unqualified" type="xs:string" />
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                        <xs:attribute name="Id" form="unqualified" type="xs:string" />
+                        <xs:attribute name="Name" form="unqualified" type="xs:string" />
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="ProductLanguages" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element ref="Language" minOccurs="0" maxOccurs="unbounded" />
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="Manufacturers" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="Manufacturer" minOccurs="0" maxOccurs="unbounded">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="PublicKeys" minOccurs="0" maxOccurs="unbounded">
+                            <xs:complexType>
+                              <xs:sequence>
+                                <xs:element name="PublicKey" minOccurs="0" maxOccurs="unbounded">
+                                  <xs:complexType>
+                                    <xs:sequence>
+                                      <xs:element name="RSAKeyValue" minOccurs="0" maxOccurs="unbounded">
+                                        <xs:complexType>
+                                          <xs:sequence>
+                                            <xs:element name="Modulus" type="xs:string" minOccurs="0" />
+                                            <xs:element name="Exponent" type="xs:string" minOccurs="0" />
+                                          </xs:sequence>
+                                        </xs:complexType>
+                                      </xs:element>
+                                    </xs:sequence>
+                                    <xs:attribute name="Id" form="unqualified" type="xs:string" />
+                                    <xs:attribute name="Number" form="unqualified" type="xs:string" />
+                                    <xs:attribute name="Revoked" form="unqualified" type="xs:string" />
+                                  </xs:complexType>
+                                </xs:element>
+                              </xs:sequence>
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                        <xs:attribute name="Id" form="unqualified" type="xs:string" />
+                        <xs:attribute name="KnxManufacturerId" form="unqualified" type="xs:string" />
+                        <xs:attribute name="Name" form="unqualified" type="xs:string" />
+                        <xs:attribute name="DefaultLanguage" form="unqualified" type="xs:string" />
+                        <xs:attribute name="ImportRestriction" form="unqualified" type="xs:string" />
+                        <xs:attribute name="ImportGroup" form="unqualified" type="xs:string" />
+                        <xs:attribute name="CompatibilityGroup" form="unqualified" type="xs:string" />
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="Languages" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element ref="Language" minOccurs="0" maxOccurs="unbounded" />
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+            <xs:attribute name="Id" form="unqualified" type="xs:string" />
+            <xs:attribute name="Version" form="unqualified" type="xs:string" />
+            <xs:attribute name="Signature" form="unqualified" type="xs:string" />
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
