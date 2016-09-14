@@ -14,10 +14,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.dsa.iot.dslink.node.Node;
-import org.dsa.iot.dslink.node.Permission;
-import org.dsa.iot.dslink.node.actions.Action;
 import org.dsa.iot.dslink.node.actions.ActionResult;
-import org.dsa.iot.dslink.node.actions.Parameter;
 import org.dsa.iot.dslink.node.value.Value;
 import org.dsa.iot.dslink.node.value.ValueType;
 import org.dsa.iot.dslink.util.Objects;
@@ -30,7 +27,6 @@ import tuwien.auto.calimero.CloseEvent;
 import tuwien.auto.calimero.DetachEvent;
 import tuwien.auto.calimero.FrameEvent;
 import tuwien.auto.calimero.GroupAddress;
-import tuwien.auto.calimero.IndividualAddress;
 import tuwien.auto.calimero.exception.KNXException;
 import tuwien.auto.calimero.knxnetip.Discoverer;
 import tuwien.auto.calimero.knxnetip.servicetype.SearchResponse;
@@ -38,20 +34,18 @@ import tuwien.auto.calimero.knxnetip.util.DeviceDIB;
 import tuwien.auto.calimero.knxnetip.util.HPAI;
 import tuwien.auto.calimero.knxnetip.util.ServiceFamiliesDIB;
 import tuwien.auto.calimero.link.KNXNetworkLink;
-import tuwien.auto.calimero.link.KNXNetworkLinkIP;
 import tuwien.auto.calimero.link.NetworkLinkListener;
-import tuwien.auto.calimero.link.medium.TPSettings;
 import tuwien.auto.calimero.process.ProcessCommunicationBase;
 import tuwien.auto.calimero.process.ProcessCommunicator;
 import tuwien.auto.calimero.process.ProcessCommunicatorImpl;
 import tuwien.auto.calimero.process.ProcessEvent;
 import tuwien.auto.calimero.process.ProcessListener;
 
-public class KnxIpConnection extends KnxConnection {
+public abstract class KnxIPConnection extends KnxConnection {
 	static final Logger LOGGER;
 
 	static {
-		LOGGER = LoggerFactory.getLogger(KnxIpConnection.class);
+		LOGGER = LoggerFactory.getLogger(KnxIPConnection.class);
 	}
 
 	static final String ACTION_ADD_DEVICE = "add device";
@@ -67,8 +61,9 @@ public class KnxIpConnection extends KnxConnection {
 	static final String ATTR_POLLING_INTERVAL = "polling interval";
 	static final String ATTR_POLLING_TIMEOUT = "polling timeout";
 	static final String NODE_STATUS = "STATUS";
+	static final String STATUS_CONNECTING = "connecting";
 	static final String STATUS_CONNECTED = "connected";
-	static final String STATUS_RESTORING = "restoring the last session";	
+	static final String STATUS_RESTORING = "restoring the last session";
 	static final String STATUS_TUNNELING_WARNNING = "invalid remote host for tunneling";
 
 	static final int SEARCH_TIMEOUT = 5;
@@ -85,6 +80,7 @@ public class KnxIpConnection extends KnxConnection {
 	InetSocketAddress localEP;
 	InetSocketAddress remoteEP;
 	TransmissionType transType;
+	int serviceMode;
 	GroupAddressType groupLevel;
 	boolean useNat = false;
 	String deviceAddress;
@@ -103,66 +99,41 @@ public class KnxIpConnection extends KnxConnection {
 	Discoverer discoverer;
 	ScheduledFuture<?> discoverFuture;
 
-	private Node statusNode;
+	Node statusNode;
 	private boolean isRestoring;
 
-	public KnxIpConnection(KnxLink link, Node node) {
+	public KnxIPConnection(KnxLink link, Node node) {
 		super(link, node);
 
-		this.transType = TransmissionType.parseType(node.getAttribute(ATTR_TRANSMISSION_TYPE).getString());
-		this.groupLevel = GroupAddressType.parseType(node.getAttribute(ATTR_GROUP_LEVEL).getString());
-		this.port = node.getAttribute(ATTR_REMOTE_PORT).getNumber().intValue();
-		this.localHost = node.getAttribute(ATTR_LOCAL_HOST).getString();
-		this.localEP = (null == localHost || localHost.isEmpty()) ? null : new InetSocketAddress(localHost, port);
-		this.remoteHost = node.getAttribute(ATTR_REMOTE_HOST).getString();
-		this.remoteEP = (null == remoteHost || remoteHost.isEmpty()) ? null : new InetSocketAddress(remoteHost, port);
-
-		this.useNat = node.getAttribute(ATTR_USE_NAT).getBool();
-		this.deviceAddress = node.getAttribute(ATTR_DEVICE_ADDRESS).getString();
-		this.interval = node.getAttribute(ATTR_POLLING_INTERVAL).getNumber().intValue();
-		this.timeout = node.getAttribute(ATTR_POLLING_TIMEOUT).getNumber().intValue();
+		transType = TransmissionType.parseType(node.getAttribute(ATTR_TRANSMISSION_TYPE).getString());
+		serviceMode = TransmissionType.parseServiceMode(transType);
+		groupLevel = GroupAddressType.parseType(node.getAttribute(ATTR_GROUP_LEVEL).getString());
+		interval = node.getAttribute(ATTR_POLLING_INTERVAL).getNumber().intValue();
+		timeout = node.getAttribute(ATTR_POLLING_TIMEOUT).getNumber().intValue();
 
 		groupToPoints = new HashMap<>();
 		pointToFutures = new HashMap<>();
 		stpe = Objects.createDaemonThreadPool();
 		addressToDeviceDIB = new HashMap<String, DeviceDIB>();
 		deviceSet = new HashSet<DeviceNode>();
-
-		connect();
 	}
 
 	public void init() {
-		makeEditAction();
 		makeRemoveAction();
-		if (KNXNetworkLinkIP.ROUTING == TransmissionType.parseServiceMode(transType)) {
-			makeDiscoverAction();
-		} else {
-			Node discoverAction = node.getChild(ACTION_DISCOVER_DEVICES);
-			if (null != discoverAction) {
-				node.removeChild(discoverAction);
-			}
-		}
 	}
 
-	private void connect() {
-		networkLink = null;
-		communicator = null;
-
-		this.statusNode = node.createChild(NODE_STATUS).setValueType(ValueType.STRING).build();
-		this.statusNode.setSerializable(false);
-
-		int serviceMode = TransmissionType.parseServiceMode(transType);
-		if (serviceMode == KNXNetworkLinkIP.TUNNELING && null == remoteEP) {
-			this.statusNode.setValue(new Value(STATUS_TUNNELING_WARNNING));
+	protected void connect() {
+		if (null == node.getChild(NODE_STATUS)) {
+			statusNode = node.createChild(NODE_STATUS).setValueType(ValueType.STRING).build();
+			statusNode.setSerializable(false);
+		} else {
+			statusNode.setValue(new Value(STATUS_CONNECTING));
 		}
 
+		networkLink = null;
+		communicator = null;
 		try {
-			if (serviceMode == KNXNetworkLinkIP.TUNNELING && null != remoteEP) {
-				networkLink = new KNXNetworkLinkIP(KNXNetworkLinkIP.TUNNELING, localEP, remoteEP, useNat,
-						new TPSettings(new IndividualAddress(deviceAddress), true));
-			} else if (serviceMode == KNXNetworkLinkIP.ROUTING) {
-				networkLink = new KNXNetworkLinkIP(KNXNetworkLinkIP.ROUTING, localEP, null, useNat, TPSettings.TP1);
-			}
+			createLink();
 
 			if (null != networkLink) {
 				networkLink.addLinkListener(new NetworkListener());
@@ -170,7 +141,7 @@ public class KnxIpConnection extends KnxConnection {
 				communicator.addProcessListener(new ProcessCommunicatorListener());
 			}
 
-		} catch (KNXException | InterruptedException e) {
+		} catch (KNXException e) {
 			this.statusNode.setValue(new Value(e.getMessage()));
 		}
 
@@ -183,67 +154,7 @@ public class KnxIpConnection extends KnxConnection {
 		return this;
 	}
 
-	public void makeEditAction() {
-		Action act = new Action(Permission.READ, new EditHandler());
-		act.addParameter(new Parameter(ATTR_NAME, ValueType.STRING, new Value(node.getName())));
-		act.addParameter(
-				new Parameter(ATTR_TRANSMISSION_TYPE, ValueType.makeEnum(Utils.enumNames(TransmissionType.class)),
-						node.getAttribute(ATTR_TRANSMISSION_TYPE)));
-		act.addParameter(new Parameter(ATTR_GROUP_LEVEL, ValueType.makeEnum(Utils.enumNames(GroupAddressType.class)),
-				node.getAttribute(ATTR_GROUP_LEVEL)));
-		act.addParameter(new Parameter(ATTR_LOCAL_HOST, ValueType.STRING, node.getAttribute(ATTR_LOCAL_HOST)));
-		act.addParameter(new Parameter(ATTR_REMOTE_HOST, ValueType.STRING, node.getAttribute(ATTR_REMOTE_HOST)));
-		act.addParameter(new Parameter(ATTR_REMOTE_PORT, ValueType.NUMBER, node.getAttribute(ATTR_REMOTE_PORT)));
-		act.addParameter(new Parameter(ATTR_USE_NAT, ValueType.BOOL, node.getAttribute(ATTR_USE_NAT)));
-		act.addParameter(new Parameter(ATTR_DEVICE_ADDRESS, ValueType.STRING, node.getAttribute(ATTR_DEVICE_ADDRESS)));
-		act.addParameter(
-				new Parameter(ATTR_POLLING_INTERVAL, ValueType.NUMBER, node.getAttribute(ATTR_POLLING_INTERVAL)));
-		act.addParameter(
-				new Parameter(ATTR_POLLING_TIMEOUT, ValueType.NUMBER, node.getAttribute(ATTR_POLLING_TIMEOUT)));
-
-		Node actionNode = node.getChild(ACTION_EDIT);
-		if (null == actionNode)
-			node.createChild(ACTION_EDIT).setAction(act).build().setSerializable(false);
-		else
-			actionNode.setAction(act);
-	}
-
-	public void makeDiscoverAction() {
-		Action act = new Action(Permission.READ, new DeviceDiscoveryHandler());
-		Node actionNode = node.getChild(ACTION_DISCOVER_DEVICES);
-		if (null == actionNode)
-			node.createChild(ACTION_DISCOVER_DEVICES).setAction(act).build().setSerializable(false);
-		else
-			actionNode.setAction(act);
-	}
-
-	private class EditHandler implements Handler<ActionResult> {
-		public void handle(ActionResult event) {
-			transType = TransmissionType
-					.parseType(event.getParameter(ATTR_TRANSMISSION_TYPE, ValueType.STRING).getString());
-			groupLevel = GroupAddressType.parseType(event.getParameter(ATTR_GROUP_LEVEL, ValueType.STRING).getString());
-			localHost = event.getParameter(ATTR_LOCAL_HOST, ValueType.STRING).getString();
-			remoteHost = event.getParameter(ATTR_REMOTE_HOST, ValueType.STRING).getString();
-			port = event.getParameter(ATTR_REMOTE_PORT, ValueType.NUMBER).getNumber().intValue();
-			useNat = event.getParameter(ATTR_USE_NAT, ValueType.BOOL).getBool();
-			deviceAddress = event.getParameter(ATTR_DEVICE_ADDRESS, ValueType.STRING).getString();
-			interval = event.getParameter(ATTR_POLLING_INTERVAL, ValueType.NUMBER).getNumber().intValue();
-
-			node.setAttribute(ATTR_TRANSMISSION_TYPE, new Value(transType.toString()));
-			node.setAttribute(ATTR_GROUP_LEVEL, new Value(groupLevel.toString()));
-			node.setAttribute(ATTR_LOCAL_HOST, new Value(localHost));
-			node.setAttribute(ATTR_REMOTE_HOST, new Value(remoteHost));
-			node.setAttribute(ATTR_REMOTE_PORT, new Value(port));
-			node.setAttribute(ATTR_USE_NAT, new Value(useNat));
-			node.setAttribute(ATTR_DEVICE_ADDRESS, new Value(deviceAddress));
-			node.setAttribute(ATTR_POLLING_INTERVAL, new Value(interval));
-
-			init();
-			connect();
-		}
-	}
-
-	private class DeviceDiscoveryHandler implements Handler<ActionResult> {
+	class DeviceDiscoveryHandler implements Handler<ActionResult> {
 		public void handle(ActionResult event) {
 			discover();
 		}
@@ -352,10 +263,10 @@ public class KnxIpConnection extends KnxConnection {
 
 	@Override
 	public void onDiscovered() {
-		Iterator it = addressToDeviceDIB.entrySet().iterator();
+		Iterator<Entry<String, DeviceDIB>> it = addressToDeviceDIB.entrySet().iterator();
 
 		while (it.hasNext()) {
-			Map.Entry pair = (Map.Entry) it.next();
+			Map.Entry<String, DeviceDIB> pair = (Map.Entry<String, DeviceDIB>) it.next();
 			String host = (String) pair.getKey();
 			DeviceDIB dib = (DeviceDIB) pair.getValue();
 			DeviceNode device = setupDeviceNode(host, dib);
@@ -366,8 +277,8 @@ public class KnxIpConnection extends KnxConnection {
 			for (DeviceNode device : deviceSet) {
 				device.restoreLastSession();
 			}
-	        isRestoring = false;
-	        statusNode.setValue(new Value(STATUS_CONNECTED));
+			isRestoring = false;
+			statusNode.setValue(new Value(STATUS_CONNECTED));
 		}
 	}
 
@@ -414,12 +325,13 @@ public class KnxIpConnection extends KnxConnection {
 				break;
 			}
 			case CONTROL: {
-				//read a 3 bit controlled datapoint value
+				// read a 3 bit controlled datapoint value
 				valString = Integer.toString(communicator.readControl(addr));
 				break;
 			}
 			case UNSIGNED: {
-				// read an unsiged 8 bit datapoint value, should be able to choose between UNSCALED, SCALING, and
+				// read an unsiged 8 bit datapoint value, should be able to
+				// choose between UNSCALED, SCALING, and
 				// ANGLE
 				valString = Integer.toString(communicator.readUnsigned(addr, ProcessCommunicationBase.UNSCALED));
 				break;
@@ -460,7 +372,7 @@ public class KnxIpConnection extends KnxConnection {
 			} else if (type == PointType.FLOAT2 || type == PointType.FLOAT4) {
 				vt = ValueType.NUMBER;
 				v = new Value(Float.parseFloat(valString));
-			}  else if (type == PointType.STRING) {
+			} else if (type == PointType.STRING) {
 				vt = ValueType.STRING;
 				v = new Value(valString);
 			}
@@ -577,7 +489,7 @@ public class KnxIpConnection extends KnxConnection {
 
 	public void restoreLastSession() {
 		init();
-        
+
 		Map<String, Node> children = node.getChildren();
 		if (null == children)
 			return;
@@ -594,13 +506,16 @@ public class KnxIpConnection extends KnxConnection {
 		Value restType = child.getAttribute(EditableFolder.ATTR_RESTORE_TYPE);
 
 		if (null != macAddress && null != individualAddress && null != medium && null != restType) {
-	        isRestoring = true;
+			isRestoring = true;
 			discover();
-		} else if (NODE_STATUS.equals(child.getName())){
+		} else if (NODE_STATUS.equals(child.getName())) {
 			child.setValue(new Value(STATUS_RESTORING));
 		} else if (null == child.getAction() && !NODE_STATUS.equals(child.getName())) {
 			node.removeChild(child);
-		} 
+		}
 	}
 
+	abstract void createLink();
+
+	abstract void makeEditAction();
 }
