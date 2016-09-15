@@ -33,7 +33,7 @@ public class KnxIPRoutingConnection extends KnxIPConnection {
 		Action act = new Action(Permission.READ, new EditHandler());
 		act.addParameter(new Parameter(ATTR_NAME, ValueType.STRING, new Value(node.getName())));
 		act.addParameter(
-				new Parameter(ATTR_TRANSMISSION_TYPE, ValueType.makeEnum(Utils.enumNames(TransmissionType.class)),
+				new Parameter(ATTR_TRANSMISSION_TYPE, ValueType.makeEnum(TransmissionType.Routing.toString()),
 						node.getAttribute(ATTR_TRANSMISSION_TYPE)));
 		act.addParameter(new Parameter(ATTR_GROUP_LEVEL, ValueType.makeEnum(Utils.enumNames(GroupAddressType.class)),
 				node.getAttribute(ATTR_GROUP_LEVEL)));
@@ -78,14 +78,12 @@ public class KnxIPRoutingConnection extends KnxIPConnection {
 
 	@Override
 	void createLink() {
-		if (serviceMode == KNXNetworkLinkIP.ROUTING) {
-			try {
-				networkLink = new KNXNetworkLinkIP(KNXNetworkLinkIP.ROUTING, null, null, false, TPSettings.TP1);
-			} catch (KNXException e) {
-				e.printStackTrace();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+		try {
+			networkLink = new KNXNetworkLinkIP(KNXNetworkLinkIP.ROUTING, null, null, false, TPSettings.TP1);
+		} catch (KNXException e) {
+			LOGGER.debug(e.getMessage());
+		} catch (InterruptedException e) {
+			LOGGER.debug(e.getMessage());
 		}
 	}
 

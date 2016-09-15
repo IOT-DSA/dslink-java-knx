@@ -44,7 +44,7 @@ public class KnxIPTunnelingConnection extends KnxIPConnection {
 		Action act = new Action(Permission.READ, new EditHandler());
 		act.addParameter(new Parameter(ATTR_NAME, ValueType.STRING, new Value(node.getName())));
 		act.addParameter(
-				new Parameter(ATTR_TRANSMISSION_TYPE, ValueType.makeEnum(Utils.enumNames(TransmissionType.class)),
+				new Parameter(ATTR_TRANSMISSION_TYPE, ValueType.makeEnum(TransmissionType.Tunneling.toString()),
 						node.getAttribute(ATTR_TRANSMISSION_TYPE)));
 		act.addParameter(new Parameter(ATTR_GROUP_LEVEL, ValueType.makeEnum(Utils.enumNames(GroupAddressType.class)),
 				node.getAttribute(ATTR_GROUP_LEVEL)));
@@ -93,11 +93,9 @@ public class KnxIPTunnelingConnection extends KnxIPConnection {
 
 	@Override
 	void createLink() {
-		if (serviceMode == KNXNetworkLinkIP.TUNNELING && null == remoteEP) {
+		if (null == remoteEP) {
 			statusNode.setValue(new Value(STATUS_TUNNELING_WARNNING));
-		}
-
-		if (serviceMode == KNXNetworkLinkIP.TUNNELING && null != remoteEP) {
+		} else {
 			try {
 				networkLink = new KNXNetworkLinkIP(KNXNetworkLinkIP.TUNNELING, localEP, remoteEP, useNat,
 						new TPSettings(new IndividualAddress(deviceAddress)));

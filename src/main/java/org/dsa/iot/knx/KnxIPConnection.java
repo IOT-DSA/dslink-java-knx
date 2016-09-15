@@ -33,6 +33,7 @@ import tuwien.auto.calimero.knxnetip.servicetype.SearchResponse;
 import tuwien.auto.calimero.knxnetip.util.DeviceDIB;
 import tuwien.auto.calimero.knxnetip.util.HPAI;
 import tuwien.auto.calimero.knxnetip.util.ServiceFamiliesDIB;
+import tuwien.auto.calimero.link.KNXLinkClosedException;
 import tuwien.auto.calimero.link.KNXNetworkLink;
 import tuwien.auto.calimero.link.NetworkLinkListener;
 import tuwien.auto.calimero.process.ProcessCommunicationBase;
@@ -123,7 +124,8 @@ public abstract class KnxIPConnection extends KnxConnection {
 	}
 
 	protected void connect() {
-		if (null == node.getChild(NODE_STATUS)) {
+		statusNode = node.getChild(NODE_STATUS);
+		if (null == statusNode) {
 			statusNode = node.createChild(NODE_STATUS).setValueType(ValueType.STRING).build();
 			statusNode.setSerializable(false);
 		} else {
@@ -132,17 +134,15 @@ public abstract class KnxIPConnection extends KnxConnection {
 
 		networkLink = null;
 		communicator = null;
-		try {
-			createLink();
-
-			if (null != networkLink) {
-				networkLink.addLinkListener(new NetworkListener());
+		createLink();
+		if (null != networkLink) {
+			networkLink.addLinkListener(new NetworkListener());
+			try {
 				communicator = new ProcessCommunicatorImpl(networkLink);
 				communicator.addProcessListener(new ProcessCommunicatorListener());
+			} catch (KNXLinkClosedException e) {
+				this.statusNode.setValue(new Value(e.getMessage()));
 			}
-
-		} catch (KNXException e) {
-			this.statusNode.setValue(new Value(e.getMessage()));
 		}
 
 		if (null != networkLink && null != communicator) {
