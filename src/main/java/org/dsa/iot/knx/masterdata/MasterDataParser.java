@@ -27,8 +27,33 @@ public class MasterDataParser {
 		LOGGER = LoggerFactory.getLogger(MasterDataParser.class);
 	}
 
-	Map<String, Integer> dataPointSubTypeIdToSize = new HashMap<>();
+	Map<String, Integer> dataPointTypeIdToSize = new HashMap<>();
 	Map<String, String> dataPointSubTypeIdToSubTypeName = new HashMap<>();
+	Map<String, String> dataPointSubTypeIdToDataPointTypeId = new HashMap<>();
+
+	public Map<String, Integer> getDataPointTypeIdToSize() {
+		return dataPointTypeIdToSize;
+	}
+
+	public void setDataPointTypeIdToSize(Map<String, Integer> dataPointTypeIdToSize) {
+		this.dataPointTypeIdToSize = dataPointTypeIdToSize;
+	}
+
+	public Map<String, String> getDataPointSubTypeIdToSubTypeName() {
+		return dataPointSubTypeIdToSubTypeName;
+	}
+
+	public void setDataPointSubTypeIdToSubTypeName(Map<String, String> dataPointSubTypeIdToSubTypeName) {
+		this.dataPointSubTypeIdToSubTypeName = dataPointSubTypeIdToSubTypeName;
+	}
+
+	public Map<String, String> getDataPointSubTypeIdToDataPointTypeId() {
+		return dataPointSubTypeIdToDataPointTypeId;
+	}
+
+	public void setDataPointSubTypeIdToDataPointTypeId(Map<String, String> dataPointSubTypeIdToDataPointTypeId) {
+		this.dataPointSubTypeIdToDataPointTypeId = dataPointSubTypeIdToDataPointTypeId;
+	}
 
 	public void parse(String content) {
 
@@ -48,7 +73,7 @@ public class MasterDataParser {
 					for (KNX.MasterData.DatapointTypes.DatapointType dpt : dataPointTypeList) {
 						String dataPointTypeId = dpt.getId();
 						Integer sizeInBit = Integer.parseInt(dpt.getSizeInBit());
-						dataPointSubTypeIdToSize.put(dataPointTypeId, sizeInBit);
+						dataPointTypeIdToSize.put(dataPointTypeId, sizeInBit);
 						LOGGER.info(dataPointTypeId);
 						List<KNX.MasterData.DatapointTypes.DatapointType.DatapointSubtypes> subDataPointTypesList = dpt
 								.getDatapointSubtypes();
@@ -60,6 +85,7 @@ public class MasterDataParser {
 								String subTypeName = subType.getName();
 								LOGGER.info(subTypeId + " : " + subTypeName);
 								dataPointSubTypeIdToSubTypeName.put(subTypeId, subTypeName);
+								dataPointSubTypeIdToDataPointTypeId.put(subTypeId, dataPointTypeId);
 							}
 						}
 
@@ -67,7 +93,6 @@ public class MasterDataParser {
 				}
 
 			}
-			LOGGER.info(knx.toString());
 
 		} catch (JAXBException e) {
 			e.printStackTrace();

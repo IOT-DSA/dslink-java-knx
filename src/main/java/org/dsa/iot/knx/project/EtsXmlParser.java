@@ -40,6 +40,19 @@ public class EtsXmlParser extends KnxProjectParser {
 	static final String DATA_TYPE_PREFIX_FOUR_BYTE_FLOAT = "FOURBYTEFLOAT";
 	static final String DATA_TYPE_PREFIX_STRING = "STRING";
 
+	static final int DATA_TYPE_SIZE_IN_BIT_BOOLING = 1;
+	static final int DATA_TYPE_SIZE_IN_BIT_PRIORITY_CONTROL = 2;
+	static final int DATA_TYPE_SIZE_IN_BIT_STEP_CONTROL = 4;
+	static final int DATA_TYPE_SIZE_IN_BIT_EIGHT_BIT_UNSIGNED = 8;
+	static final int DATA_TYPE_SIZE_IN_BIT_TWO_BYTE_UNSIGNED = 16;
+	static final int DATA_TYPE_SIZE_IN_BIT_TWO_BYTE_FLOAT = 16;
+	static final int DATA_TYPE_SIZE_IN_BIT_THREE_BYTE_UNSIGNED = 24;
+	static final int DATA_TYPE_SIZE_IN_BIT_FOUR_BYTE_UNSIGNED = 32;
+	static final int DATA_TYPE_SIZE_IN_BIT_FOUR_BYTE_SIGNED = 32;
+	static final int DATA_TYPE_SIZE_IN_BIT_FOUR_BYTE_FLOAT = 32;
+	static final int DATA_TYPE_SIZE_IN_BIT_SIX_BYTE_UNSIGNED = 48;
+	static final int DATA_TYPE_SIZE_IN_BIT_EIGHT_BYTE_UNSIGNED = 64;
+
 	static final String DATA_TYPE_SHORTNAME_BOOLING = "boolean";
 	static final String DATA_TYPE_SHORTNAME_CONTROL = "control";
 	static final String DATA_TYPE_SHORTNAME_EIGHT_BIT_UNSIGNED = "8bitu";
@@ -52,8 +65,36 @@ public class EtsXmlParser extends KnxProjectParser {
 	static final String DATA_TYPE_SHORTNAME_UNDEFINED = "undefined";
 
 	static final String VERSION_SEPARATOR = "-";
-	
+
 	Map<String, String> addressRefIdToTypeId;
+	Map<String, Integer> dataPointTypeIdToSizeInBit = new HashMap<>();
+
+	public Map<String, Integer> getDataPointTypeIdToSize() {
+		return dataPointTypeIdToSizeInBit;
+	}
+
+	public void setDataPointTypeIdToSize(Map<String, Integer> dataPointTypeIdToSize) {
+		this.dataPointTypeIdToSizeInBit = dataPointTypeIdToSize;
+	}
+
+	public Map<String, String> getDataPointSubTypeIdToSubTypeName() {
+		return dataPointSubTypeIdToSubTypeName;
+	}
+
+	public void setDataPointSubTypeIdToSubTypeName(Map<String, String> dataPointSubTypeIdToSubTypeName) {
+		this.dataPointSubTypeIdToSubTypeName = dataPointSubTypeIdToSubTypeName;
+	}
+
+	public Map<String, String> getDataPointSubTypeIdToDataPointTypeId() {
+		return dataPointSubTypeIdToDataPointTypeId;
+	}
+
+	public void setDataPointSubTypeIdToDataPointTypeId(Map<String, String> dataPointSubTypeIdToDataPointTypeId) {
+		this.dataPointSubTypeIdToDataPointTypeId = dataPointSubTypeIdToDataPointTypeId;
+	}
+
+	Map<String, String> dataPointSubTypeIdToSubTypeName = new HashMap<>();
+	Map<String, String> dataPointSubTypeIdToDataPointTypeId = new HashMap<>();
 
 	public EtsXmlParser(EditableFolder folder) {
 		super(folder);
@@ -61,7 +102,7 @@ public class EtsXmlParser extends KnxProjectParser {
 		addressRefIdToTypeId = new HashMap<>();
 	}
 
-	public void parseItems(String content) {
+	public void parse(String content) {
 		JAXBContext context = null;
 		try {
 			context = JAXBContext.newInstance(KNX.class);
@@ -149,7 +190,7 @@ public class EtsXmlParser extends KnxProjectParser {
 												String dataPointName = dataPointAndPath[0];
 												String path = dataPointAndPath[1];
 
-												String dataPointType = getDataPointTypeByTypeId(typeId);
+												String dataPointType = getDataPointTypeShortNameByTypeId(typeId);
 
 												buildAddressToBean(mainGroupName, middleGroupName, groupAddress,
 														dataPointType, dataPointName);
@@ -182,6 +223,41 @@ public class EtsXmlParser extends KnxProjectParser {
 			if (null == context) {
 				return;
 			}
+		}
+	}
+
+	private String getDataPointTypeShortNameByTypeId(String typeId) {
+		String majorTypeId = null;
+		String subTypeId = null;
+		if (typeId.startsWith("DPT")) {
+			majorTypeId = typeId;
+		} else if (typeId.startsWith("DPST")) {
+			subTypeId = typeId;
+			majorTypeId = dataPointSubTypeIdToDataPointTypeId.get(subTypeId);
+		}
+
+		int sizeInBit = dataPointTypeIdToSizeInBit.get(majorTypeId);
+
+		if (sizeInBit == (DATA_TYPE_SIZE_IN_BIT_BOOLING)) {
+			return DATA_TYPE_SHORTNAME_BOOLING;
+		} else if (sizeInBit == (DATA_TYPE_SIZE_IN_BIT_PRIORITY_CONTROL)) {
+			return DATA_TYPE_SHORTNAME_CONTROL;
+		} else if (sizeInBit == (DATA_TYPE_SIZE_IN_BIT_STEP_CONTROL)) {
+			return DATA_TYPE_SHORTNAME_CONTROL;
+		} else if (sizeInBit == (DATA_TYPE_SIZE_IN_BIT_EIGHT_BIT_UNSIGNED)) {
+			return DATA_TYPE_SHORTNAME_EIGHT_BIT_UNSIGNED;
+		} else if (sizeInBit == (DATA_TYPE_SIZE_IN_BIT_TWO_BYTE_UNSIGNED)) {
+			return DATA_TYPE_SHORTNAME_TWO_BYTE_UNSIGNED;
+		} else if (sizeInBit == (DATA_TYPE_SIZE_IN_BIT_TWO_BYTE_FLOAT)) {
+			return DATA_TYPE_SHORTNAME_TWO_BYTE_FLOAT;
+		} else if (sizeInBit == (DATA_TYPE_SIZE_IN_BIT_FOUR_BYTE_UNSIGNED)) {
+			return DATA_TYPE_SHORTNAME_FOUR_BYTE_UNSIGNED;
+		} else if (sizeInBit == (DATA_TYPE_SIZE_IN_BIT_FOUR_BYTE_SIGNED)) {
+			return DATA_TYPE_SHORTNAME_FOUR_BYTE_SIGNED;
+		} else if (sizeInBit == (DATA_TYPE_SIZE_IN_BIT_FOUR_BYTE_FLOAT)) {
+			return DATA_TYPE_SHORTNAME_FOUR_BYTE_FLOAT;
+		} else {
+			return DATA_TYPE_SHORTNAME_UNDEFINED;
 		}
 	}
 

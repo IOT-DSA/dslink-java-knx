@@ -29,7 +29,7 @@ public abstract class EditableFolder {
 	static final String ATTR_EDITABLE_FOLDER = "editable folder";
 	static final String ATTR_EDITABLE_POINT = "editable point";
 	static final String ATTR_PROJECT_CONTENT = "project content";
-
+	static final String ATTR_MASTER_DATA_CONTENT = "master data content";
 	static final String ACTION_REMOVE = "remove";
 	static final String ACTION_EDIT = "edit";
 	static final String ACTION_ADD_POINT = "add group address";
@@ -93,6 +93,7 @@ public abstract class EditableFolder {
 	public void makeImportProjectAction() {
 		Action act;
 		act = new Action(Permission.READ, new AddImportProjectHandler());
+		act.addParameter(new Parameter(ATTR_MASTER_DATA_CONTENT, ValueType.STRING).setEditorType(EditorType.TEXT_AREA));
 		act.addParameter(new Parameter(ATTR_PROJECT_CONTENT, ValueType.STRING).setEditorType(EditorType.TEXT_AREA));
 
 		node.createChild(ACTION_IMPORT_PROJECT).setAction(act).build().setSerializable(false);

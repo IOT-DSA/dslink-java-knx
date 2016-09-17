@@ -20,7 +20,7 @@ public class OpcFileParser extends KnxProjectParser {
 		super(folder);
 	}
 
-	public void parseItems(String content) {
+	public void parse(String content) {
 
 		String[] lines = content.split(System.getProperty("line.separator"));
 

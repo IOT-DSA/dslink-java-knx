@@ -74,6 +74,6 @@ public abstract class KnxProjectParser {
 		return new String[] { dataPointName, path };
 	}
 
-	public abstract void parseItems(String content);
+	public abstract void parse(String content);
 
 }
