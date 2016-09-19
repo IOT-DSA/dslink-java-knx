@@ -238,23 +238,23 @@ public class EtsXmlParser extends KnxProjectParser {
 
 		int sizeInBit = dataPointTypeIdToSizeInBit.get(majorTypeId);
 
-		if (sizeInBit == (DATA_TYPE_SIZE_IN_BIT_BOOLING)) {
+		if (sizeInBit == DATA_TYPE_SIZE_IN_BIT_BOOLING) {
 			return DATA_TYPE_SHORTNAME_BOOLING;
-		} else if (sizeInBit == (DATA_TYPE_SIZE_IN_BIT_PRIORITY_CONTROL)) {
+		} else if (sizeInBit == DATA_TYPE_SIZE_IN_BIT_PRIORITY_CONTROL) {
 			return DATA_TYPE_SHORTNAME_CONTROL;
-		} else if (sizeInBit == (DATA_TYPE_SIZE_IN_BIT_STEP_CONTROL)) {
+		} else if (sizeInBit == DATA_TYPE_SIZE_IN_BIT_STEP_CONTROL) {
 			return DATA_TYPE_SHORTNAME_CONTROL;
-		} else if (sizeInBit == (DATA_TYPE_SIZE_IN_BIT_EIGHT_BIT_UNSIGNED)) {
+		} else if (sizeInBit == DATA_TYPE_SIZE_IN_BIT_EIGHT_BIT_UNSIGNED) {
 			return DATA_TYPE_SHORTNAME_EIGHT_BIT_UNSIGNED;
-		} else if (sizeInBit == (DATA_TYPE_SIZE_IN_BIT_TWO_BYTE_UNSIGNED)) {
+		} else if (sizeInBit == DATA_TYPE_SIZE_IN_BIT_TWO_BYTE_UNSIGNED) {
 			return DATA_TYPE_SHORTNAME_TWO_BYTE_UNSIGNED;
-		} else if (sizeInBit == (DATA_TYPE_SIZE_IN_BIT_TWO_BYTE_FLOAT)) {
+		} else if (sizeInBit == DATA_TYPE_SIZE_IN_BIT_TWO_BYTE_FLOAT) {
 			return DATA_TYPE_SHORTNAME_TWO_BYTE_FLOAT;
-		} else if (sizeInBit == (DATA_TYPE_SIZE_IN_BIT_FOUR_BYTE_UNSIGNED)) {
+		} else if (sizeInBit == DATA_TYPE_SIZE_IN_BIT_FOUR_BYTE_UNSIGNED) {
 			return DATA_TYPE_SHORTNAME_FOUR_BYTE_UNSIGNED;
-		} else if (sizeInBit == (DATA_TYPE_SIZE_IN_BIT_FOUR_BYTE_SIGNED)) {
+		} else if (sizeInBit == DATA_TYPE_SIZE_IN_BIT_FOUR_BYTE_SIGNED) {
 			return DATA_TYPE_SHORTNAME_FOUR_BYTE_SIGNED;
-		} else if (sizeInBit == (DATA_TYPE_SIZE_IN_BIT_FOUR_BYTE_FLOAT)) {
+		} else if (sizeInBit == DATA_TYPE_SIZE_IN_BIT_FOUR_BYTE_FLOAT) {
 			return DATA_TYPE_SHORTNAME_FOUR_BYTE_FLOAT;
 		} else {
 			return DATA_TYPE_SHORTNAME_UNDEFINED;
