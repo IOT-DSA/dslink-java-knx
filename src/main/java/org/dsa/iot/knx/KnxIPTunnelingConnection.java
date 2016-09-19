@@ -13,7 +13,6 @@ import org.dsa.iot.dslink.util.handler.Handler;
 
 import tuwien.auto.calimero.IndividualAddress;
 import tuwien.auto.calimero.exception.KNXException;
-import tuwien.auto.calimero.exception.KNXFormatException;
 import tuwien.auto.calimero.link.KNXNetworkLinkIP;
 import tuwien.auto.calimero.link.medium.TPSettings;
 
@@ -47,13 +46,12 @@ public class KnxIPTunnelingConnection extends KnxIPConnection {
 		if (null != networkLink && null != communicator) {
 			generateGatewayNode();
 		}
-
 	}
 
 	private void generateGatewayNode() {
 		Node child = node.createChild(ATTR_GATEWAY_NAME).build();
 		child.setAttribute(ATTR_DEVICE_ADDRESS, new Value(deviceAddress));
-		DeviceNode deviceNode = new DeviceNode(getConnection(), null, child);
+		new DeviceNode(getConnection(), null, child);
 	}
 
 	@Override
