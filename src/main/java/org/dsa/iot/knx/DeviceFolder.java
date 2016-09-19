@@ -7,6 +7,7 @@ import org.dsa.iot.dslink.node.Node;
 import org.dsa.iot.dslink.node.actions.ActionResult;
 import org.dsa.iot.dslink.node.value.Value;
 import org.dsa.iot.dslink.node.value.ValueType;
+import org.dsa.iot.knx.masterdata.MasterDataParser;
 import org.dsa.iot.knx.project.EtsXmlParser;
 import org.dsa.iot.knx.project.KnxProjectParser;
 import org.dsa.iot.knx.project.OpcFileParser;
@@ -83,10 +84,20 @@ public class DeviceFolder extends EditableFolder {
 
 	@Override
 	protected void importProjectByXml(ActionResult event) {
-		String content = event.getParameter(ATTR_PROJECT_CONTENT, ValueType.STRING).getString();
-		KnxProjectParser parser = new EtsXmlParser(this);
+		String masterDataContent = event.getParameter(ATTR_MASTER_DATA_CONTENT, ValueType.STRING).getString();
+		MasterDataParser masterDataParser = new MasterDataParser();
+		masterDataParser.parse(masterDataContent);
 
-		parser.parseItems(content);
+		Map<String, Integer> dataPointTypeIdToSize = masterDataParser.getDataPointTypeIdToSize();
+		Map<String, String> dataPointSubTypeIdToDataPointTypeId = masterDataParser
+				.getDataPointSubTypeIdToDataPointTypeId();
+		if (!dataPointTypeIdToSize.isEmpty() && !dataPointSubTypeIdToDataPointTypeId.isEmpty()) {
+			String contentProject = event.getParameter(ATTR_PROJECT_CONTENT, ValueType.STRING).getString();
+			EtsXmlParser projectParser = new EtsXmlParser(this);
+			projectParser.setDataPointSubTypeIdToDataPointTypeId(dataPointSubTypeIdToDataPointTypeId);
+			projectParser.setDataPointTypeIdToSize(dataPointTypeIdToSize);
+			projectParser.parse(contentProject);
+		}
 	}
 
 	@Override
@@ -94,7 +105,7 @@ public class DeviceFolder extends EditableFolder {
 		String content = event.getParameter(ATTR_PROJECT_CONTENT, ValueType.STRING).getString();
 		KnxProjectParser parser = new OpcFileParser(this);
 
-		parser.parseItems(content);
+		parser.parse(content);
 	}
 
 	public Node buildFolderTree(Node parent, Queue<String> path) {
