@@ -13,11 +13,12 @@ import org.dsa.iot.dslink.util.handler.Handler;
 
 import tuwien.auto.calimero.IndividualAddress;
 import tuwien.auto.calimero.exception.KNXException;
-import tuwien.auto.calimero.exception.KNXFormatException;
 import tuwien.auto.calimero.link.KNXNetworkLinkIP;
 import tuwien.auto.calimero.link.medium.TPSettings;
 
 public class KnxIPTunnelingConnection extends KnxIPConnection {
+
+	final static String ATTR_GATEWAY_NAME = "Gateway";
 
 	public KnxIPTunnelingConnection(KnxLink link, Node node) {
 		super(link, node);
@@ -40,12 +41,25 @@ public class KnxIPTunnelingConnection extends KnxIPConnection {
 	}
 
 	@Override
+	protected void connect() {
+		super.connect();
+		if (null != networkLink && null != communicator) {
+			generateGatewayNode();
+		}
+	}
+
+	private void generateGatewayNode() {
+		Node child = node.createChild(ATTR_GATEWAY_NAME).build();
+		child.setAttribute(ATTR_DEVICE_ADDRESS, new Value(deviceAddress));
+		new DeviceNode(getConnection(), null, child);
+	}
+
+	@Override
 	public void makeEditAction() {
 		Action act = new Action(Permission.READ, new EditHandler());
 		act.addParameter(new Parameter(ATTR_NAME, ValueType.STRING, new Value(node.getName())));
-		act.addParameter(
-				new Parameter(ATTR_TRANSMISSION_TYPE, ValueType.makeEnum(TransmissionType.Tunneling.toString()),
-						node.getAttribute(ATTR_TRANSMISSION_TYPE)));
+		act.addParameter(new Parameter(ATTR_TRANSMISSION_TYPE,
+				ValueType.makeEnum(TransmissionType.Tunneling.toString()), node.getAttribute(ATTR_TRANSMISSION_TYPE)));
 		act.addParameter(new Parameter(ATTR_GROUP_LEVEL, ValueType.makeEnum(Utils.enumNames(GroupAddressType.class)),
 				node.getAttribute(ATTR_GROUP_LEVEL)));
 		act.addParameter(new Parameter(ATTR_LOCAL_HOST, ValueType.STRING, node.getAttribute(ATTR_LOCAL_HOST)));
@@ -97,14 +111,10 @@ public class KnxIPTunnelingConnection extends KnxIPConnection {
 			statusNode.setValue(new Value(STATUS_TUNNELING_WARNNING));
 		} else {
 			try {
-				networkLink = new KNXNetworkLinkIP(KNXNetworkLinkIP.TUNNELING, localEP, remoteEP, useNat,
+				networkLink = new KNXNetworkLinkIP((short) KNXNetworkLinkIP.TUNNELING, localEP, remoteEP, useNat,
 						new TPSettings(new IndividualAddress(deviceAddress)));
-			} catch (KNXFormatException e) {
-				LOGGER.debug(e.getMessage());
-			} catch (KNXException e) {
-				LOGGER.debug(e.getMessage());
-			} catch (InterruptedException e) {
-				LOGGER.debug(e.getMessage());
+			} catch (KNXException | InterruptedException e) {
+				statusNode.setValue(new Value(e.getMessage()));
 			}
 		}
 	}
