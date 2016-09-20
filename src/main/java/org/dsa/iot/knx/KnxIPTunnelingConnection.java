@@ -27,7 +27,7 @@ public class KnxIPTunnelingConnection extends KnxIPConnection {
 		this.deviceAddress = node.getAttribute(ATTR_DEVICE_ADDRESS).getString();
 		this.port = node.getAttribute(ATTR_REMOTE_PORT).getNumber().intValue();
 		this.localHost = node.getAttribute(ATTR_LOCAL_HOST).getString();
-		this.localEP = (null == localHost || localHost.isEmpty()) ? null : new InetSocketAddress(localHost, port);
+		this.localEP = (null == localHost || localHost.isEmpty()) ? null : new InetSocketAddress(localHost, 0);
 		this.remoteHost = node.getAttribute(ATTR_REMOTE_HOST).getString();
 		this.remoteEP = (null == remoteHost || remoteHost.isEmpty()) ? null : new InetSocketAddress(remoteHost, port);
 	}
