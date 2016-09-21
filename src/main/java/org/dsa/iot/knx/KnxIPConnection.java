@@ -508,8 +508,6 @@ public abstract class KnxIPConnection extends KnxConnection {
 		if (null != macAddress && null != individualAddress && null != medium && null != restType) {
 			isRestoring = true;
 			discover();
-		} else if (NODE_STATUS.equals(child.getName())) {
-			child.setValue(new Value(STATUS_RESTORING));
 		} else if (null == child.getAction() && !NODE_STATUS.equals(child.getName())) {
 			node.removeChild(child);
 		}
