@@ -75,7 +75,6 @@ public class DeviceFolder extends EditableFolder {
 		ValueType valType = PointType.getValueType(type);
 		Node pointNode = node.createChild(pointName).setValueType(valType).build();
 		pointNode.setAttribute(ATTR_POINT_TYPE, new Value(type.toString()));
-		pointNode.setAttribute(ATTR_POINT_NAME, new Value(pointName));
 		pointNode.setAttribute(ATTR_GROUP_ADDRESS, new Value(groupAddress.toString()));
 
 		DevicePoint knxPoint = new DevicePoint(conn, this, pointNode);
