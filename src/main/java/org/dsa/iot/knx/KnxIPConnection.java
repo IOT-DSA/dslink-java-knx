@@ -68,7 +68,7 @@ public abstract class KnxIPConnection extends KnxConnection {
 	static final String STATUS_TUNNELING_WARNNING = "invalid remote host for tunneling";
 	static final String MESSAGE_DISCOVERING = "Discovering devices......";
 	static final String MESSAGE_DISCOVERED = "Devices discovered!";
-	static final String MESSAGE_HOST_PROTOCOL_ADDRESS_INFOMATION = "Host Protocl Address Information";
+	static final String MESSAGE_HOST_PROTOCOL_ADDRESS_INFORMATION = "Host Protocol Address Information";
 	static final String MESSAGE_SERVICE_FAMILIES = "Service Families";
 	static final String MESSAGE_MAP_SEPARATOR = ":";
 	static final int SEARCH_TIMEOUT = 5;
@@ -226,7 +226,7 @@ public abstract class KnxIPConnection extends KnxConnection {
 
 					LOGGER.info(MESSAGE_DISCOVERED);
 					LOGGER.info(dib.getName() + MESSAGE_MAP_SEPARATOR + dib.getMACAddressString());
-					LOGGER.info(MESSAGE_HOST_PROTOCOL_ADDRESS_INFOMATION + MESSAGE_MAP_SEPARATOR + hpai.toString());
+					LOGGER.info(MESSAGE_HOST_PROTOCOL_ADDRESS_INFORMATION + MESSAGE_MAP_SEPARATOR + hpai.toString());
 					LOGGER.info(MESSAGE_SERVICE_FAMILIES + MESSAGE_MAP_SEPARATOR + fam.toString());
 
 					addressToDeviceDIB.put(hpai.getAddress().getHostAddress(), dib);
