@@ -67,9 +67,13 @@ public class DeviceFolder extends EditableFolder {
 			return;
 		}
 
+		String mainGroup = null;
 		String middleGroup = null;
+		String group = null;
 		if (null != groupAddress) {
+			mainGroup = String.valueOf(groupAddress.getMainGroup());
 			middleGroup = String.valueOf(groupAddress.getMiddleGroup());
+			group = mainGroup + GROUP_ADDRESS_SEPARATOR + middleGroup;
 		}
 
 		ValueType valType = PointType.getValueType(type);
@@ -78,7 +82,7 @@ public class DeviceFolder extends EditableFolder {
 		pointNode.setAttribute(ATTR_GROUP_ADDRESS, new Value(groupAddress.toString()));
 
 		DevicePoint knxPoint = new DevicePoint(conn, this, pointNode);
-		getConnection().updateGroupToPoints(middleGroup, knxPoint);
+		getConnection().updateGroupToPoints(group, knxPoint);
 	}
 
 	@Override
