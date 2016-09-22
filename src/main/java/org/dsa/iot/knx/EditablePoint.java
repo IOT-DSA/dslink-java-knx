@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import tuwien.auto.calimero.GroupAddress;
+import tuwien.auto.calimero.exception.KNXFormatException;
 
 public abstract class EditablePoint {
 	private static final Logger LOGGER;
@@ -79,14 +80,8 @@ public abstract class EditablePoint {
 
 	protected class EditHandler implements Handler<ActionResult> {
 		public void handle(ActionResult event) {
-			String newname = event.getParameter("name", ValueType.STRING).getString();
-			if (null != newname && !newname.isEmpty() && !newname.equals(node.getName())) {
-				Node parent = node.getParent();
-				parent.removeChild(node);
-				node = parent.createChild(newname).build();
-			}
-
-			makeEditAction();
+           edit(event);
+		   makeEditAction();
 		}
 	}
 
@@ -125,4 +120,6 @@ public abstract class EditablePoint {
 	public abstract PointType getType();
 
 	public abstract GroupAddress getGroupAddress();
+	
+	public abstract void edit(ActionResult event);
 }
