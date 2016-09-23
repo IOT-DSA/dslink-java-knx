@@ -76,7 +76,8 @@ public abstract class KnxIPConnection extends KnxConnection {
 	static final int POLLING_TIMEOUT = 5;
 	static final int DEFAULT_DELAY = 5;
 	static final int INITIAL_DELAY = 0;
-
+	static final int MAXIMUM_UNSIGNED_BYTE = 255;
+	static final int PERCENTAGE_FACTOR = 100;
 	private ScheduledThreadPoolExecutor stpe;
 	private final Map<String, ScheduledFuture<?>> pointToFutures;
 
@@ -373,7 +374,9 @@ public abstract class KnxIPConnection extends KnxConnection {
 				v = new Value(Integer.parseInt(valString));
 			} else if (type == PointType.UNSIGNED) {
 				vt = ValueType.NUMBER;
-				v = new Value(Integer.parseInt(valString));
+				int rawValue = Integer.parseInt(valString);
+				Double percent = new Double((double) rawValue / (double) MAXIMUM_UNSIGNED_BYTE);
+				v = new Value(percent * PERCENTAGE_FACTOR);
 			} else if (type == PointType.FLOAT2 || type == PointType.FLOAT4) {
 				vt = ValueType.NUMBER;
 				v = new Value(Float.parseFloat(valString));
@@ -409,7 +412,6 @@ public abstract class KnxIPConnection extends KnxConnection {
 		GroupAddress dst = point.getGroupAddress();
 		boolean use4ByteFloat = true;
 		int stepcode = 1;
-		String scale = "1";
 
 		try {
 			switch (type) {
@@ -421,18 +423,20 @@ public abstract class KnxIPConnection extends KnxConnection {
 				communicator.write(dst, val.getBool(), stepcode);
 				break;
 			}
+			case UNSIGNED: {
+				// should be able to choose between UNSCALED, SCALING, and
+				// ANGLE
+				int value = val.getNumber().intValue();
+				int rawVal = value * MAXIMUM_UNSIGNED_BYTE / PERCENTAGE_FACTOR;
+				communicator.write(dst, rawVal, ProcessCommunicationBase.UNSCALED);
+				break;
+			}
 			case FLOAT2: {
 				communicator.write(dst, val.getNumber().floatValue(), !use4ByteFloat);
 				break;
 			}
 			case FLOAT4: {
 				communicator.write(dst, val.getNumber().floatValue(), use4ByteFloat);
-				break;
-			}
-			case UNSIGNED: {
-				// should be able to choose between UNSCALED, SCALING, and
-				// ANGLE
-				communicator.write(dst, val.getNumber().intValue(), scale);
 				break;
 			}
 			default: {

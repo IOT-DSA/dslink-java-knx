@@ -95,5 +95,8 @@ public class DevicePoint extends EditablePoint {
 
 		node.setAttribute(ATTR_POINT_TYPE, new Value(type.toString()));
 		node.setAttribute(ATTR_GROUP_ADDRESS, new Value(groupAddress.toString()));
+		if (type.equals(PointType.UNSIGNED)) {
+			node.setAttribute(ATTR_UNIT, new Value(PERCENTAGE_UNIT));
+		}
 	}
 }

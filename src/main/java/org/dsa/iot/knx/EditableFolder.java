@@ -30,6 +30,7 @@ public abstract class EditableFolder {
 	static final String ATTR_EDITABLE_POINT = "editable point";
 	static final String ATTR_PROJECT_CONTENT = "project content";
 	static final String ATTR_MASTER_DATA_CONTENT = "master data content";
+	static final String ATTR_UNIT = "unit";
 	static final String ACTION_REMOVE = "remove";
 	static final String ACTION_EDIT = "edit";
 	static final String ACTION_ADD_POINT = "add group address";
@@ -39,6 +40,7 @@ public abstract class EditableFolder {
 	static final String NODE_STATUS = "STATUS";
 	static final String DEFAULT_GROUP_ADDRESS = "0/0/0";
 	static final String GROUP_ADDRESS_SEPARATOR = "/";
+	static final String PERCENTAGE_UNIT = "%";
 
 	KnxConnection conn;
 	Node node;

@@ -80,6 +80,9 @@ public class DeviceFolder extends EditableFolder {
 		Node pointNode = node.createChild(pointName).setValueType(valType).build();
 		pointNode.setAttribute(ATTR_POINT_TYPE, new Value(type.toString()));
 		pointNode.setAttribute(ATTR_GROUP_ADDRESS, new Value(groupAddress.toString()));
+		if (type.equals(PointType.UNSIGNED)) {
+			pointNode.setAttribute(ATTR_UNIT, new Value(PERCENTAGE_UNIT));
+		}
 
 		DevicePoint knxPoint = new DevicePoint(conn, this, pointNode);
 		getConnection().updateGroupToPoints(group, knxPoint);
