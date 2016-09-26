@@ -26,6 +26,7 @@ public abstract class EditablePoint {
 	static final String ATTR_NAME = "name";
 	static final String ATTR_POINT_TYPE = "point type";
 	static final String ATTR_GROUP_ADDRESS = "group address";
+	static final String ATTR_UNIT = "unit";
 	static final String ATTR_RESTORE_TYPE = "restore type";
 	static final String RESTORE_EDITABLE_POINT = "editable point";
 
@@ -33,6 +34,7 @@ public abstract class EditablePoint {
 	static final String ACTION_EDIT = "edit";
 
 	static final String DEFAULT_GROUP_ADDRESS = "0/0/0";
+	static final String PERCENTAGE_UNIT = "%";
 
 	KnxConnection conn;
 	EditableFolder folder;
@@ -80,8 +82,8 @@ public abstract class EditablePoint {
 
 	protected class EditHandler implements Handler<ActionResult> {
 		public void handle(ActionResult event) {
-           edit(event);
-		   makeEditAction();
+			edit(event);
+			makeEditAction();
 		}
 	}
 
@@ -120,6 +122,6 @@ public abstract class EditablePoint {
 	public abstract PointType getType();
 
 	public abstract GroupAddress getGroupAddress();
-	
+
 	public abstract void edit(ActionResult event);
 }
