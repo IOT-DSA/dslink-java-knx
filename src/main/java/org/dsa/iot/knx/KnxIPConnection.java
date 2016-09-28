@@ -139,7 +139,7 @@ public abstract class KnxIPConnection extends KnxConnection {
 
 		networkLink = null;
 		communicator = null;
-		createLink();
+		networkLink = createLink();
 		if (null != networkLink) {
 			networkLink.addLinkListener(new NetworkListener());
 			try {
@@ -522,7 +522,7 @@ public abstract class KnxIPConnection extends KnxConnection {
 		}
 	}
 
-	abstract void createLink();
+	abstract KNXNetworkLink createLink();
 
 	abstract void makeEditAction();
 }

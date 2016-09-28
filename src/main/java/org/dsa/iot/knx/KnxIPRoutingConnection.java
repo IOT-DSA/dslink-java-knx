@@ -10,6 +10,7 @@ import org.dsa.iot.dslink.node.value.ValueType;
 import org.dsa.iot.dslink.util.handler.Handler;
 
 import tuwien.auto.calimero.exception.KNXException;
+import tuwien.auto.calimero.link.KNXNetworkLink;
 import tuwien.auto.calimero.link.KNXNetworkLinkIP;
 import tuwien.auto.calimero.link.medium.TPSettings;
 
@@ -77,14 +78,16 @@ public class KnxIPRoutingConnection extends KnxIPConnection {
 	}
 
 	@Override
-	void createLink() {
+	KNXNetworkLink createLink() {
+		KNXNetworkLink networkLink = null;
 		try {
 			networkLink = new KNXNetworkLinkIP(KNXNetworkLinkIP.ROUTING, null, null, false, TPSettings.TP1);
-		} catch (KNXException e) {
+		} catch (KNXException | InterruptedException e) {
 			LOGGER.debug(e.getMessage());
-		} catch (InterruptedException e) {
-			LOGGER.debug(e.getMessage());
-		}
+			statusNode.setValue(new Value(e.getMessage()));
+		} 
+		
+		return networkLink;
 	}
 
 }
