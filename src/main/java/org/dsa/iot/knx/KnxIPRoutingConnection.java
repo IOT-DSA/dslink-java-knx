@@ -33,9 +33,8 @@ public class KnxIPRoutingConnection extends KnxIPConnection {
 	public void makeEditAction() {
 		Action act = new Action(Permission.READ, new EditHandler());
 		act.addParameter(new Parameter(ATTR_NAME, ValueType.STRING, new Value(node.getName())));
-		act.addParameter(
-				new Parameter(ATTR_TRANSMISSION_TYPE, ValueType.makeEnum(TransmissionType.Routing.toString()),
-						node.getAttribute(ATTR_TRANSMISSION_TYPE)));
+		act.addParameter(new Parameter(ATTR_TRANSMISSION_TYPE, ValueType.makeEnum(TransmissionType.Routing.toString()),
+				node.getAttribute(ATTR_TRANSMISSION_TYPE)));
 		act.addParameter(new Parameter(ATTR_GROUP_LEVEL, ValueType.makeEnum(Utils.enumNames(GroupAddressType.class)),
 				node.getAttribute(ATTR_GROUP_LEVEL)));
 		act.addParameter(
@@ -85,8 +84,8 @@ public class KnxIPRoutingConnection extends KnxIPConnection {
 		} catch (KNXException | InterruptedException e) {
 			LOGGER.debug(e.getMessage());
 			statusNode.setValue(new Value(e.getMessage()));
-		} 
-		
+		}
+
 		return networkLink;
 	}
 

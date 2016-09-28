@@ -116,7 +116,7 @@ public class KnxIPTunnelingConnection extends KnxIPConnection {
 			LOGGER.debug(e.getMessage());
 			statusNode.setValue(new Value(e.getMessage()));
 		}
-		
+
 		return networkLink;
 	}
 }
