@@ -13,6 +13,7 @@ import org.dsa.iot.dslink.util.handler.Handler;
 
 import tuwien.auto.calimero.IndividualAddress;
 import tuwien.auto.calimero.exception.KNXException;
+import tuwien.auto.calimero.link.KNXNetworkLink;
 import tuwien.auto.calimero.link.KNXNetworkLinkIP;
 import tuwien.auto.calimero.link.medium.TPSettings;
 
@@ -106,16 +107,16 @@ public class KnxIPTunnelingConnection extends KnxIPConnection {
 	}
 
 	@Override
-	void createLink() {
-		if (null == remoteEP) {
-			statusNode.setValue(new Value(STATUS_TUNNELING_WARNNING));
-		} else {
-			try {
-				networkLink = new KNXNetworkLinkIP((short) KNXNetworkLinkIP.TUNNELING, localEP, remoteEP, useNat,
-						new TPSettings(new IndividualAddress(deviceAddress)));
-			} catch (KNXException | InterruptedException e) {
-				statusNode.setValue(new Value(e.getMessage()));
-			}
+	KNXNetworkLink createLink() {
+		KNXNetworkLink networkLink = null;
+		try {
+			networkLink = new KNXNetworkLinkIP((short) KNXNetworkLinkIP.TUNNELING, localEP, remoteEP, useNat,
+					new TPSettings(new IndividualAddress(deviceAddress)));
+		} catch (KNXException | InterruptedException e) {
+			LOGGER.debug(e.getMessage());
+			statusNode.setValue(new Value(e.getMessage()));
 		}
+
+		return networkLink;
 	}
 }
