@@ -313,7 +313,7 @@ public abstract class KnxIPConnection extends KnxConnection {
 			poller = new Poller();
 		}
 
-		ScheduledFuture<?> future = stpe.scheduleWithFixedDelay(poller, INITIAL_DELAY, DEFAULT_DELAY, TimeUnit.SECONDS);
+		ScheduledFuture<?> future = stpe.scheduleWithFixedDelay(poller, INITIAL_DELAY, interval, TimeUnit.SECONDS);
 		pointToFutures.put(address, future);
 	}
 
