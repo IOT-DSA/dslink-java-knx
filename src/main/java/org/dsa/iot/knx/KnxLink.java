@@ -41,8 +41,8 @@ public class KnxLink {
 
 	static final String NODE_DEFS = "defs";
 
-	static final int DEFAULT_POLLING_INTERVAL = 5;
-	static final int DEFAULT_POLLING_TIMEOUT = 5;
+	static final int DEFAULT_POLLING_INTERVAL = 5000;
+	static final int DEFAULT_POLLING_TIMEOUT = 5000;
 	static final String DEFAULT_MULTICAST_ADDRESS = "";
 	static final String DEFAULT_DEVICE_ADDRESS = "0.0.0";
 	Node node;
@@ -155,8 +155,8 @@ public class KnxLink {
 			String name = event.getParameter(ATTR_NAME, ValueType.STRING).getString();
 			String transmission = event.getParameter(ATTR_TRANSMISSION_TYPE).getString();
 			String groupLevel = event.getParameter(ATTR_GROUP_LEVEL).getString();
-			int interval = event.getParameter(ATTR_POLLING_INTERVAL, ValueType.NUMBER).getNumber().intValue();
-			int timeout = event.getParameter(ATTR_POLLING_TIMEOUT, ValueType.NUMBER).getNumber().intValue();
+			long interval = event.getParameter(ATTR_POLLING_INTERVAL, ValueType.NUMBER).getNumber().longValue();
+			long timeout = event.getParameter(ATTR_POLLING_TIMEOUT, ValueType.NUMBER).getNumber().longValue();
 
 			Node ipConnNode = node.createChild(name).build();
 			ipConnNode.setAttribute(ATTR_TRANSMISSION_TYPE, new Value(transmission));

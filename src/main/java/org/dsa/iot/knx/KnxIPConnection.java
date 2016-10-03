@@ -71,10 +71,9 @@ public abstract class KnxIPConnection extends KnxConnection {
 	static final String MESSAGE_HOST_PROTOCOL_ADDRESS_INFORMATION = "Host Protocol Address Information";
 	static final String MESSAGE_SERVICE_FAMILIES = "Service Families";
 	static final String MESSAGE_MAP_SEPARATOR = ":";
-	static final int SEARCH_TIMEOUT = 5;
-	static final int POLLING_INTERVAL = 5;
-	static final int POLLING_TIMEOUT = 5;
-	static final int DEFAULT_DELAY = 5;
+	static final int SEARCH_TIMEOUT_IN_SECONDS = 5;
+	static final int POLLING_INTERVAL = 5000;
+	static final int POLLING_TIMEOUT = 5000;
 	static final int INITIAL_DELAY = 0;
 	static final int MAXIMUM_UNSIGNED_BYTE = 255;
 	static final int PERCENTAGE_FACTOR = 100;
@@ -93,8 +92,8 @@ public abstract class KnxIPConnection extends KnxConnection {
 	String localHost;
 	String remoteHost;
 	int port;
-	int interval;
-	int timeout;
+	long interval;
+	long timeout;
 
 	Map<String, HPAI> addressToHPAI;
 	Map<String, DeviceDIB> addressToDeviceDIB;
@@ -217,7 +216,7 @@ public abstract class KnxIPConnection extends KnxConnection {
 					discoverer = new Discoverer(null, 0, false, true);
 				}
 				LOGGER.info(MESSAGE_DISCOVERING);
-				discoverer.startSearch(SEARCH_TIMEOUT, true);
+				discoverer.startSearch(SEARCH_TIMEOUT_IN_SECONDS, true);
 
 				SearchResponse[] responses = discoverer.getSearchResponses();
 				for (SearchResponse sr : responses) {
@@ -313,7 +312,7 @@ public abstract class KnxIPConnection extends KnxConnection {
 			poller = new Poller();
 		}
 
-		ScheduledFuture<?> future = stpe.scheduleWithFixedDelay(poller, INITIAL_DELAY, DEFAULT_DELAY, TimeUnit.SECONDS);
+		ScheduledFuture<?> future = stpe.scheduleWithFixedDelay(poller, INITIAL_DELAY, interval, TimeUnit.MILLISECONDS);
 		pointToFutures.put(address, future);
 	}
 

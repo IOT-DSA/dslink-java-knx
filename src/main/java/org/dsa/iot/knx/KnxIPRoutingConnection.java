@@ -63,8 +63,8 @@ public class KnxIPRoutingConnection extends KnxIPConnection {
 			transType = TransmissionType
 					.parseType(event.getParameter(ATTR_TRANSMISSION_TYPE, ValueType.STRING).getString());
 			groupLevel = GroupAddressType.parseType(event.getParameter(ATTR_GROUP_LEVEL, ValueType.STRING).getString());
-			interval = event.getParameter(ATTR_POLLING_INTERVAL, ValueType.NUMBER).getNumber().intValue();
-			timeout = event.getParameter(ATTR_POLLING_TIMEOUT, ValueType.NUMBER).getNumber().intValue();
+			interval = event.getParameter(ATTR_POLLING_INTERVAL, ValueType.NUMBER).getNumber().longValue();
+			timeout = event.getParameter(ATTR_POLLING_TIMEOUT, ValueType.NUMBER).getNumber().longValue();
 
 			node.setAttribute(ATTR_TRANSMISSION_TYPE, new Value(transType.toString()));
 			node.setAttribute(ATTR_GROUP_LEVEL, new Value(groupLevel.toString()));
