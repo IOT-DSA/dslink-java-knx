@@ -85,4 +85,7 @@ public abstract class KnxConnection {
 	public void updateGroupToPoints(String group, DevicePoint point) {
 	}
 
+	public void updateAddressToPoint(String address, EditablePoint point){
+	}
+	
 }

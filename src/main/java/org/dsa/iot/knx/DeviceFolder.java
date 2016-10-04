@@ -84,8 +84,9 @@ public class DeviceFolder extends EditableFolder {
 			pointNode.setAttribute(ATTR_UNIT, new Value(PERCENTAGE_UNIT));
 		}
 
-		DevicePoint knxPoint = new DevicePoint(conn, this, pointNode);
-		getConnection().updateGroupToPoints(group, knxPoint);
+		DevicePoint point = new DevicePoint(conn, this, pointNode);
+		getConnection().updateGroupToPoints(group, point);
+		getConnection().updateAddressToPoint(groupAddress.toString(), point);
 	}
 
 	@Override
@@ -145,8 +146,9 @@ public class DeviceFolder extends EditableFolder {
 		pointNode.setAttribute(ATTR_POINT_TYPE, new Value(type.toString()));
 		pointNode.setAttribute(ATTR_GROUP_ADDRESS, new Value(groupAddress.toString()));
 
-		DevicePoint knxPoint = new DevicePoint(conn, this, pointNode);
-		getConnection().updateGroupToPoints(addressBean.getMiddleGroup(), knxPoint);
+		DevicePoint point = new DevicePoint(conn, this, pointNode);
+		getConnection().updateGroupToPoints(addressBean.getMiddleGroup(), point);
+		getConnection().updateAddressToPoint(groupAddress.toString(), point);
 	}
 
 	@Override

@@ -27,6 +27,7 @@ import tuwien.auto.calimero.CloseEvent;
 import tuwien.auto.calimero.DetachEvent;
 import tuwien.auto.calimero.FrameEvent;
 import tuwien.auto.calimero.GroupAddress;
+import tuwien.auto.calimero.IndividualAddress;
 import tuwien.auto.calimero.exception.KNXException;
 import tuwien.auto.calimero.knxnetip.Discoverer;
 import tuwien.auto.calimero.knxnetip.servicetype.SearchResponse;
@@ -77,6 +78,11 @@ public abstract class KnxIPConnection extends KnxConnection {
 	static final int INITIAL_DELAY = 0;
 	static final int MAXIMUM_UNSIGNED_BYTE = 255;
 	static final int PERCENTAGE_FACTOR = 100;
+
+	private static final int GROUP_READ = 0x00;
+	private static final int GROUP_RESPONSE = 0x40;
+	private static final int GROUP_WRITE = 0x80;
+
 	private ScheduledThreadPoolExecutor stpe;
 	private final Map<String, ScheduledFuture<?>> pointToFutures;
 
@@ -94,12 +100,11 @@ public abstract class KnxIPConnection extends KnxConnection {
 	int port;
 	long interval;
 	long timeout;
-
-	Map<String, HPAI> addressToHPAI;
+	
 	Map<String, DeviceDIB> addressToDeviceDIB;
-	Map<String, ServiceFamiliesDIB> addressToServiceFamiliesDIB;
 	Set<DeviceNode> deviceSet;
-
+	Map<String, EditablePoint> addressToDataPoint;
+	
 	Poller poller;
 	Discoverer discoverer;
 	ScheduledFuture<?> discoverFuture;
@@ -120,6 +125,7 @@ public abstract class KnxIPConnection extends KnxConnection {
 		pointToFutures = new HashMap<>();
 		stpe = Objects.createDaemonThreadPool();
 		addressToDeviceDIB = new HashMap<String, DeviceDIB>();
+		addressToDataPoint = new HashMap<String, EditablePoint>();
 		deviceSet = new HashSet<DeviceNode>();
 	}
 
@@ -179,9 +185,27 @@ public abstract class KnxIPConnection extends KnxConnection {
 		}
 	}
 
-	private static class ProcessCommunicatorListener implements ProcessListener {
+	private class ProcessCommunicatorListener implements ProcessListener {
 
 		public void groupWrite(ProcessEvent e) {
+			GroupAddress dstAddress = e.getDestination();
+			IndividualAddress srcAddress = e.getSourceAddr();
+			byte[] asdu = e.getASDU();
+			int service = e.getServiceCode();
+			switch (service) {
+			case GROUP_READ: {
+				break;
+			}
+			case GROUP_RESPONSE: {
+				break;
+			}
+			case GROUP_WRITE: {
+				updatePointValue(dstAddress, asdu);
+				break;
+			}
+			default:
+				break;
+			}
 
 		}
 
@@ -249,6 +273,52 @@ public abstract class KnxIPConnection extends KnxConnection {
 		Discover discover = new Discover();
 		discover.addListener(getConnection());
 		discoverFuture = stpe.schedule(discover, 0, TimeUnit.SECONDS);
+	}
+
+	void updatePointValue(GroupAddress address, byte[] asdu) {
+		EditablePoint point = addressToDataPoint.get(address.toString());
+		if (null != point) {
+			Value value = null;
+			PointType type = point.getType();
+			if (type == PointType.BOOL) {
+				value = (asdu[0] & 0xFF) == 1 ? new Value(true) : new Value(false);
+			} else if (type == PointType.CONTROL) {
+				int asInt = (asdu[0] & 0xFF);
+				value = new Value(asInt);
+			} else if (type == PointType.UNSIGNED) {
+				int asInt = asdu[0] & 0xFF;
+				value = new Value(rawToPercentage(asInt));
+			} else if (type == PointType.FLOAT2) {
+				int asInt = (asdu[0] & 0xFF) | ((asdu[1] & 0xFF) << 8);
+				float asFloat = Float.intBitsToFloat(asInt);
+				value = new Value(asFloat);
+			} else if (type == PointType.FLOAT4) {
+				int asInt = (asdu[0] & 0xFF) | ((asdu[1] & 0xFF) << 8) | ((asdu[2] & 0xFF) << 16)
+						| ((asdu[3] & 0xFF) << 24);
+				float asFloat = Float.intBitsToFloat(asInt);
+				value = new Value(asFloat);
+			} else if (type == PointType.STRING) {
+				String asString = asdu.toString();
+				value = new Value(asString);
+			}
+
+			point.node.setValue(value);
+		}
+
+	}
+
+	int rawToPercentage(int number) {
+		double percentage = (double) number / (double) MAXIMUM_UNSIGNED_BYTE;
+		percentage *= (double) PERCENTAGE_FACTOR;
+		long rounded = Math.round(percentage);
+		return (int) rounded;
+	}
+
+	int percentageToRaw(int percentage) {
+		double converted = (double) percentage / (double) PERCENTAGE_FACTOR;
+		converted *= (double) MAXIMUM_UNSIGNED_BYTE;
+		long rounded = Math.round(converted);
+		return (int) rounded;
 	}
 
 	protected DeviceNode setupDeviceNode(String host, DeviceDIB dib) {
@@ -358,35 +428,34 @@ public abstract class KnxIPConnection extends KnxConnection {
 
 			}
 
-			Value v = new Value(valString);
-			ValueType vt = ValueType.STRING;
+			Value value = new Value(valString);
+			ValueType valueType = ValueType.STRING;
 			if (null != valString && valString.length() == 0) {
-				vt = pointNode.getValueType();
-				v = null;
+				valueType = pointNode.getValueType();
+				value = null;
 			}
 
 			if (type == PointType.BOOL) {
-				vt = ValueType.BOOL;
-				v = new Value(Boolean.parseBoolean(valString));
+				valueType = ValueType.BOOL;
+				value = new Value(Boolean.parseBoolean(valString));
 			} else if (type == PointType.CONTROL) {
-				vt = ValueType.NUMBER;
-				v = new Value(Integer.parseInt(valString));
+				valueType = ValueType.NUMBER;
+				value = new Value(Integer.parseInt(valString));
 			} else if (type == PointType.UNSIGNED) {
-				vt = ValueType.NUMBER;
+				valueType = ValueType.NUMBER;
 				int rawValue = Integer.parseInt(valString);
-				Double percent = new Double((double) rawValue / (double) MAXIMUM_UNSIGNED_BYTE);
-				v = new Value(percent * PERCENTAGE_FACTOR);
+				value = new Value(rawToPercentage(rawValue));
 			} else if (type == PointType.FLOAT2 || type == PointType.FLOAT4) {
-				vt = ValueType.NUMBER;
-				v = new Value(Float.parseFloat(valString));
+				valueType = ValueType.NUMBER;
+				value = new Value(Float.parseFloat(valString));
 			} else if (type == PointType.STRING) {
-				vt = ValueType.STRING;
-				v = new Value(valString);
+				valueType = ValueType.STRING;
+				value = new Value(valString);
 			}
 
-			pointNode.setValueType(vt);
-			pointNode.setValue(v);
-			LOGGER.debug("read and updated " + pointNode.getName() + " : " + v.toString());
+			pointNode.setValueType(valueType);
+			pointNode.setValue(value);
+			LOGGER.debug("read and updated " + pointNode.getName() + " : " + value.toString());
 
 		} catch (KNXException | InterruptedException e) {
 			LOGGER.debug("error: ", e);
@@ -426,8 +495,7 @@ public abstract class KnxIPConnection extends KnxConnection {
 				// should be able to choose between UNSCALED, SCALING, and
 				// ANGLE
 				int value = val.getNumber().intValue();
-				int rawVal = value * MAXIMUM_UNSIGNED_BYTE / PERCENTAGE_FACTOR;
-				communicator.write(dst, rawVal, ProcessCommunicationBase.UNSCALED);
+				communicator.write(dst, percentageToRaw(value), ProcessCommunicationBase.UNSCALED);
 				break;
 			}
 			case FLOAT2: {
@@ -493,6 +561,11 @@ public abstract class KnxIPConnection extends KnxConnection {
 		}
 		points.add(point);
 		groupToPoints.put(group, points);
+	}
+
+	@Override
+	public void updateAddressToPoint(String address, EditablePoint point) {
+		addressToDataPoint.put(address, point);
 	}
 
 	public void restoreLastSession() {
