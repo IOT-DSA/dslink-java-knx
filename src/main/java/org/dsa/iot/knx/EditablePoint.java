@@ -89,6 +89,7 @@ public abstract class EditablePoint {
 
 	protected class RemoveHandler implements Handler<ActionResult> {
 		public void handle(ActionResult event) {
+			remove(event);
 			node.clearChildren();
 			node.getParent().removeChild(node);
 		}
@@ -124,4 +125,6 @@ public abstract class EditablePoint {
 	public abstract GroupAddress getGroupAddress();
 
 	public abstract void edit(ActionResult event);
+	
+	public abstract void remove(ActionResult event);
 }

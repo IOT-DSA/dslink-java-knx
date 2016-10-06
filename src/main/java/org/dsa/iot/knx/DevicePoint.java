@@ -22,7 +22,6 @@ public class DevicePoint extends EditablePoint {
 	public DevicePoint(KnxConnection conn, EditableFolder folder, Node node) {
 		super(conn, folder, node);
 
-		folder.getConnection().setupPointListener(this);
 	}
 
 	@Override
@@ -75,9 +74,9 @@ public class DevicePoint extends EditablePoint {
 			LOGGER.debug("error: ", e);
 			return;
 		}
-
+		String name = node.getName();
 		String newname = event.getParameter(ATTR_NAME, ValueType.STRING).getString();
-		if (null != newname && !newname.isEmpty() && !newname.equals(node.getName())
+		if (null != newname && !newname.isEmpty() && !newname.equals(name)
 				|| null != type && !type.toString().equals(node.getAttribute(ATTR_POINT_TYPE))) {
 			Node parent = node.getParent();
 			parent.removeChild(node);
@@ -98,5 +97,29 @@ public class DevicePoint extends EditablePoint {
 		if (PointType.UNSIGNED.equals(type)) {
 			node.setAttribute(ATTR_UNIT, new Value(PERCENTAGE_UNIT));
 		}
+	}
+
+	@Override
+	public void remove(ActionResult event) {
+		String address = node.getAttribute(ATTR_GROUP_ADDRESS).getString();
+		GroupAddress groupAddress = null;
+		try {
+			groupAddress = new GroupAddress(address);
+		} catch (KNXFormatException e1) {
+			e1.printStackTrace();
+			return;
+		}
+
+		String mainGroup = null;
+		String middleGroup = null;
+		String group = null;
+		if (null != groupAddress) {
+			mainGroup = String.valueOf(groupAddress.getMainGroup());
+			middleGroup = String.valueOf(groupAddress.getMiddleGroup());
+			group = mainGroup + "/" + middleGroup;
+		}
+		this.conn.updateGroupToPoints(group, this, false);
+		this.conn.updateAddressToPoint(address, this, false);
+
 	}
 }

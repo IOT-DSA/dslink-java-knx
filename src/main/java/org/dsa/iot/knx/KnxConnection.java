@@ -82,10 +82,10 @@ public abstract class KnxConnection {
 		return GroupAddressType.THREE_LEVEL;
 	}
 
-	public void updateGroupToPoints(String group, DevicePoint point) {
+	public void updateGroupToPoints(String group, DevicePoint point, boolean add) {
 	}
 
-	public void updateAddressToPoint(String address, EditablePoint point){
+	public void updateAddressToPoint(String address, EditablePoint point, boolean add) {
 	}
-	
+
 }
