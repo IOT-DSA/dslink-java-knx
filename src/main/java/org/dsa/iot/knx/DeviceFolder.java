@@ -85,8 +85,9 @@ public class DeviceFolder extends EditableFolder {
 		}
 
 		DevicePoint point = new DevicePoint(conn, this, pointNode);
-		getConnection().updateGroupToPoints(group, point);
-		getConnection().updateAddressToPoint(groupAddress.toString(), point);
+		getConnection().setupPointListener(point);
+		getConnection().updateGroupToPoints(group, point, true);
+		getConnection().updateAddressToPoint(groupAddress.toString(), point, true);
 	}
 
 	@Override
@@ -147,8 +148,9 @@ public class DeviceFolder extends EditableFolder {
 		pointNode.setAttribute(ATTR_GROUP_ADDRESS, new Value(groupAddress.toString()));
 
 		DevicePoint point = new DevicePoint(conn, this, pointNode);
-		getConnection().updateGroupToPoints(addressBean.getMiddleGroup(), point);
-		getConnection().updateAddressToPoint(groupAddress.toString(), point);
+		getConnection().setupPointListener(point);
+		getConnection().updateGroupToPoints(addressBean.getMiddleGroup(), point, true);
+		getConnection().updateAddressToPoint(groupAddress.toString(), point, true);
 	}
 
 	@Override
@@ -169,4 +171,5 @@ public class DeviceFolder extends EditableFolder {
 			}
 		}
 	}
+
 }

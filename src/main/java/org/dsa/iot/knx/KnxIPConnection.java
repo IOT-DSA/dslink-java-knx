@@ -100,11 +100,12 @@ public abstract class KnxIPConnection extends KnxConnection {
 	int port;
 	long interval;
 	long timeout;
-	
-	Map<String, DeviceDIB> addressToDeviceDIB;
+
+	Map<String, DeviceDIB> hostToDeviceDIB;
 	Set<DeviceNode> deviceSet;
 	Map<String, EditablePoint> addressToDataPoint;
-	
+	Map<String, Boolean> addressToPolled;
+
 	Poller poller;
 	Discoverer discoverer;
 	ScheduledFuture<?> discoverFuture;
@@ -124,8 +125,9 @@ public abstract class KnxIPConnection extends KnxConnection {
 		groupToPoints = new HashMap<>();
 		pointToFutures = new HashMap<>();
 		stpe = Objects.createDaemonThreadPool();
-		addressToDeviceDIB = new HashMap<String, DeviceDIB>();
+		hostToDeviceDIB = new HashMap<String, DeviceDIB>();
 		addressToDataPoint = new HashMap<String, EditablePoint>();
+		addressToPolled = new HashMap<>();
 		deviceSet = new HashSet<DeviceNode>();
 	}
 
@@ -253,7 +255,7 @@ public abstract class KnxIPConnection extends KnxConnection {
 					LOGGER.info(MESSAGE_HOST_PROTOCOL_ADDRESS_INFORMATION + MESSAGE_MAP_SEPARATOR + hpai.toString());
 					LOGGER.info(MESSAGE_SERVICE_FAMILIES + MESSAGE_MAP_SEPARATOR + fam.toString());
 
-					addressToDeviceDIB.put(hpai.getAddress().getHostAddress(), dib);
+					hostToDeviceDIB.put(hpai.getAddress().getHostAddress(), dib);
 					this.listener.onDiscovered();
 				}
 
@@ -338,7 +340,7 @@ public abstract class KnxIPConnection extends KnxConnection {
 
 	@Override
 	public void onDiscovered() {
-		Iterator<Entry<String, DeviceDIB>> it = addressToDeviceDIB.entrySet().iterator();
+		Iterator<Entry<String, DeviceDIB>> it = hostToDeviceDIB.entrySet().iterator();
 
 		while (it.hasNext()) {
 			Map.Entry<String, DeviceDIB> pair = (Map.Entry<String, DeviceDIB>) it.next();
@@ -371,12 +373,11 @@ public abstract class KnxIPConnection extends KnxConnection {
 
 	@Override
 	public void startPolling(DevicePoint point) {
-		String address = point.getGroupAddress().toString();
+		String address = point.getGroupAddress().toString();// by group?
 		if (pointToFutures.containsKey(address)) {
 			return;
 		}
 
-		LOGGER.info("Polling: ");
 		stpe = getDaemonThreadPool();
 		if (null == poller) {
 			poller = new Poller();
@@ -388,39 +389,40 @@ public abstract class KnxIPConnection extends KnxConnection {
 
 	private void readPoint(String group, EditablePoint point) {
 		PointType type = point.getType();
-		GroupAddress addr = point.getGroupAddress();
-
+		GroupAddress groupAddress = point.getGroupAddress();
+		String address = groupAddress.toString();
 		Node pointNode = point.node;
 		String valString = null;
 
 		try {
 			switch (type) {
 			case BOOL: {
-				valString = Boolean.toString(communicator.readBool(addr));
+				valString = Boolean.toString(communicator.readBool(groupAddress));
 				break;
 			}
 			case CONTROL: {
 				// read a 3 bit controlled datapoint value
-				valString = Integer.toString(communicator.readControl(addr));
+				valString = Integer.toString(communicator.readControl(groupAddress));
 				break;
 			}
 			case UNSIGNED: {
 				// read an unsiged 8 bit datapoint value, should be able to
 				// choose between UNSCALED, SCALING, and
 				// ANGLE
-				valString = Integer.toString(communicator.readUnsigned(addr, ProcessCommunicationBase.UNSCALED));
+				valString = Integer
+						.toString(communicator.readUnsigned(groupAddress, ProcessCommunicationBase.UNSCALED));
 				break;
 			}
 			case FLOAT2: {
-				valString = Float.toString(communicator.readFloat(addr, false));
+				valString = Float.toString(communicator.readFloat(groupAddress, false));
 				break;
 			}
 			case FLOAT4: {
-				valString = Float.toString(communicator.readFloat(addr, true));
+				valString = Float.toString(communicator.readFloat(groupAddress, true));
 				break;
 			}
 			case STRING:
-				valString = communicator.readString(addr);
+				valString = communicator.readString(groupAddress);
 				break;
 			default: {
 				break;
@@ -455,6 +457,7 @@ public abstract class KnxIPConnection extends KnxConnection {
 
 			pointNode.setValueType(valueType);
 			pointNode.setValue(value);
+			addressToPolled.put(address, true);
 			LOGGER.debug("read and updated " + pointNode.getName() + " : " + value.toString());
 
 		} catch (KNXException | InterruptedException e) {
@@ -467,7 +470,11 @@ public abstract class KnxIPConnection extends KnxConnection {
 			String group = entry.getKey();
 			List<EditablePoint> points = entry.getValue();
 			for (EditablePoint point : points) {
-				if (point.isSubscribed()) {
+				Node node = point.node;
+				String address = node.getAttribute(EditablePoint.ATTR_GROUP_ADDRESS).getString();
+				boolean polled = addressToPolled.get(address);
+				if (point.isSubscribed() && !polled) {
+					LOGGER.info("Polling: ");
 					readPoint(group, point);
 				}
 			}
@@ -551,7 +558,7 @@ public abstract class KnxIPConnection extends KnxConnection {
 	}
 
 	@Override
-	public void updateGroupToPoints(String group, DevicePoint point) {
+	public void updateGroupToPoints(String group, DevicePoint point, boolean add) {
 		List<EditablePoint> points = null;
 		Map<String, List<EditablePoint>> groupToPoints = getConnection().getGroupToPoints();
 		if (!groupToPoints.containsKey(group)) {
@@ -559,13 +566,24 @@ public abstract class KnxIPConnection extends KnxConnection {
 		} else {
 			points = groupToPoints.get(group);
 		}
-		points.add(point);
+
+		if (add) {
+			points.add(point);
+		} else {
+			points.remove(point);
+		}
 		groupToPoints.put(group, points);
 	}
 
 	@Override
-	public void updateAddressToPoint(String address, EditablePoint point) {
-		addressToDataPoint.put(address, point);
+	public void updateAddressToPoint(String address, EditablePoint point, boolean add) {
+		if (add) {
+			addressToDataPoint.put(address, point);
+			addressToPolled.put(address, false);
+		} else {
+			addressToDataPoint.remove(address);
+			addressToPolled.remove(address);
+		}
 	}
 
 	public void restoreLastSession() {
