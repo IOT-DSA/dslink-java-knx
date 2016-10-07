@@ -373,8 +373,9 @@ public abstract class KnxIPConnection extends KnxConnection {
 
 	@Override
 	public void startPolling(DevicePoint point) {
-		String address = point.getGroupAddress().toString();// by group?
-		if (pointToFutures.containsKey(address)) {
+		String address = point.getGroupAddress().toString();
+		if (pointToFutures.containsKey(address)
+				|| (addressToPolled.containsKey(address) && addressToPolled.get(address))) {
 			return;
 		}
 
@@ -383,7 +384,7 @@ public abstract class KnxIPConnection extends KnxConnection {
 			poller = new Poller();
 		}
 
-		ScheduledFuture<?> future = stpe.scheduleWithFixedDelay(poller, INITIAL_DELAY, interval, TimeUnit.MILLISECONDS);
+		ScheduledFuture<?> future = stpe.schedule(poller, INITIAL_DELAY, TimeUnit.MILLISECONDS);
 		pointToFutures.put(address, future);
 	}
 
