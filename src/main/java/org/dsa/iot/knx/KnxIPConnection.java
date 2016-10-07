@@ -374,7 +374,8 @@ public abstract class KnxIPConnection extends KnxConnection {
 	@Override
 	public void startPolling(DevicePoint point) {
 		String address = point.getGroupAddress().toString();
-		if (pointToFutures.containsKey(address) || true == addressToPolled.get(address)) {
+		if (pointToFutures.containsKey(address)
+				|| (addressToPolled.containsKey(address) && addressToPolled.get(address))) {
 			return;
 		}
 
