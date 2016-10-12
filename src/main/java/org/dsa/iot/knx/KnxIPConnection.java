@@ -28,7 +28,15 @@ import tuwien.auto.calimero.DetachEvent;
 import tuwien.auto.calimero.FrameEvent;
 import tuwien.auto.calimero.GroupAddress;
 import tuwien.auto.calimero.IndividualAddress;
+import tuwien.auto.calimero.datapoint.Datapoint;
+import tuwien.auto.calimero.datapoint.StateDP;
+import tuwien.auto.calimero.dptxlator.DPTXlator;
+import tuwien.auto.calimero.dptxlator.DPTXlatorTime;
+import tuwien.auto.calimero.dptxlator.DPTXlatorDate;
+import tuwien.auto.calimero.dptxlator.TranslatorTypes;
 import tuwien.auto.calimero.exception.KNXException;
+import tuwien.auto.calimero.exception.KNXFormatException;
+import tuwien.auto.calimero.exception.KNXIllegalArgumentException;
 import tuwien.auto.calimero.knxnetip.Discoverer;
 import tuwien.auto.calimero.knxnetip.servicetype.SearchResponse;
 import tuwien.auto.calimero.knxnetip.util.DeviceDIB;
@@ -422,9 +430,22 @@ public abstract class KnxIPConnection extends KnxConnection {
 				valString = Float.toString(communicator.readFloat(groupAddress, true));
 				break;
 			}
-			case STRING:
+			case TIME: {
+				Datapoint dataPnt = new StateDP(groupAddress, "time", 0, DPTXlatorTime.DPT_TIMEOFDAY.getID());
+				String response = communicator.read(dataPnt);
+				valString = response;
+				break;
+			}
+			case DATE: {
+				Datapoint dataPnt = new StateDP(groupAddress, "date", 0, DPTXlatorDate.DPT_DATE.getID());
+				String response = communicator.read(dataPnt);
+				valString = response;
+				break;
+			}
+			case STRING: {
 				valString = communicator.readString(groupAddress);
 				break;
+			}
 			default: {
 				break;
 			}
@@ -451,6 +472,12 @@ public abstract class KnxIPConnection extends KnxConnection {
 			} else if (type == PointType.FLOAT2 || type == PointType.FLOAT4) {
 				valueType = ValueType.NUMBER;
 				value = new Value(Float.parseFloat(valString));
+			} else if (type == PointType.TIME) {
+				valueType = ValueType.STRING;
+				value = new Value(valString);
+			} else if (type == PointType.DATE) {
+				valueType = ValueType.STRING;
+				value = new Value(valString);
 			} else if (type == PointType.STRING) {
 				valueType = ValueType.STRING;
 				value = new Value(valString);
@@ -512,6 +539,16 @@ public abstract class KnxIPConnection extends KnxConnection {
 			}
 			case FLOAT4: {
 				communicator.write(dst, val.getNumber().floatValue(), use4ByteFloat);
+				break;
+			}
+			case TIME: {
+				Datapoint dataPnt = new StateDP(dst, "time", 0, DPTXlatorTime.DPT_TIMEOFDAY.getID());
+				communicator.write(dataPnt, val.getString());
+				break;
+			}
+			case DATE: {
+				Datapoint dataPnt = new StateDP(dst, "date", 0, DPTXlatorDate.DPT_DATE.getID());
+				communicator.write(dataPnt, val.getString());
 				break;
 			}
 			default: {

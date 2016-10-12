@@ -3,7 +3,7 @@ package org.dsa.iot.knx;
 import org.dsa.iot.dslink.node.value.ValueType;
 
 public enum PointType {
-	BOOL, CONTROL, UNSIGNED, FLOAT2, FLOAT4, STRING;
+	BOOL, CONTROL, UNSIGNED, FLOAT2, FLOAT4, TIME, DATE, STRING;
 
 	public static PointType parseType(String str) {
 		PointType type = null;
@@ -23,6 +23,12 @@ public enum PointType {
 			break;
 		case "FLOAT4":
 			type = PointType.FLOAT4;
+			break;
+		case "TIME":
+			type = PointType.TIME;
+			break;
+		case "DATE":
+			type = PointType.DATE;
 			break;
 		case "STRING":
 			type = PointType.STRING;
@@ -96,6 +102,10 @@ public enum PointType {
 			vt = ValueType.NUMBER;
 		} else if (type == PointType.UNSIGNED) {
 			vt = ValueType.NUMBER;
+		} else if (type == PointType.TIME) {
+			vt = ValueType.TIME;
+		} else if (type == PointType.DATE) {
+			vt = ValueType.TIME;
 		} else if (type == PointType.STRING) {
 			vt = ValueType.STRING;
 		}
