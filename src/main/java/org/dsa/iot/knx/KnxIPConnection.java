@@ -73,6 +73,7 @@ public abstract class KnxIPConnection extends KnxConnection {
 	static final String NODE_STATUS = "STATUS";
 	static final String STATUS_CONNECTING = "connecting";
 	static final String STATUS_CONNECTED = "connected";
+	static final String STATUS_DISCONNECTED = "disconnected";
 	static final String STATUS_RESTORING = "restoring the last session";
 	static final String STATUS_TUNNELING_WARNNING = "invalid remote host for tunneling";
 	static final String MESSAGE_DISCOVERING = "Discovering devices......";
@@ -143,6 +144,17 @@ public abstract class KnxIPConnection extends KnxConnection {
 		makeRemoveAction();
 	}
 
+	protected void disconnect() {
+		if (null != communicator) {
+			communicator.detach();
+			communicator = null;
+			if (null != networkLink) {
+				networkLink.close();
+				networkLink = null;
+			}
+		}
+	}
+
 	protected void connect() {
 		statusNode = node.getChild(NODE_STATUS);
 		if (null == statusNode) {
@@ -172,6 +184,27 @@ public abstract class KnxIPConnection extends KnxConnection {
 
 	public KnxConnection getConnection() {
 		return this;
+	}
+
+	@Override
+	public void remove() {
+		disconnect();
+		super.remove();
+	}
+
+	@Override
+	public void stop() {
+		disconnect();
+		if (null != statusNode) {
+			statusNode.setValue(new Value(STATUS_DISCONNECTED));
+		}
+
+	}
+
+	@Override
+	public void restart() {
+		stop();
+		this.restoreLastSession();
 	}
 
 	class DeviceDiscoveryHandler implements Handler<ActionResult> {
