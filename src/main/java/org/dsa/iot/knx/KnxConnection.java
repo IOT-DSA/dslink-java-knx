@@ -20,6 +20,8 @@ public abstract class KnxConnection {
 	}
 
 	static final String ACTION_REMOVE = "remove";
+	static final String ACTION_STOP = "stop";
+	static final String ACTION_RESTART = "restart";
 	static final String ACTION_EDIT = "edit";
 
 	KnxLink link;
@@ -40,6 +42,20 @@ public abstract class KnxConnection {
 			node.createChild(ACTION_REMOVE).setAction(act).build().setSerializable(false);
 		else
 			actionNode.setAction(act);
+
+		act = new Action(Permission.READ, new StopHandler());
+		actionNode = node.getChild(ACTION_STOP);
+		if (null == actionNode)
+			node.createChild(ACTION_STOP).setAction(act).build().setSerializable(false);
+		else
+			actionNode.setAction(act);
+
+		act = new Action(Permission.READ, new RestartHandler());
+		actionNode = node.getChild(ACTION_RESTART);
+		if (null == actionNode)
+			node.createChild(ACTION_RESTART).setAction(act).build().setSerializable(false);
+		else
+			actionNode.setAction(act);
 	};
 
 	private class RemoveHandler implements Handler<ActionResult> {
@@ -51,6 +67,24 @@ public abstract class KnxConnection {
 	public void remove() {
 		node.clearChildren();
 		node.getParent().removeChild(node);
+	}
+
+	private class StopHandler implements Handler<ActionResult> {
+		public void handle(ActionResult event) {
+			stop();
+		}
+	}
+
+	public void stop() {
+	}
+
+	private class RestartHandler implements Handler<ActionResult> {
+		public void handle(ActionResult event) {
+			restart();
+		}
+	}
+
+	public void restart() {
 	}
 
 	public abstract void onDiscovered();
