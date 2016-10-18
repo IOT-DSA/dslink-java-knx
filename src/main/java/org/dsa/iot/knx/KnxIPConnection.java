@@ -146,7 +146,6 @@ public abstract class KnxIPConnection extends KnxConnection {
 
 	protected void disconnect() {
 		if (null != communicator) {
-			communicator.detach();
 			communicator = null;
 			if (null != networkLink) {
 				networkLink.close();
