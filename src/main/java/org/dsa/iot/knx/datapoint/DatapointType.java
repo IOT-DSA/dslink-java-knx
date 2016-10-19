@@ -37,14 +37,32 @@ public enum DatapointType {
     BOOLEAN_SCENE("knx.dpt.boolean.scene", "DPST-1-22", new DPTBoolean("1.022", "Scene A", "Scene B")), //
     BOOLEAN_SHUTTERBLINDSMODE("knx.dpt.boolean.shutterBlindsMode", "DPST-1-23", new DPTBoolean("1.023",
             "Only move up/down", "Move up/down + step-stop")), //
-    //BOOLEAN_HEATBOOL("knx.dpt.boolean.heatCool", new DPTBoolean("1.100", "Cooling", "Heating")), //
+    BOOLEAN_HEATBOOL("knx.dpt.boolean.heatCool", "DPST-1-100", new DPTBoolean("1.100", "Cooling", "Heating")), //
+    
+    //
+    //
+    // 1 bit controlled (3)
+    //
+    TWO_BIT_SWITCH_CONTROL("knx.dpt.control.switch", "DPST-2-1", new DPT1BitControlled("2.001", "Off", "On")), //
+    TWO_BIT_BOOLEAN_CONTROL("knx.dpt.control.boolean", "DPST-2-2", new DPT1BitControlled("2.002", "False", "True")), //
+    TWO_BIT_ENABLE_CONTROL("knx.dpt.control.enable", "DPST-2-3", new DPT1BitControlled("2.003", "Disable", "Enable")), //
+    TWO_BIT_RAMP_CONTROL("knx.dpt.control.ramp", "DPST-2-4", new DPT1BitControlled("2.004", "No ramp", "Ramp")), //
+    TWO_BIT_ALARM_CONTROL("knx.dpt.control.alarm", "DPST-2-5", new DPT1BitControlled("2.005", "No alarm", "Alarm")), //
+    TWO_BIT_BINARYVALUE_CONTROL("knx.dpt.control.binaryValue", "DPST-2-6", new DPT1BitControlled("2.006", "Low", "High")), //
+    TWO_BIT_STEP_CONTROL("knx.dpt.control.step", "DPST-2-7", new DPT1BitControlled("2.007", "Decrease", "Increase")), //
+    TWO_BIT_UPDOWN_CONTROL("knx.dpt.control.upDown", "DPST-2-8", new DPT1BitControlled("2.008", "Up", "Down")), //
+    TWO_BIT_OPENCLOSE_CONTROL("knx.dpt.control.openClose", "DPST-2-9", new DPT1BitControlled("2.009", "Open", "Close")), //
+    TWO_BIT_START_CONTROL("knx.dpt.control.start", "DPST-2-10", new DPT1BitControlled("2.010", "Stop", "Start")), //
+    TWO_BIT_STATE_CONTROL("knx.dpt.control.state", "DPST-2-11", new DPT1BitControlled("2.011", "Inactive", "Active")), //
+    TWO_BIT_INVERT_CONTROL("knx.dpt.control.invert", "DPST-2-12", new DPT1BitControlled("2.012", "Not inverted", "Inverted")), //
+    
     //
     //
     // 3 bit controlled (3)
+    //   
+    FOUR_BIT_CONTROL_DIMMING("knx.dpt.control.dimming", "DPST-3-7", new DPT3BitControlled( "3.007", null,null)), //
+    FOUR_BIT_CONTROL_BLINDS("knx.dpt.control.blinds", "DPST-3-8", new DPT3BitControlled( "3.008", null, null)), //
     
-    //   CONTROL_DIMMING("knx.dpt.control.dimming", DPTXlator3BitControlled.class, "3.007", null), //
-    //   CONTROL_BLINDS("knx.dpt.control.blinds", DPTXlator3BitControlled.class, "3.008", null), //
-
     //
     //
     // 8 bit unsigned (5)
@@ -95,12 +113,13 @@ public enum DatapointType {
             "K/%")), //
     TWO_BYTE_FLOAT_POWER("knx.dpt.2bytef.power", "DPST-9-24", new DPT2ByteFloat("9.024", "#.##", "kW")), //
 
-    //    //
-    //    //
-    //    // Date and time (10 and 11)
-    //    //
-    //    TWOBYTEFLOAT_POWER("knx.dpt.2bytef.power", "DPST-9-24", new DPT2ByteFloat("9.024", "#.##", "kW")), //
-
+     //
+     //
+     // Date and time (10 and 11)
+     //
+    THREE_BYTE_TIME("knx.dpt.3byte.time", "DPST-10-1", new DPT2ByteFloat("10.001", "dow, hh:mm:ss", null)), //
+    THREE_BYTE_DATE("knx.dpt.3byte.date", "DPST-11-1", new DPT2ByteFloat("11.001", "yyyy-mm-dd", null)), //
+    
     //
     //
     // 4 byte unsigned (12)
