@@ -67,7 +67,8 @@ public abstract class KnxIPConnection extends KnxConnection {
 	static final String ATTR_REMOTE_HOST = "remote host";
 	static final String ATTR_REMOTE_PORT = "remote port";
 	static final String ATTR_USE_NAT = "use NAT";
-	static final String ATTR_DEVICE_ADDRESS = "device address";
+	static final String ATTR_INDIVIDUAL_ADDRESS = "individual address";
+	static final String ATTR_MEDIUM = "medium";
 	static final String ATTR_POLLING_INTERVAL = "polling interval";
 	static final String ATTR_POLLING_TIMEOUT = "polling timeout";
 	static final String NODE_STATUS = "STATUS";
@@ -103,7 +104,7 @@ public abstract class KnxIPConnection extends KnxConnection {
 	int serviceMode;
 	GroupAddressType groupLevel;
 	boolean useNat = false;
-	String deviceAddress;
+	String individualAddress;
 	String localHost;
 	String remoteHost;
 	int port;
@@ -677,6 +678,8 @@ public abstract class KnxIPConnection extends KnxConnection {
 		if (null != macAddress && null != individualAddress && null != medium && null != restType) {
 			isRestoring = true;
 			discover();
+		} else if (null != individualAddress && null != medium && null != restType) {
+			LOGGER.debug("gateways already is created!");
 		} else if (null == child.getAction() && !NODE_STATUS.equals(child.getName())) {
 			node.removeChild(child);
 		}

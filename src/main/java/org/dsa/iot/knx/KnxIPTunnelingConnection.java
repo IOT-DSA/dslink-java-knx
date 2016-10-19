@@ -25,7 +25,7 @@ public class KnxIPTunnelingConnection extends KnxIPConnection {
 		super(link, node);
 
 		this.useNat = node.getAttribute(ATTR_USE_NAT).getBool();
-		this.deviceAddress = node.getAttribute(ATTR_DEVICE_ADDRESS).getString();
+		this.individualAddress = node.getAttribute(ATTR_INDIVIDUAL_ADDRESS).getString();
 		this.port = node.getAttribute(ATTR_REMOTE_PORT).getNumber().intValue();
 		this.localHost = node.getAttribute(ATTR_LOCAL_HOST).getString();
 		this.localEP = (null == localHost || localHost.isEmpty()) ? null : new InetSocketAddress(localHost, 0);
@@ -51,7 +51,9 @@ public class KnxIPTunnelingConnection extends KnxIPConnection {
 
 	private void generateGatewayNode() {
 		Node child = node.createChild(ATTR_GATEWAY_NAME).build();
-		child.setAttribute(ATTR_DEVICE_ADDRESS, new Value(deviceAddress));
+		child.setAttribute(ATTR_INDIVIDUAL_ADDRESS, new Value(individualAddress));
+		child.setAttribute(ATTR_MEDIUM, new Value(TPSettings.getMediumString(TPSettings.MEDIUM_TP1)));
+
 		new DeviceNode(getConnection(), null, child);
 	}
 
@@ -67,7 +69,8 @@ public class KnxIPTunnelingConnection extends KnxIPConnection {
 		act.addParameter(new Parameter(ATTR_REMOTE_HOST, ValueType.STRING, node.getAttribute(ATTR_REMOTE_HOST)));
 		act.addParameter(new Parameter(ATTR_REMOTE_PORT, ValueType.NUMBER, node.getAttribute(ATTR_REMOTE_PORT)));
 		act.addParameter(new Parameter(ATTR_USE_NAT, ValueType.BOOL, node.getAttribute(ATTR_USE_NAT)));
-		act.addParameter(new Parameter(ATTR_DEVICE_ADDRESS, ValueType.STRING, node.getAttribute(ATTR_DEVICE_ADDRESS)));
+		act.addParameter(
+				new Parameter(ATTR_INDIVIDUAL_ADDRESS, ValueType.STRING, node.getAttribute(ATTR_INDIVIDUAL_ADDRESS)));
 		act.addParameter(
 				new Parameter(ATTR_POLLING_INTERVAL, ValueType.NUMBER, node.getAttribute(ATTR_POLLING_INTERVAL)));
 		act.addParameter(
@@ -89,7 +92,7 @@ public class KnxIPTunnelingConnection extends KnxIPConnection {
 			remoteHost = event.getParameter(ATTR_REMOTE_HOST, ValueType.STRING).getString();
 			port = event.getParameter(ATTR_REMOTE_PORT, ValueType.NUMBER).getNumber().intValue();
 			useNat = event.getParameter(ATTR_USE_NAT, ValueType.BOOL).getBool();
-			deviceAddress = event.getParameter(ATTR_DEVICE_ADDRESS, ValueType.STRING).getString();
+			individualAddress = event.getParameter(ATTR_INDIVIDUAL_ADDRESS, ValueType.STRING).getString();
 			interval = event.getParameter(ATTR_POLLING_INTERVAL, ValueType.NUMBER).getNumber().intValue();
 
 			node.setAttribute(ATTR_TRANSMISSION_TYPE, new Value(transType.toString()));
@@ -98,7 +101,7 @@ public class KnxIPTunnelingConnection extends KnxIPConnection {
 			node.setAttribute(ATTR_REMOTE_HOST, new Value(remoteHost));
 			node.setAttribute(ATTR_REMOTE_PORT, new Value(port));
 			node.setAttribute(ATTR_USE_NAT, new Value(useNat));
-			node.setAttribute(ATTR_DEVICE_ADDRESS, new Value(deviceAddress));
+			node.setAttribute(ATTR_INDIVIDUAL_ADDRESS, new Value(individualAddress));
 			node.setAttribute(ATTR_POLLING_INTERVAL, new Value(interval));
 
 			makeEditAction();
@@ -111,7 +114,7 @@ public class KnxIPTunnelingConnection extends KnxIPConnection {
 		KNXNetworkLink networkLink = null;
 		try {
 			networkLink = new KNXNetworkLinkIP((short) KNXNetworkLinkIP.TUNNELING, localEP, remoteEP, useNat,
-					new TPSettings(new IndividualAddress(deviceAddress)));
+					new TPSettings(new IndividualAddress(individualAddress)));
 		} catch (KNXException | InterruptedException e) {
 			LOGGER.debug(e.getMessage());
 			statusNode.setValue(new Value(e.getMessage()));

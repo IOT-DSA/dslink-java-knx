@@ -16,7 +16,7 @@ public class DeviceNode extends DeviceFolder {
 		LOGGER = LoggerFactory.getLogger(DeviceNode.class);
 	}
 
-	public static final String ATTR_INDIVIDUAL_ADDRESS = "individual Address";
+	public static final String ATTR_INDIVIDUAL_ADDRESS = "individual address";
 	public static final String ATTR_MEDIUM = "medium";
 	public static final String ATTR_MAC_ADDRESS = "mac address";
 	public static final String NODE_STATUS = "STATUS";
