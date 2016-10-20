@@ -4,6 +4,7 @@ import org.dsa.iot.dslink.node.Node;
 import org.dsa.iot.dslink.node.actions.ActionResult;
 import org.dsa.iot.dslink.node.value.Value;
 import org.dsa.iot.dslink.node.value.ValueType;
+import org.dsa.iot.knx.datapoint.DatapointType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,7 +31,7 @@ public class DevicePoint extends EditablePoint {
 	}
 
 	@Override
-	public PointType getType() {
+	public DatapointType getType() {
 		return this.type;
 	}
 

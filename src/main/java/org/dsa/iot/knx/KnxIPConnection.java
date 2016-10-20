@@ -19,7 +19,7 @@ import org.dsa.iot.dslink.node.value.Value;
 import org.dsa.iot.dslink.node.value.ValueType;
 import org.dsa.iot.dslink.util.Objects;
 import org.dsa.iot.dslink.util.handler.Handler;
-
+import org.dsa.iot.knx.datapoint.DatapointType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,6 +31,11 @@ import tuwien.auto.calimero.IndividualAddress;
 import tuwien.auto.calimero.datapoint.Datapoint;
 import tuwien.auto.calimero.datapoint.StateDP;
 import tuwien.auto.calimero.dptxlator.DPTXlator;
+import tuwien.auto.calimero.dptxlator.DPTXlator1BitControlled;
+import tuwien.auto.calimero.dptxlator.DPTXlator2ByteFloat;
+import tuwien.auto.calimero.dptxlator.DPTXlator2ByteUnsigned;
+import tuwien.auto.calimero.dptxlator.DPTXlator3BitControlled;
+import tuwien.auto.calimero.dptxlator.DPTXlator4ByteFloat;
 import tuwien.auto.calimero.dptxlator.DPTXlatorTime;
 import tuwien.auto.calimero.dptxlator.DPTXlatorDate;
 import tuwien.auto.calimero.dptxlator.TranslatorTypes;
@@ -322,27 +327,108 @@ public abstract class KnxIPConnection extends KnxConnection {
 		EditablePoint point = addressToDataPoint.get(address.toString());
 		if (null != point) {
 			Value value = null;
-			PointType type = point.getType();
-			if (type == PointType.BOOL) {
-				value = (asdu[0] & 0xFF) == 1 ? new Value(true) : new Value(false);
-			} else if (type == PointType.CONTROL) {
-				int asInt = (asdu[0] & 0xFF);
+			DatapointType type = point.getType();
+
+			switch (type) {
+			case BOOLEAN_SWITCH: {
+				value = (asdu[0] & 0x01) == 1 ? new Value(true) : new Value(false);
+				break;
+			}
+			case TWO_BIT_SWITCH_CONTROL: {
+				int asInt = (asdu[0] & 0x03);
 				value = new Value(asInt);
-			} else if (type == PointType.UNSIGNED) {
+				break;
+			}
+			case FOUR_BIT_CONTROL_BLINDS: {
+				int asInt = (asdu[0] & 0x07);
+				value = new Value(asInt);
+				break;
+			}
+			case EIGHT_BIT_UNSIGNED_PERCENT: {
 				int asInt = asdu[0] & 0xFF;
 				value = new Value(rawToPercentage(asInt));
-			} else if (type == PointType.FLOAT2) {
+				break;
+			}
+			case TWO_BYTE_UNSIGNED_BRIGHTNESS: {
 				int asInt = (asdu[0] & 0xFF) | ((asdu[1] & 0xFF) << 8);
-				float asFloat = Float.intBitsToFloat(asInt);
+				value = new Value(asInt);
+				break;
+			}
+			case TWO_BYTE_FLOAT_TEMPERATURE: {
+				float asFloat = 0;
+				DPTXlator translator;
+				try {
+					translator = new DPTXlator2ByteFloat(DPTXlator2ByteFloat.DPT_TEMPERATURE);
+					if (asdu.length < 2) {
+						throw new KNXIllegalArgumentException("minimum APDU length is 2 bytes");
+					}
+					translator.setData(asdu, 0);
+					asFloat = (float) translator.getNumericValue();
+				} catch (KNXFormatException e) {
+					LOGGER.error(e.getMessage());
+				}
+
 				value = new Value(asFloat);
-			} else if (type == PointType.FLOAT4) {
-				int asInt = (asdu[0] & 0xFF) | ((asdu[1] & 0xFF) << 8) | ((asdu[2] & 0xFF) << 16)
-						| ((asdu[3] & 0xFF) << 24);
-				float asFloat = Float.intBitsToFloat(asInt);
+				break;
+			}
+			case FOUR_BYTE_FLOAT_ABSOLUTE_TEMPERATURE: {
+				float asFloat = 0;
+				DPTXlator translator;
+				try {
+					translator = new DPTXlator4ByteFloat(DPTXlator4ByteFloat.DPT_ABSOLUTE_TEMPERATURE);
+					if (asdu.length < 4) {
+						throw new KNXIllegalArgumentException("minimum APDU length is 4 bytes");
+					}
+					translator.setData(asdu, 0);
+					asFloat = (float) translator.getNumericValue();
+				} catch (KNXFormatException e) {
+					LOGGER.error(e.getMessage());
+				}
+
 				value = new Value(asFloat);
-			} else if (type == PointType.STRING) {
+				break;
+			}
+			case THREE_BYTE_DATE: {
+				String date = null;
+				DPTXlator translator;
+				try {
+					translator = new DPTXlatorDate(DPTXlatorDate.DPT_DATE);
+					if (asdu.length < 3) {
+						throw new KNXIllegalArgumentException("minimum APDU length is 3 bytes");
+					}
+					translator.setData(asdu, 0);
+					date = translator.getValue();
+				} catch (KNXFormatException e) {
+					LOGGER.error(e.getMessage());
+				}
+
+				value = new Value(date);
+				break;
+			}
+			case THREE_BYTE_TIME: {
+				String time = null;
+				DPTXlator translator;
+				try {
+					translator = new DPTXlatorTime(DPTXlatorTime.DPT_TIMEOFDAY);
+					if (asdu.length < 3) {
+						throw new KNXIllegalArgumentException("minimum APDU length is 3 bytes");
+					}
+					translator.setData(asdu, 0);
+					time = translator.getValue();
+				} catch (KNXFormatException e) {
+					LOGGER.error(e.getMessage());
+				}
+
+				value = new Value(time);
+				break;
+			}
+			case STRING_ASCII: {
 				String asString = asdu.toString();
 				value = new Value(asString);
+				break;
+			}
+			default:
+				break;
 			}
 
 			point.node.setValue(value);
@@ -429,8 +515,8 @@ public abstract class KnxIPConnection extends KnxConnection {
 		pointToFutures.put(address, future);
 	}
 
-	private void readPoint(String group, EditablePoint point) {
-		PointType type = point.getType();
+	public void readPoint(String group, EditablePoint point) {
+		DatapointType type = point.getType();
 		GroupAddress groupAddress = point.getGroupAddress();
 		String address = groupAddress.toString();
 		Node pointNode = point.node;
@@ -438,16 +524,23 @@ public abstract class KnxIPConnection extends KnxConnection {
 
 		try {
 			switch (type) {
-			case BOOL: {
+			case BOOLEAN_SWITCH: {
 				valString = Boolean.toString(communicator.readBool(groupAddress));
 				break;
 			}
-			case CONTROL: {
-				// read a 3 bit controlled datapoint value
+			case TWO_BIT_SWITCH_CONTROL: {
+				Datapoint dataPnt = new StateDP(groupAddress, "switch", 0,
+						DPTXlator1BitControlled.DPT_SWITCH_CONTROL.getID());
+				String response = communicator.read(dataPnt);
+				valString = response;
+				break;
+			}
+			case FOUR_BIT_CONTROL_BLINDS: {
+				// read a 3 bit controlled data point value
 				valString = Integer.toString(communicator.readControl(groupAddress));
 				break;
 			}
-			case UNSIGNED: {
+			case EIGHT_BIT_UNSIGNED_PERCENT: {
 				// read an unsiged 8 bit datapoint value, should be able to
 				// choose between UNSCALED, SCALING, and
 				// ANGLE
@@ -455,27 +548,34 @@ public abstract class KnxIPConnection extends KnxConnection {
 						.toString(communicator.readUnsigned(groupAddress, ProcessCommunicationBase.UNSCALED));
 				break;
 			}
-			case FLOAT2: {
+			case TWO_BYTE_UNSIGNED_BRIGHTNESS: {
+				Datapoint dataPnt = new StateDP(groupAddress, "brightness", 0,
+						DPTXlator2ByteUnsigned.DPT_BRIGHTNESS.getID());
+				String response = communicator.read(dataPnt);
+				valString = response;
+				break;
+			}
+			case TWO_BYTE_FLOAT_TEMPERATURE: {
 				valString = Float.toString(communicator.readFloat(groupAddress, false));
 				break;
 			}
-			case FLOAT4: {
+			case FOUR_BYTE_FLOAT_ABSOLUTE_TEMPERATURE: {
 				valString = Float.toString(communicator.readFloat(groupAddress, true));
 				break;
 			}
-			case TIME: {
+			case THREE_BYTE_TIME: {
 				Datapoint dataPnt = new StateDP(groupAddress, "time", 0, DPTXlatorTime.DPT_TIMEOFDAY.getID());
 				String response = communicator.read(dataPnt);
 				valString = response;
 				break;
 			}
-			case DATE: {
+			case THREE_BYTE_DATE: {
 				Datapoint dataPnt = new StateDP(groupAddress, "date", 0, DPTXlatorDate.DPT_DATE.getID());
 				String response = communicator.read(dataPnt);
 				valString = response;
 				break;
 			}
-			case STRING: {
+			case STRING_ASCII: {
 				valString = communicator.readString(groupAddress);
 				break;
 			}
@@ -492,28 +592,55 @@ public abstract class KnxIPConnection extends KnxConnection {
 				value = null;
 			}
 
-			if (type == PointType.BOOL) {
+			switch (type) {
+			case BOOLEAN_SWITCH: {
 				valueType = ValueType.BOOL;
 				value = new Value(Boolean.parseBoolean(valString));
-			} else if (type == PointType.CONTROL) {
+				break;
+			}
+			case TWO_BIT_SWITCH_CONTROL: {
 				valueType = ValueType.NUMBER;
 				value = new Value(Integer.parseInt(valString));
-			} else if (type == PointType.UNSIGNED) {
+				break;
+			}
+			case FOUR_BIT_CONTROL_BLINDS: {
+				valueType = ValueType.NUMBER;
+				value = new Value(Integer.parseInt(valString));
+				break;
+			}
+			case EIGHT_BIT_UNSIGNED_PERCENT: {
 				valueType = ValueType.NUMBER;
 				int rawValue = Integer.parseInt(valString);
 				value = new Value(rawToPercentage(rawValue));
-			} else if (type == PointType.FLOAT2 || type == PointType.FLOAT4) {
+				break;
+			}
+			case TWO_BYTE_FLOAT_TEMPERATURE: {
 				valueType = ValueType.NUMBER;
 				value = new Value(Float.parseFloat(valString));
-			} else if (type == PointType.TIME) {
+				break;
+			}
+			case FOUR_BYTE_FLOAT_ABSOLUTE_TEMPERATURE: {
+				valueType = ValueType.NUMBER;
+				value = new Value(Float.parseFloat(valString));
+				break;
+			}
+			case THREE_BYTE_TIME: {
 				valueType = ValueType.STRING;
 				value = new Value(valString);
-			} else if (type == PointType.DATE) {
+				break;
+			}
+			case THREE_BYTE_DATE: {
 				valueType = ValueType.STRING;
 				value = new Value(valString);
-			} else if (type == PointType.STRING) {
+				break;
+			}
+			case STRING_ASCII: {
 				valueType = ValueType.STRING;
 				value = new Value(valString);
+				break;
+			}
+			default:
+				break;
 			}
 
 			pointNode.setValueType(valueType);
@@ -544,42 +671,55 @@ public abstract class KnxIPConnection extends KnxConnection {
 
 	public void setPointValue(EditablePoint point, Value val) {
 
-		PointType type = point.getType();
+		DatapointType type = point.getType();
 		GroupAddress dst = point.getGroupAddress();
 		boolean use4ByteFloat = true;
 		int stepcode = 1;
 
 		try {
 			switch (type) {
-			case BOOL: {
+			case BOOLEAN_SWITCH: {
 				communicator.write(dst, val.getBool());
 				break;
 			}
-			case CONTROL: {
-				communicator.write(dst, val.getBool(), stepcode);
+			case TWO_BIT_SWITCH_CONTROL: {
+				Datapoint dataPnt = new StateDP(dst, "switch control", 0,
+						DPTXlator1BitControlled.DPT_SWITCH_CONTROL.getID());
+				communicator.write(dataPnt, val.getString());
 				break;
 			}
-			case UNSIGNED: {
+			case FOUR_BIT_CONTROL_BLINDS: {
+				Datapoint dataPnt = new StateDP(dst, "control blinds", 0,
+						DPTXlator3BitControlled.DPT_CONTROL_BLINDS.getID());
+				communicator.write(dataPnt, val.getString());
+				break;
+			}
+			case EIGHT_BIT_UNSIGNED_PERCENT: {
 				// should be able to choose between UNSCALED, SCALING, and
 				// ANGLE
 				int value = val.getNumber().intValue();
 				communicator.write(dst, percentageToRaw(value), ProcessCommunicationBase.UNSCALED);
 				break;
 			}
-			case FLOAT2: {
+			case TWO_BYTE_UNSIGNED_BRIGHTNESS: {
+				Datapoint dataPnt = new StateDP(dst, "brightness", 0, DPTXlator2ByteUnsigned.DPT_BRIGHTNESS.getID());
+				communicator.write(dataPnt, val.getString());
+				break;
+			}
+			case TWO_BYTE_FLOAT_TEMPERATURE: {
 				communicator.write(dst, val.getNumber().floatValue(), !use4ByteFloat);
 				break;
 			}
-			case FLOAT4: {
+			case FOUR_BYTE_FLOAT_ABSOLUTE_TEMPERATURE: {
 				communicator.write(dst, val.getNumber().floatValue(), use4ByteFloat);
 				break;
 			}
-			case TIME: {
+			case THREE_BYTE_TIME: {
 				Datapoint dataPnt = new StateDP(dst, "time", 0, DPTXlatorTime.DPT_TIMEOFDAY.getID());
 				communicator.write(dataPnt, val.getString());
 				break;
 			}
-			case DATE: {
+			case THREE_BYTE_DATE: {
 				Datapoint dataPnt = new StateDP(dst, "date", 0, DPTXlatorDate.DPT_DATE.getID());
 				communicator.write(dataPnt, val.getString());
 				break;
