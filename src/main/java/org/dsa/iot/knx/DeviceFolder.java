@@ -11,6 +11,7 @@ import org.dsa.iot.knx.masterdata.MasterDataParser;
 import org.dsa.iot.knx.project.EtsXmlParser;
 import org.dsa.iot.knx.project.KnxProjectParser;
 import org.dsa.iot.knx.project.OpcFileParser;
+import org.dsa.iot.knx.datapoint.DatapointType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,9 +51,9 @@ public class DeviceFolder extends EditableFolder {
 		String pointName = event.getParameter(ATTR_POINT_NAME, ValueType.STRING).getString();
 		String groupAddressStr = event.getParameter(ATTR_GROUP_ADDRESS).getString();
 
-		PointType type;
+		DatapointType type;
 		try {
-			type = PointType.valueOf(event.getParameter(ATTR_POINT_TYPE, ValueType.STRING).getString().toUpperCase());
+			type = DatapointType.valueOf(event.getParameter(ATTR_POINT_TYPE, ValueType.STRING).getString().toUpperCase());
 		} catch (Exception e) {
 			LOGGER.error("invalid type");
 			LOGGER.debug("error: ", e);
@@ -76,11 +77,11 @@ public class DeviceFolder extends EditableFolder {
 			group = mainGroup + GROUP_ADDRESS_SEPARATOR + middleGroup;
 		}
 
-		ValueType valType = PointType.getValueType(type);
+		ValueType valType = DatapointType.getValueType(type);
 		Node pointNode = node.createChild(pointName).setValueType(valType).build();
 		pointNode.setAttribute(ATTR_POINT_TYPE, new Value(type.toString()));
 		pointNode.setAttribute(ATTR_GROUP_ADDRESS, new Value(groupAddress.toString()));
-		if (PointType.UNSIGNED.equals(type)) {
+		if (DatapointType.EIGHT_BIT_UNSIGNED_PERCENT.equals(type)) {
 			pointNode.setAttribute(ATTR_UNIT, new Value(PERCENTAGE_UNIT));
 		}
 

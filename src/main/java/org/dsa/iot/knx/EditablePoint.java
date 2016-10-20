@@ -10,6 +10,7 @@ import org.dsa.iot.dslink.node.value.Value;
 import org.dsa.iot.dslink.node.value.ValuePair;
 import org.dsa.iot.dslink.node.value.ValueType;
 import org.dsa.iot.dslink.util.handler.Handler;
+import org.dsa.iot.knx.datapoint.DatapointType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +42,7 @@ public abstract class EditablePoint {
 	Node node;
 
 	ValueType valType;
-	PointType type;
+	DatapointType type;
 
 	public EditablePoint(KnxConnection conn, EditableFolder folder, Node node) {
 		this.conn = conn;
@@ -53,14 +54,14 @@ public abstract class EditablePoint {
 		makeRemoveAction();
 		makeSetAction();
 
-		this.type = PointType.parseType(node.getAttribute(ATTR_POINT_TYPE).getString());
+		this.type = DatapointType.valueOf(node.getAttribute(ATTR_POINT_TYPE).getString());
 	}
 
 	protected void makeEditAction() {
 
 		Action act = new Action(Permission.READ, new EditHandler());
 		act.addParameter(new Parameter(ATTR_NAME, ValueType.STRING, new Value(node.getName())));
-		act.addParameter(new Parameter(ATTR_POINT_TYPE, ValueType.makeEnum(Utils.enumNames(PointType.class)),
+		act.addParameter(new Parameter(ATTR_POINT_TYPE, ValueType.makeEnum(Utils.enumNames(DatapointType.class)),
 				node.getAttribute(ATTR_POINT_TYPE)));
 		act.addParameter(new Parameter(ATTR_GROUP_ADDRESS, ValueType.STRING, node.getAttribute(ATTR_GROUP_ADDRESS)));
 
@@ -120,7 +121,7 @@ public abstract class EditablePoint {
 
 	protected abstract void handleSet(Value val);
 
-	public abstract PointType getType();
+	public abstract DatapointType getType();
 
 	public abstract GroupAddress getGroupAddress();
 
