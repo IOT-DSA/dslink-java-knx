@@ -331,7 +331,7 @@ public abstract class KnxIPConnection extends KnxConnection {
 
 			switch (type) {
 			case BOOLEAN_SWITCH: {
-				value = (asdu[0] & 0x01) == 1 ? new Value(true) : new Value(false);
+				value = new Value((asdu[0] & 0x01) == 1) ; 
 				break;
 			}
 			case TWO_BIT_SWITCH_CONTROL: {
