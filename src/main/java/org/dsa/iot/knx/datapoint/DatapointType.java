@@ -117,8 +117,8 @@ public enum DatapointType {
      //
      // Date and time (10 and 11)
      //
-    THREE_BYTE_TIME("knx.dpt.3byte.time", "DPST-10-1", new DPT2ByteFloat("10.001", "dow, hh:mm:ss", null)),
-    THREE_BYTE_DATE("knx.dpt.3byte.date", "DPST-11-1", new DPT2ByteFloat("11.001", "yyyy-mm-dd", null)),
+    TIME("knx.dpt.3byte.time", "DPST-10-1", new DPT2ByteFloat("10.001", "dow, hh:mm:ss", null)),
+    DATE("knx.dpt.3byte.date", "DPST-11-1", new DPT2ByteFloat("11.001", "yyyy-mm-dd", null)),
     
     //
     //
@@ -339,10 +339,10 @@ public enum DatapointType {
 		case TWO_BYTE_UNSIGNED_BRIGHTNESS:
 			valType = ValueType.NUMBER;
 			break;
-		case THREE_BYTE_TIME:
+		case TIME:
 			valType = ValueType.STRING;
 			break;
-		case THREE_BYTE_DATE:
+		case DATE:
 			valType = ValueType.STRING;
 			break;
 		case FOUR_BYTE_FLOAT_ABSOLUTE_TEMPERATURE:

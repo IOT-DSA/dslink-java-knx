@@ -388,7 +388,7 @@ public abstract class KnxIPConnection extends KnxConnection {
 				value = new Value(asFloat);
 				break;
 			}
-			case THREE_BYTE_DATE: {
+			case DATE: {
 				String date = null;
 				DPTXlator translator;
 				try {
@@ -405,7 +405,7 @@ public abstract class KnxIPConnection extends KnxConnection {
 				value = new Value(date);
 				break;
 			}
-			case THREE_BYTE_TIME: {
+			case TIME: {
 				String time = null;
 				DPTXlator translator;
 				try {
@@ -563,13 +563,13 @@ public abstract class KnxIPConnection extends KnxConnection {
 				valString = Float.toString(communicator.readFloat(groupAddress, true));
 				break;
 			}
-			case THREE_BYTE_TIME: {
+			case TIME: {
 				Datapoint dataPnt = new StateDP(groupAddress, "time", 0, DPTXlatorTime.DPT_TIMEOFDAY.getID());
 				String response = communicator.read(dataPnt);
 				valString = response;
 				break;
 			}
-			case THREE_BYTE_DATE: {
+			case DATE: {
 				Datapoint dataPnt = new StateDP(groupAddress, "date", 0, DPTXlatorDate.DPT_DATE.getID());
 				String response = communicator.read(dataPnt);
 				valString = response;
@@ -624,12 +624,12 @@ public abstract class KnxIPConnection extends KnxConnection {
 				value = new Value(Float.parseFloat(valString));
 				break;
 			}
-			case THREE_BYTE_TIME: {
+			case TIME: {
 				valueType = ValueType.STRING;
 				value = new Value(valString);
 				break;
 			}
-			case THREE_BYTE_DATE: {
+			case DATE: {
 				valueType = ValueType.STRING;
 				value = new Value(valString);
 				break;
@@ -714,12 +714,12 @@ public abstract class KnxIPConnection extends KnxConnection {
 				communicator.write(dst, val.getNumber().floatValue(), use4ByteFloat);
 				break;
 			}
-			case THREE_BYTE_TIME: {
+			case TIME: {
 				Datapoint dataPnt = new StateDP(dst, "time", 0, DPTXlatorTime.DPT_TIMEOFDAY.getID());
 				communicator.write(dataPnt, val.getString());
 				break;
 			}
-			case THREE_BYTE_DATE: {
+			case DATE: {
 				Datapoint dataPnt = new StateDP(dst, "date", 0, DPTXlatorDate.DPT_DATE.getID());
 				communicator.write(dataPnt, val.getString());
 				break;
