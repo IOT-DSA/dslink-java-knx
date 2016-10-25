@@ -2,7 +2,7 @@ apply plugin: 'java'
 apply plugin: 'findbugs'
 apply plugin: 'application'
 
-version '0.0.30-SNAPSHOT'
+version '0.0.31-SNAPSHOT'
 
 mainClassName = 'org.dsa.iot.knx.Main'
 sourceCompatibility = 1.7
