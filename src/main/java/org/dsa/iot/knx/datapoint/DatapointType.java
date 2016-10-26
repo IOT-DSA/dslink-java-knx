@@ -117,8 +117,8 @@ public enum DatapointType {
      //
      // Date and time (10 and 11)
      //
-    TIME("knx.dpt.3byte.time", "DPST-10-1", new DPT2ByteFloat("10.001", "dow, hh:mm:ss", null)),
-    DATE("knx.dpt.3byte.date", "DPST-11-1", new DPT2ByteFloat("11.001", "yyyy-mm-dd", null)),
+    TIME("knx.dpt.3byte.time", "DPST-10-1", new DPTTime("10.001", "dow, hh:mm:ss", null)),
+    DATE("knx.dpt.3byte.date", "DPST-11-1", new DPTDate("11.001", "yyyy-mm-dd", null)),
     
     //
     //
