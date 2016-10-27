@@ -6,14 +6,14 @@ public class DPTDate extends DPT {
 	private final String format;
 	private final String suffix;
 
-    public DPTDate(String dptId, String format, String suffix) {
-        super(dptId);
-        this.format = format;
-        this.suffix = suffix;
-    }
+	public DPTDate(String dptId, String format, String suffix) {
+		super(dptId);
+		this.format = format;
+		this.suffix = suffix;
+	}
 
-    @Override
-    public int getDataTypeId() {
-        return DataTypes.BINARY.ordinal();
-    }
+	@Override
+	public int getDataTypeId() {
+		return DataTypes.BINARY.ordinal();
+	}
 }
