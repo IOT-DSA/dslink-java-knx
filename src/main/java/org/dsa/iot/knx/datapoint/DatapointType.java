@@ -73,6 +73,9 @@ public enum DatapointType {
     EIGHT_BIT_UNSIGNED_DECIMALFACTOR("knx.dpt.8bitu.decimalFactor", "DPST-5-5", new DPT8BitUnsigned("5.005", "#", "")),
     EIGHT_BIT_UNSIGNED_COUNT("knx.dpt.8bitu.count", "DPST-5-10", new DPT8BitUnsigned("5.010", "#", "pulses")),
 
+    SCENE_NUMBER("knx.dpt.8bitu.scenenumber", "DPST-17-1", new DPTSceneNumber("17.001", "0", "63")),
+    SCENE_CONTROL("knx.dpt.8bitu.scenecontrol","DPST-18-1", new DPTSceneControl("18.001",  "activate 0", "learn 63")),
+
     //
     //
     // 2 byte unsigned (7)
@@ -113,12 +116,13 @@ public enum DatapointType {
             "K/%")),
     TWO_BYTE_FLOAT_POWER("knx.dpt.2bytef.power", "DPST-9-24", new DPT2ByteFloat("9.024", "#.##", "kW")),
 
-     //
-     //
-     // Date and time (10 and 11)
-     //
+    //
+    //
+    // Date and time (10 and 11)
+    //
     TIME("knx.dpt.3byte.time", "DPST-10-1", new DPTTime("10.001", "dow, hh:mm:ss", null)),
     DATE("knx.dpt.3byte.date", "DPST-11-1", new DPTDate("11.001", "yyyy-mm-dd", null)),
+    RGB("knx.dpt.3byte.rgb", "DPST-232-600", new DPTRGB("232.600","r,g,b",null)),
     
     //
     //
@@ -131,9 +135,13 @@ public enum DatapointType {
     // 4 byte signed (13)
     //
     FOUR_BYTE_SIGNED_COUNT("knx.dpt.4byte.count", "DPST-13-1", new DPT4ByteSigned("13.001", "#", "pulses")),
-    FOUR_BYTE_SIGNED_ACTIVEENERGY("knx.dpt.4byte.activeEnergy", "DPST-13-10", new DPT4ByteSigned("13.010", "#", "Wh")),
-    FOUR_BYTE_SIGNED_REACTIVEENERGY("knx.dpt.4byte.reactiveEnergy", "DPST-13-12",
-            new DPT4ByteSigned("13.012", "#", "Var")),
+    FOUR_BYTE_SIGNED_ACTIVE_ENERGY("knx.dpt.4byte.activeEnergy", "DPST-13-10", new DPT4ByteSigned("13.010", "#", "Wh")),
+    FOUR_BYTE_SIGNED_APPARANT_ENERGY("knx.dpt.4byte.apparantEnergy", "DPST-13-11", new DPT4ByteSigned("13.011", "#", "Var")),
+    FOUR_BYTE_SIGNED_REACTIVE_ENERGY("knx.dpt.4byte.reactiveEnergy", "DPST-13-12", new DPT4ByteSigned("13.012", "#", "Var")),
+    FOUR_BYTE_SIGNED_ACTIVE_ENERGY_KWH("knx.dpt.4byte.activeEnergyKwh", "DPST-13-13", new DPT4ByteSigned("13.013", "#", "kWh")),
+    FOUR_BYTE_SIGNED_APPARANT_ENERGY_KVAH("knx.dpt.4byte.apparantEnergyKvah", "DPST-13-14", new DPT4ByteSigned("13.014", "#", "kVah")),
+    FOUR_BYTE_SIGNED_REACTIVE_ENERGY_KVARH("knx.dpt.4byte.reactiveEnergyKVarh", "DPST-13-15", new DPT4ByteSigned("13.015", "#", "kVarh")),
+    FOUR_BYTE_SIGNED_LONG_DELTA_TIMESEC("knx.dpt.4byte.LongDeltaTimeSec", "DPST-13-100", new DPT4ByteSigned("13.100", "#", "Var")),
 
     //
     //
@@ -260,6 +268,20 @@ public enum DatapointType {
             new DPT4ByteFloat("14.077", "#.#", "m\u00b3/s")),
     FOUR_BYTE_FLOAT_WEIGHT("knx.dpt.4bytef.weight", "DPST-14-78", new DPT4ByteFloat("14.078", "#.#", "N")),
     FOUR_BYTE_FLOAT_WORK("knx.dpt.4bytef.work", "DPST-14-79", new DPT4ByteFloat("14.079", "#.#", "J")),
+    
+    //
+    //
+    // 8 bytes unsigned(19)
+    //
+    DateTime("knx.dpt.8byte.datetime", "DPST-19-1", new DPTDateTime("19.001", "yr/mth/day hr:min:sec", null)),
+    
+    //
+    //
+    // 8 bytes signed(29)
+    //
+    EIGHT_BYTE_SIGNED_ACTIVE_ENGERY("knx.dpt.64bit.activeenergy", "DPST-29-10", new DPT64BitSigned("29.010", "#.#", "Wh")),
+    EIGHT_BYTE_SIGNED__APPARANT_ENGERY("knx.dpt.64bit.apparantenergy", "DPST-29-11", new DPT64BitSigned("29.011","#.#", "VAh")),
+    EIGHT_BYTE_SIGNED__REACTIVE_ENERGY("knx.dpt.64bit.reactiveenergy", "DPST-29-12", new DPT64BitSigned("29.012","#.#", "VARh")),
 
     //
     //
@@ -269,7 +291,6 @@ public enum DatapointType {
     STRING_8859_1("knx.dpt.string.8859_1", "DPST-16-1", new DPTString("16.001")),
     ;
  
-
     public final String nameKey;
     public final String typeId;
     public final DPT dpt;
