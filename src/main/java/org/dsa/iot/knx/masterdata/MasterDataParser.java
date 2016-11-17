@@ -56,7 +56,7 @@ public class MasterDataParser {
 	}
 
 	public void parse(String content) {
-
+		LOGGER.info("start parsing master data....");
 		JAXBContext context = null;
 		try {
 			context = JAXBContext.newInstance(KNX.class);
@@ -97,5 +97,6 @@ public class MasterDataParser {
 		} catch (JAXBException e) {
 			e.printStackTrace();
 		}
+		LOGGER.info("parsing is done!");
 	}
 }

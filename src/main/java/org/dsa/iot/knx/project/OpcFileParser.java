@@ -21,7 +21,7 @@ public class OpcFileParser extends KnxProjectParser {
 	}
 
 	public void parse(String content) {
-
+		LOGGER.info("start parsing opc file...");
 		String[] lines = content.split(System.getProperty("line.separator"));
 
 		// skip the title and build the hash map: path => nodes
@@ -64,5 +64,6 @@ public class OpcFileParser extends KnxProjectParser {
 		}
 
 		buildGroupTree();
+		LOGGER.info("parsing is done!");
 	}
 }

@@ -30,38 +30,6 @@ public class EtsXmlParser extends KnxProjectParser {
 		LOGGER = LoggerFactory.getLogger(OpcFileParser.class);
 	}
 
-	static final String DATA_TYPE_PREFIX_BOOLING = "BOOLEAN";
-	static final String DATA_TYPE_PREFIX_CONTROL = "CONTROL";
-	static final String DATA_TYPE_PREFIX_EIGHT_BIT_UNSIGNED = "EIGHTBITUNSIGNED";
-	static final String DATA_TYPE_PREFIX_TWO_BYTE_UNSIGNED = "TWOBYTEUNSIGNED";
-	static final String DATA_TYPE_PREFIX_TWO_BYTE_FLOAT = "TWOBYTEFLOAT";
-	static final String DATA_TYPE_PREFIX_FOUR_BYTE_UNSIGNED = "FOURBYTEUNSIGNED";
-	static final String DATA_TYPE_PREFIX_FOUR_BYTE_SIGNED = "FOURBYTESIGNED";
-	static final String DATA_TYPE_PREFIX_FOUR_BYTE_FLOAT = "FOURBYTEFLOAT";
-	static final String DATA_TYPE_PREFIX_STRING = "STRING";
-
-	static final int DATA_TYPE_SIZE_IN_BIT_BOOLING = 1;
-	static final int DATA_TYPE_SIZE_IN_BIT_PRIORITY_CONTROL = 2;
-	static final int DATA_TYPE_SIZE_IN_BIT_STEP_CONTROL = 4;
-	static final int DATA_TYPE_SIZE_IN_BIT_EIGHT_BIT_UNSIGNED = 8;
-	static final int DATA_TYPE_SIZE_IN_BIT_TWO_BYTE_UNSIGNED = 16;
-	static final int DATA_TYPE_SIZE_IN_BIT_TWO_BYTE_FLOAT = 16;
-	static final int DATA_TYPE_SIZE_IN_BIT_THREE_BYTE_UNSIGNED = 24;
-	static final int DATA_TYPE_SIZE_IN_BIT_FOUR_BYTE_UNSIGNED = 32;
-	static final int DATA_TYPE_SIZE_IN_BIT_FOUR_BYTE_SIGNED = 32;
-	static final int DATA_TYPE_SIZE_IN_BIT_FOUR_BYTE_FLOAT = 32;
-	static final int DATA_TYPE_SIZE_IN_BIT_SIX_BYTE_UNSIGNED = 48;
-	static final int DATA_TYPE_SIZE_IN_BIT_EIGHT_BYTE_UNSIGNED = 64;
-
-	static final String DATA_TYPE_SHORTNAME_BOOLING = "boolean";
-	static final String DATA_TYPE_SHORTNAME_CONTROL = "control";
-	static final String DATA_TYPE_SHORTNAME_EIGHT_BIT_UNSIGNED = "8bitu";
-	static final String DATA_TYPE_SHORTNAME_TWO_BYTE_UNSIGNED = "2byteu";
-	static final String DATA_TYPE_SHORTNAME_TWO_BYTE_FLOAT = "2bytef";
-	static final String DATA_TYPE_SHORTNAME_FOUR_BYTE_UNSIGNED = "4byteu";
-	static final String DATA_TYPE_SHORTNAME_FOUR_BYTE_SIGNED = "4byte";
-	static final String DATA_TYPE_SHORTNAME_FOUR_BYTE_FLOAT = "4bytef";
-	static final String DATA_TYPE_SHORTNAME_STRING = "string";
 	static final String DATA_TYPE_SHORTNAME_UNDEFINED = "undefined";
 
 	static final String VERSION_SEPARATOR = "-";
@@ -103,6 +71,7 @@ public class EtsXmlParser extends KnxProjectParser {
 	}
 
 	public void parse(String content) {
+		LOGGER.info("start parsing project xml");
 		JAXBContext context = null;
 		try {
 			context = JAXBContext.newInstance(KNX.class);
@@ -116,7 +85,7 @@ public class EtsXmlParser extends KnxProjectParser {
 				for (KNX.Project.Installations installations : installationsList) {
 					List<KNX.Project.Installations.Installation> installationList = installations.getInstallation();
 					for (KNX.Project.Installations.Installation installation : installationList) {
-						// 1. handle topology
+						LOGGER.info("parsing topology......");
 						List<KNX.Project.Installations.Installation.Topology> topologyList = installation.getTopology();
 						for (KNX.Project.Installations.Installation.Topology topology : topologyList) {
 							List<KNX.Project.Installations.Installation.Topology.Area> areaList = topology.getArea();
@@ -155,14 +124,14 @@ public class EtsXmlParser extends KnxProjectParser {
 							}
 						}
 
-						// 2. handle building parts
+						LOGGER.info("parsing building parts......");
 						List<KNX.Project.Installations.Installation.Buildings> buildingsList = installation
 								.getBuildings();
 						for (KNX.Project.Installations.Installation.Buildings buildings : buildingsList) {
 							// TBD
 						}
 
-						// 3. handle group addresses
+						LOGGER.info("parsing group addresses......");
 						List<KNX.Project.Installations.Installation.GroupAddresses> groupAddressesList = installation
 								.getGroupAddresses();
 						for (KNX.Project.Installations.Installation.GroupAddresses groupAddresses : groupAddressesList) {
@@ -190,7 +159,7 @@ public class EtsXmlParser extends KnxProjectParser {
 												String dataPointName = dataPointAndPath[0];
 												String path = dataPointAndPath[1];
 
-												String dataPointType = getDataPointTypeShortNameByTypeId(typeId);
+												String dataPointType = getDataPointTypeByTypeId(typeId);
 
 												buildAddressToBean(mainGroupName, middleGroupName, groupAddress,
 														dataPointType, dataPointName);
@@ -224,66 +193,19 @@ public class EtsXmlParser extends KnxProjectParser {
 				return;
 			}
 		}
-	}
-
-	private String getDataPointTypeShortNameByTypeId(String typeId) {
-		String majorTypeId = null;
-		String subTypeId = null;
-		if (typeId.startsWith("DPT")) {
-			majorTypeId = typeId;
-		} else if (typeId.startsWith("DPST")) {
-			subTypeId = typeId;
-			majorTypeId = dataPointSubTypeIdToDataPointTypeId.get(subTypeId);
-		}
-
-		int sizeInBit = dataPointTypeIdToSizeInBit.get(majorTypeId);
-
-		if (sizeInBit == DATA_TYPE_SIZE_IN_BIT_BOOLING) {
-			return DATA_TYPE_SHORTNAME_BOOLING;
-		} else if (sizeInBit == DATA_TYPE_SIZE_IN_BIT_PRIORITY_CONTROL) {
-			return DATA_TYPE_SHORTNAME_CONTROL;
-		} else if (sizeInBit == DATA_TYPE_SIZE_IN_BIT_STEP_CONTROL) {
-			return DATA_TYPE_SHORTNAME_CONTROL;
-		} else if (sizeInBit == DATA_TYPE_SIZE_IN_BIT_EIGHT_BIT_UNSIGNED) {
-			return DATA_TYPE_SHORTNAME_EIGHT_BIT_UNSIGNED;
-		} else if (sizeInBit == DATA_TYPE_SIZE_IN_BIT_TWO_BYTE_FLOAT) {
-			return DATA_TYPE_SHORTNAME_TWO_BYTE_FLOAT;
-		} else if (sizeInBit == DATA_TYPE_SIZE_IN_BIT_FOUR_BYTE_FLOAT) {
-			return DATA_TYPE_SHORTNAME_FOUR_BYTE_FLOAT;
-		} else {
-			return DATA_TYPE_SHORTNAME_UNDEFINED;
-		}
+		LOGGER.info("parsing is done!");
 	}
 
 	private String getDataPointTypeByTypeId(String typeId) {
+		DatapointType type = null;
 		if (typeId.startsWith("DPT")) {
 			typeId = typeId.replaceFirst("DPT", "DPST");
-		}
-		int versions = StringUtils.countMatches(typeId, VERSION_SEPARATOR);
-		boolean isMajorId = versions == 1 ? true : false;
-
-		DatapointType type = DatapointType.forMajorTypeId(typeId, isMajorId);
-		String dataPointTypeNme = type.toString();
-		if (dataPointTypeNme.startsWith(DATA_TYPE_PREFIX_BOOLING)) {
-			return DATA_TYPE_SHORTNAME_BOOLING;
-		} else if (dataPointTypeNme.startsWith(DATA_TYPE_PREFIX_CONTROL)) {
-			return DATA_TYPE_SHORTNAME_CONTROL;
-		} else if (dataPointTypeNme.startsWith(DATA_TYPE_PREFIX_EIGHT_BIT_UNSIGNED)) {
-			return DATA_TYPE_SHORTNAME_EIGHT_BIT_UNSIGNED;
-		} else if (dataPointTypeNme.startsWith(DATA_TYPE_PREFIX_TWO_BYTE_UNSIGNED)) {
-			return DATA_TYPE_SHORTNAME_TWO_BYTE_UNSIGNED;
-		} else if (dataPointTypeNme.startsWith(DATA_TYPE_PREFIX_TWO_BYTE_FLOAT)) {
-			return DATA_TYPE_SHORTNAME_TWO_BYTE_FLOAT;
-		} else if (dataPointTypeNme.startsWith(DATA_TYPE_PREFIX_FOUR_BYTE_UNSIGNED)) {
-			return DATA_TYPE_SHORTNAME_FOUR_BYTE_UNSIGNED;
-		} else if (dataPointTypeNme.startsWith(DATA_TYPE_PREFIX_FOUR_BYTE_SIGNED)) {
-			return DATA_TYPE_SHORTNAME_FOUR_BYTE_SIGNED;
-		} else if (dataPointTypeNme.startsWith(DATA_TYPE_PREFIX_FOUR_BYTE_FLOAT)) {
-			return DATA_TYPE_SHORTNAME_FOUR_BYTE_FLOAT;
-		} else if (dataPointTypeNme.startsWith(DATA_TYPE_PREFIX_STRING)) {
-			return DATA_TYPE_SHORTNAME_STRING;
+			type = DatapointType.forMajorTypeId(typeId, true);
 		} else {
-			return DATA_TYPE_SHORTNAME_UNDEFINED;
+			type = DatapointType.forTypeId(typeId);
 		}
+
+		String dataPointTypeNme = type.toString();
+		return dataPointTypeNme;
 	}
 }
