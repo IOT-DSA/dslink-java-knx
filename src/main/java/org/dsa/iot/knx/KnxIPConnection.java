@@ -25,9 +25,14 @@ import org.dsa.iot.knx.datapoint.DPT2ByteFloat;
 import org.dsa.iot.knx.datapoint.DPT2ByteUnsigned;
 import org.dsa.iot.knx.datapoint.DPT3BitControlled;
 import org.dsa.iot.knx.datapoint.DPT4ByteFloat;
+import org.dsa.iot.knx.datapoint.DPT64BitSigned;
 import org.dsa.iot.knx.datapoint.DPT8BitUnsigned;
 import org.dsa.iot.knx.datapoint.DPTBoolean;
 import org.dsa.iot.knx.datapoint.DPTDate;
+import org.dsa.iot.knx.datapoint.DPTDateTime;
+import org.dsa.iot.knx.datapoint.DPTRGB;
+import org.dsa.iot.knx.datapoint.DPTSceneControl;
+import org.dsa.iot.knx.datapoint.DPTSceneNumber;
 import org.dsa.iot.knx.datapoint.DPTString;
 import org.dsa.iot.knx.datapoint.DPTTime;
 import org.dsa.iot.knx.datapoint.DatapointType;
@@ -49,6 +54,7 @@ import tuwien.auto.calimero.dptxlator.DPTXlator3BitControlled;
 import tuwien.auto.calimero.dptxlator.DPTXlator4ByteFloat;
 import tuwien.auto.calimero.dptxlator.DPTXlatorTime;
 import tuwien.auto.calimero.dptxlator.DPTXlatorDate;
+import tuwien.auto.calimero.dptxlator.DPTXlatorRGB;
 import tuwien.auto.calimero.dptxlator.TranslatorTypes;
 import tuwien.auto.calimero.exception.KNXException;
 import tuwien.auto.calimero.exception.KNXFormatException;
@@ -357,6 +363,10 @@ public abstract class KnxIPConnection extends KnxConnection {
 					int asInt = asdu[0] & 0x000000FF;
 					value = new Value(rawToPercentage(asInt));
 				}
+			} else if (dpt instanceof DPTSceneNumber || dpt instanceof DPTSceneControl) {
+				int asInt = asdu[0] & 0x0000003F;
+				value = new Value(asInt);
+
 			} else if (dpt instanceof DPT2ByteUnsigned) {
 				int asInt = (asdu[0] & 0x000000FF) | ((asdu[1] & 0x000000FF) << 8);
 				value = new Value(asInt);
@@ -420,6 +430,51 @@ public abstract class KnxIPConnection extends KnxConnection {
 				}
 
 				value = new Value(time);
+			} else if (dpt instanceof DPTRGB) {
+				String rgb = null;
+				DPTXlator translator;
+				try {
+					translator = new DPTXlatorRGB(dpt.getDtpId());
+					if (asdu.length < 3) {
+						throw new KNXIllegalArgumentException("minimum APDU length is 3 bytes");
+					}
+					translator.setData(asdu, 0);
+					rgb = translator.getValue();
+				} catch (KNXFormatException e) {
+					LOGGER.error(e.getMessage());
+				}
+
+				value = new Value(rgb);
+			} else if (dpt instanceof DPTDateTime) {
+				String datetime = null;
+				DPTXlator translator;
+				try {
+					translator = new DPTXlatorTime(dpt.getDtpId());
+					if (asdu.length < 8) {
+						throw new KNXIllegalArgumentException("minimum APDU length is 8 bytes");
+					}
+					translator.setData(asdu, 0);
+					datetime = translator.getValue();
+				} catch (KNXFormatException e) {
+					LOGGER.error(e.getMessage());
+				}
+
+				value = new Value(datetime);
+			} else if (dpt instanceof DPT64BitSigned) {
+				String kiloString = null;
+				DPTXlator translator;
+				try {
+					translator = new DPTXlatorTime(dpt.getDtpId());
+					if (asdu.length < 8) {
+						throw new KNXIllegalArgumentException("minimum APDU length is 8 bytes");
+					}
+					translator.setData(asdu, 0);
+					kiloString = translator.getValue();
+				} catch (KNXFormatException e) {
+					LOGGER.error(e.getMessage());
+				}
+				long kiloValue = Long.parseLong(kiloString);
+				value = new Value(kiloValue);
 			} else if (dpt instanceof DPTString) {
 				String asString = asdu.toString();
 				value = new Value(asString);
@@ -533,8 +588,8 @@ public abstract class KnxIPConnection extends KnxConnection {
 			} else if (dpt instanceof DPT1BitControlled) {
 				Datapoint dataPnt = new StateDP(groupAddress, "1 bit controlled", 0, dpt.getDtpId());
 				valString = communicator.read(dataPnt);
-				value = new Value(Integer.parseInt(valString));
-				valueType = ValueType.NUMBER;
+				value = new Value(valString);
+				valueType = ValueType.STRING;
 			} else if (dpt instanceof DPT3BitControlled) {
 				valInt = communicator.readControl(groupAddress);
 				value = new Value(valInt);
@@ -550,6 +605,13 @@ public abstract class KnxIPConnection extends KnxConnection {
 					valInt = communicator.readUnsigned(groupAddress, ProcessCommunicationBase.UNSCALED);
 					value = new Value(rawToPercentage(valInt));
 				}
+				valueType = ValueType.NUMBER;
+			} else if (dpt instanceof DPTSceneNumber || dpt instanceof DPTSceneControl) {
+				Datapoint dataPnt = new StateDP(groupAddress, "1 byte scene", 0, dpt.getDtpId());
+				valString = communicator.read(dataPnt);
+				byte[] b = valString.getBytes();
+				short number = (short) (b[0] & 0x3F);
+				value = new Value(number);
 				valueType = ValueType.NUMBER;
 			} else if (dpt instanceof DPT2ByteUnsigned) {
 				Datapoint dataPnt = new StateDP(groupAddress, "2 byte unsigned", 0, dpt.getDtpId());
@@ -573,6 +635,21 @@ public abstract class KnxIPConnection extends KnxConnection {
 				valueType = ValueType.STRING;
 			} else if (dpt instanceof DPTDate) {
 				Datapoint dataPnt = new StateDP(groupAddress, "date", 0, dpt.getDtpId());
+				valString = communicator.read(dataPnt);
+				value = new Value(valString);
+				valueType = ValueType.STRING;
+			} else if (dpt instanceof DPTRGB) {
+				Datapoint dataPnt = new StateDP(groupAddress, "rgb", 0, dpt.getDtpId());
+				valString = communicator.read(dataPnt);
+				value = new Value(valString);
+				valueType = ValueType.STRING;
+			} else if (dpt instanceof DPTDateTime) {
+				Datapoint dataPnt = new StateDP(groupAddress, "datetime", 0, dpt.getDtpId());
+				valString = communicator.read(dataPnt);
+				value = new Value(valString);
+				valueType = ValueType.STRING;
+			} else if (dpt instanceof DPT64BitSigned) {
+				Datapoint dataPnt = new StateDP(groupAddress, "64 bit signed", 0, dpt.getDtpId());
 				valString = communicator.read(dataPnt);
 				value = new Value(valString);
 				valueType = ValueType.STRING;
@@ -623,8 +700,9 @@ public abstract class KnxIPConnection extends KnxConnection {
 				Datapoint dataPnt = new StateDP(dst, "1 bit controlled", 0, dpt.getDtpId());
 				communicator.write(dataPnt, val.getString());
 			} else if (dpt instanceof DPT3BitControlled) {
-				Datapoint dataPnt = new StateDP(dst, "3 bit controlled", 0, dpt.getDtpId());
-				communicator.write(dataPnt, val.getString());
+				int stepcode = val.getNumber().intValue();
+				boolean control = stepcode > 0 ? true : false;
+				communicator.write(dst, control, Math.abs(stepcode));
 			} else if (dpt instanceof DPT8BitUnsigned) {
 				int unsigned = 0;
 				if ("DPST-5-1".equals(type.typeId)) {
@@ -637,6 +715,9 @@ public abstract class KnxIPConnection extends KnxConnection {
 					unsigned = val.getNumber().intValue();
 					communicator.write(dst, percentageToRaw(unsigned), ProcessCommunicationBase.UNSCALED);
 				}
+			} else if (dpt instanceof DPTSceneNumber || dpt instanceof DPTSceneControl) {
+				Datapoint dataPnt = new StateDP(dst, "1 byte scene", 0, dpt.getDtpId());
+				communicator.write(dataPnt, val.getString());
 			} else if (dpt instanceof DPT2ByteUnsigned) {
 				Datapoint dataPnt = new StateDP(dst, "two byte unsigned", 0, dpt.getDtpId());
 				communicator.write(dataPnt, val.getString());
@@ -649,6 +730,15 @@ public abstract class KnxIPConnection extends KnxConnection {
 				communicator.write(dataPnt, val.getString());
 			} else if (dpt instanceof DPTDate) {
 				Datapoint dataPnt = new StateDP(dst, "date", 0, dpt.getDtpId());
+				communicator.write(dataPnt, val.getString());
+			} else if (dpt instanceof DPTRGB) {
+				Datapoint dataPnt = new StateDP(dst, "rgb", 0, dpt.getDtpId());
+				communicator.write(dataPnt, val.getString());
+			} else if (dpt instanceof DPTDateTime) {
+				Datapoint dataPnt = new StateDP(dst, "datetime", 0, dpt.getDtpId());
+				communicator.write(dataPnt, val.getString());
+			} else if (dpt instanceof DPT64BitSigned) {
+				Datapoint dataPnt = new StateDP(dst, "64 bit signed", 0, dpt.getDtpId());
 				communicator.write(dataPnt, val.getString());
 			} else if (dpt instanceof DPTString) {
 				communicator.write(dst, val.getString());
