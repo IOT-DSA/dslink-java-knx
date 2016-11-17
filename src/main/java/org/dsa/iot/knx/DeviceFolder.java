@@ -53,7 +53,8 @@ public class DeviceFolder extends EditableFolder {
 
 		DatapointType type;
 		try {
-			type = DatapointType.valueOf(event.getParameter(ATTR_POINT_TYPE, ValueType.STRING).getString().toUpperCase());
+			type = DatapointType
+					.valueOf(event.getParameter(ATTR_POINT_TYPE, ValueType.STRING).getString().toUpperCase());
 		} catch (Exception e) {
 			LOGGER.error("invalid type");
 			LOGGER.debug("error: ", e);
@@ -92,21 +93,24 @@ public class DeviceFolder extends EditableFolder {
 	}
 
 	@Override
-	protected void importProjectByXml(ActionResult event) {
+	protected void importMasterData(ActionResult event) {
 		String masterDataContent = event.getParameter(ATTR_MASTER_DATA_CONTENT, ValueType.STRING).getString();
 		MasterDataParser masterDataParser = new MasterDataParser();
-		masterDataParser.parse(masterDataContent);
+		if (masterDataContent != null && !masterDataContent.isEmpty()) {
+			masterDataParser.parse(masterDataContent);
 
-		Map<String, Integer> dataPointTypeIdToSize = masterDataParser.getDataPointTypeIdToSize();
-		Map<String, String> dataPointSubTypeIdToDataPointTypeId = masterDataParser
-				.getDataPointSubTypeIdToDataPointTypeId();
-		if (!dataPointTypeIdToSize.isEmpty() && !dataPointSubTypeIdToDataPointTypeId.isEmpty()) {
-			String contentProject = event.getParameter(ATTR_PROJECT_CONTENT, ValueType.STRING).getString();
-			EtsXmlParser projectParser = new EtsXmlParser(this);
-			projectParser.setDataPointSubTypeIdToDataPointTypeId(dataPointSubTypeIdToDataPointTypeId);
-			projectParser.setDataPointTypeIdToSize(dataPointTypeIdToSize);
+		}
+	}
+
+	@Override
+	protected void importProjectByXml(ActionResult event) {
+
+		String contentProject = event.getParameter(ATTR_PROJECT_CONTENT, ValueType.STRING).getString();
+		EtsXmlParser projectParser = new EtsXmlParser(this);
+		if (contentProject != null && !contentProject.isEmpty()) {
 			projectParser.parse(contentProject);
 		}
+
 	}
 
 	@Override

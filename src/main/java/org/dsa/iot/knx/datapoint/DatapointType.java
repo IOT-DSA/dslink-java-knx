@@ -76,6 +76,8 @@ public enum DatapointType {
     SCENE_NUMBER("knx.dpt.8bitu.scenenumber", "DPST-17-1", new DPTSceneNumber("17.001", "0", "63")),
     SCENE_CONTROL("knx.dpt.8bitu.scenecontrol","DPST-18-1", new DPTSceneControl("18.001",  "activate 0", "learn 63")),
 
+    HVAC_MODE("knx.dpt.1byte.hvacmode", "DPST-20-102", new DPT8BitUnsigned("20.102", "", null)),
+    
     //
     //
     // 2 byte unsigned (7)

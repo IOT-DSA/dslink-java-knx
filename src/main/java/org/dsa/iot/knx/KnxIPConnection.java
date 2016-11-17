@@ -503,9 +503,14 @@ public abstract class KnxIPConnection extends KnxConnection {
 	}
 
 	protected DeviceNode setupDeviceNode(String host, DeviceDIB dib) {
+		DeviceNode deviceNode = null;
 		String name = dib.getName();
-		Node child = node.createChild(name).build();
-		DeviceNode deviceNode = new DeviceNode(getConnection(), null, child, dib);
+		Node child = node.getChild(name);
+		if (null == child) {
+			child = node.createChild(name).build();
+			deviceNode = new DeviceNode(getConnection(), null, child, dib);
+		}
+
 		return deviceNode;
 	}
 
@@ -526,7 +531,10 @@ public abstract class KnxIPConnection extends KnxConnection {
 			String host = (String) pair.getKey();
 			DeviceDIB dib = (DeviceDIB) pair.getValue();
 			DeviceNode device = setupDeviceNode(host, dib);
-			deviceSet.add(device);
+			if (null != device) {
+				deviceSet.add(device);
+			}
+
 		}
 
 		if (isRestoring && !deviceSet.isEmpty()) {
