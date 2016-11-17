@@ -98,13 +98,11 @@ public class DeviceFolder extends EditableFolder {
 		MasterDataParser masterDataParser = new MasterDataParser();
 		if (masterDataContent != null && !masterDataContent.isEmpty()) {
 			masterDataParser.parse(masterDataContent);
-
 		}
 	}
 
 	@Override
 	protected void importProjectByXml(ActionResult event) {
-
 		String contentProject = event.getParameter(ATTR_PROJECT_CONTENT, ValueType.STRING).getString();
 		EtsXmlParser projectParser = new EtsXmlParser(this);
 		if (contentProject != null && !contentProject.isEmpty()) {
