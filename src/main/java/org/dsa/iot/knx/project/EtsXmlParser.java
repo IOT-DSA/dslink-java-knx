@@ -4,7 +4,6 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
-import org.apache.commons.lang3.StringUtils;
 import org.dsa.iot.knx.EditableFolder;
 import org.dsa.iot.knx.datapoint.DatapointType;
 import org.slf4j.Logger;

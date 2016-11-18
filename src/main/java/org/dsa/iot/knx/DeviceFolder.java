@@ -143,11 +143,11 @@ public class DeviceFolder extends EditableFolder {
 				return;
 		}
 
-		PointType type = PointType.getDataTypeByDataPointType(addressBean.getDataPointType());
-		ValueType valueType = PointType.getValueType(type);
+		DatapointType type = DatapointType.valueOf(addressBean.getDataPointType());
+		ValueType valueType = DatapointType.getValueType(type);
 		String dataPointName = addressBean.getDataPointName();
 		Node pointNode = parent.createChild(dataPointName).setValueType(valueType).build();
-		pointNode.setAttribute(ATTR_POINT_TYPE, new Value(type.toString()));
+		pointNode.setAttribute(ATTR_POINT_TYPE, new Value(type.name()));
 		pointNode.setAttribute(ATTR_GROUP_ADDRESS, new Value(groupAddress.toString()));
 
 		DevicePoint point = new DevicePoint(conn, this, pointNode);
@@ -174,5 +174,4 @@ public class DeviceFolder extends EditableFolder {
 			}
 		}
 	}
-
 }
