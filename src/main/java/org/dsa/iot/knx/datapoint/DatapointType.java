@@ -342,43 +342,28 @@ public enum DatapointType {
 
 	public static ValueType getValueType(DatapointType type) {
 		ValueType valType = ValueType.STRING;
-		
-		switch(type){
-		case BOOLEAN_SWITCH:
+		DPT dpt = type.dpt;
+		if (dpt instanceof DPTBoolean) {
 			valType = ValueType.BOOL;
-			break;
-		case TWO_BIT_SWITCH_CONTROL:
-			valType = ValueType.NUMBER;
-			break;
-		case FOUR_BIT_CONTROL_BLINDS:
-		    valType = ValueType.NUMBER;
-		    break;
-		case EIGHT_BIT_UNSIGNED_PERCENT:
-			valType = ValueType.NUMBER;
-			break;
-		case TWO_BYTE_FLOAT_TEMPERATURE:
-			valType = ValueType.NUMBER;
-			break;
-		case TWO_BYTE_UNSIGNED_BRIGHTNESS:
-			valType = ValueType.NUMBER;
-			break;
-		case TIME:
+		} else if (dpt instanceof DPT1BitControlled) {
 			valType = ValueType.STRING;
-			break;
-		case DATE:
-			valType = ValueType.STRING;
-			break;
-		case FOUR_BYTE_FLOAT_ABSOLUTE_TEMPERATURE:
+		} else if (dpt instanceof DPT3BitControlled) {
 			valType = ValueType.NUMBER;
-			break;
-		case STRING_ASCII:
+		} else if (dpt instanceof DPT8BitUnsigned) {
+			valType = ValueType.NUMBER;
+		} else if (dpt instanceof DPTSceneNumber || dpt instanceof DPTSceneControl) {
+			valType = ValueType.NUMBER;
+		} else if (dpt instanceof DPT2ByteUnsigned || dpt instanceof DPT2ByteFloat || dpt instanceof DPT4ByteFloat) {
+			valType = ValueType.NUMBER;
+		} else if (dpt instanceof DPTTime || dpt instanceof DPTDate || dpt instanceof DPTDateTime
+				|| dpt instanceof DPTRGB) {
 			valType = ValueType.STRING;
-			break;
-		default:
-		    break;
+		} else if (dpt instanceof DPT64BitSigned) {
+			valType = ValueType.STRING;
+		} else if (dpt instanceof DPTString) {
+			valType = ValueType.STRING;
 		}
-		
+
 		return valType;
 	}
-
 }
