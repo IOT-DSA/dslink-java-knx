@@ -122,7 +122,7 @@ public class GroupAddressParser {
 		}
 
 		String path = pathAndAnotation;
-		if (pathAndAnotation.contains(" ") && pathAndAnotation.indexOf(' ') != -1) {
+		if (pathAndAnotation.contains(" ")) {
 			path = pathAndAnotation.substring(0, pathAndAnotation.indexOf(' '));
 		}
 		return new String[] { dataPointName, path };
