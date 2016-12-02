@@ -8,6 +8,7 @@ public class GroupAddressBean {
 	private boolean settable;
 	private String dataType;
 	private String dataPointType;
+	private String dptId;
 
 	public String getMainGroup() {
 		return mainGroup;
@@ -65,4 +66,11 @@ public class GroupAddressBean {
 		this.dataPointType = dataPointType;
 	}
 
+	public String getDptId() {
+		return dptId;
+	}
+
+	public void setDptId(String dptId) {
+		this.dptId = dptId;
+	}
 }

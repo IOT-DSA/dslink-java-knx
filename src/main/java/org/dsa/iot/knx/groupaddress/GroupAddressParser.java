@@ -41,7 +41,7 @@ public class GroupAddressParser {
 	private static final Logger LOGGER;
 
 	static {
-		LOGGER = LoggerFactory.getLogger(KnxProjectParser.class);
+		LOGGER = LoggerFactory.getLogger(GroupAddressParser.class);
 	}
 
 	EditableFolder folder;
@@ -69,11 +69,10 @@ public class GroupAddressParser {
 						String dptId = groupAddress.getDPTs();
 						DatapointType type = DatapointType.forTypeId(dptId);
 						String nameWithPath = groupAddress.getName();
-
-						String[] dataPointAndPath = parseGroupAddressName(nameWithPath);
-						String dataPointName = dataPointAndPath[0];
-						String name = dataPointAndPath[0];
-						String path = dataPointAndPath[1];
+						String[] nameArray = parseGroupAddressName(nameWithPath);
+						String name = nameArray[0];
+						String path = nameArray[1];
+						
 						GroupAddressBean bean = new GroupAddressBean();
 						bean.setDptId(dptId);
 						bean.setGroupAddress(address);
@@ -88,9 +87,9 @@ public class GroupAddressParser {
 						} else {
 							List<String> nodes = pathToNodes.get(path);
 							nodes.add(address);
-							pathToNodes.put(nameWithPath, nodes);
+							pathToNodes.put(path, nodes);
 						}
-						LOGGER.info(address + " : " + dptId + " : " + dataPointName + " : " + path);
+						LOGGER.info(address + " : " + dptId + " : " + name + " : " + path);
 					}
 				}
 			}

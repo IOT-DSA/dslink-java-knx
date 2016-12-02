@@ -673,8 +673,9 @@ public abstract class KnxIPConnection extends KnxConnection {
 			pointNode.setValueType(valueType);
 			pointNode.setValue(value);
 			addressToPolled.put(address, true);
-			LOGGER.debug("read and updated " + pointNode.getName() + " : " + value.toString());
-
+			if (value != null) {
+				LOGGER.debug("read and updated " + pointNode.getName() + " : " + value.toString());
+			}
 		} catch (KNXException | InterruptedException e) {
 			LOGGER.debug("error: ", e.getMessage());
 		}
