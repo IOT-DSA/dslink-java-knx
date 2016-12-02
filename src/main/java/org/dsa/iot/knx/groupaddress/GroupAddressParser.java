@@ -1,16 +1,10 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package org.dsa.iot.knx.groupaddress;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Scanner;
+
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
 
@@ -18,11 +12,9 @@ import org.dsa.iot.dslink.node.Node;
 import org.dsa.iot.knx.EditableFolder;
 import org.dsa.iot.knx.GroupAddressBean;
 import org.dsa.iot.knx.datapoint.DatapointType;
-import org.dsa.iot.knx.project.KnxProjectParser;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import tuwien.auto.calimero.GroupAddress;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,6 +24,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Set;
 
 /**
  *
@@ -72,7 +65,7 @@ public class GroupAddressParser {
 						String[] nameArray = parseGroupAddressName(nameWithPath);
 						String name = nameArray[0];
 						String path = nameArray[1];
-						
+
 						GroupAddressBean bean = new GroupAddressBean();
 						bean.setDptId(dptId);
 						bean.setGroupAddress(address);
@@ -96,20 +89,19 @@ public class GroupAddressParser {
 			// build the folder tree from the hashMap
 			buildGroupTree();
 		} catch (Exception e) {
-
+			LOGGER.debug(e.getMessage());
 		}
 	}
 
 	public void buildGroupTree() {
-		Iterator it = pathToNodes.entrySet().iterator();
-		while (it.hasNext()) {
-			Map.Entry pair = (Map.Entry) it.next();
-			String path = (String) pair.getKey();
+		Set<Map.Entry<String, List<String>>> entrySet = pathToNodes.entrySet();
+		for (Map.Entry entry : entrySet) {
+			String path = (String) entry.getKey();
 			String[] subDirectories = path.split("_");
 			Queue<String> queue = new LinkedList<>(Arrays.asList(subDirectories));
 			Node lastNode = folder.buildFolderTree(folder.getNode(), queue);
 
-			List<String> nodes = (ArrayList<String>) pair.getValue();
+			List<String> nodes = (ArrayList<String>) entry.getValue();
 			for (String address : nodes) {
 				GroupAddressBean bean = addressToBean.get(address);
 				folder.buildDataPoint(lastNode, bean);
@@ -119,12 +111,19 @@ public class GroupAddressParser {
 
 	public String[] parseGroupAddressName(String groupAddressName) {
 		String[] nameArray = groupAddressName.split("_");
+		// data point follows the naming convention: command_senario_state
 		String dataPointName = nameArray[0] + "_" + nameArray[1] + "_" + nameArray[2];
-		String pathAndAnotation = groupAddressName.substring(dataPointName.length() + 1, groupAddressName.length() - 1);
-		int index = pathAndAnotation.indexOf(' ');
+		String pathAndAnotation = null;
+		// remove the annotation symbol
+		if (groupAddressName.endsWith("@")) {
+			pathAndAnotation = groupAddressName.substring(dataPointName.length() + 1, groupAddressName.length() - 1);
+		} else {
+			pathAndAnotation = groupAddressName.substring(dataPointName.length() + 1);
+		}
+
 		String path = pathAndAnotation;
-		if (index != -1) {
-			path = pathAndAnotation.substring(0, index);
+		if (pathAndAnotation.contains(" ") && pathAndAnotation.indexOf(' ') != -1) {
+			path = pathAndAnotation.substring(0, pathAndAnotation.indexOf(' '));
 		}
 		return new String[] { dataPointName, path };
 	}
