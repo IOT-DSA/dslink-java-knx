@@ -29,7 +29,9 @@ public abstract class EditableFolder {
 	static final String ATTR_RESTORE_TYPE = "restore type";
 	static final String ATTR_EDITABLE_FOLDER = "editable folder";
 	static final String ATTR_EDITABLE_POINT = "editable point";
-	static final String ATTR_PROJECT_CONTENT = "project content";
+	static final String ATTR_PROJECT_CONTENT_XML = "xml content";
+	static final String ATTR_PROJECT_CONTENT_ESF = "esf content";
+	static final String ATTR_PROJECT_CONTENT_GROUP_ADDRESS = "group address content";
 	static final String ATTR_MASTER_DATA_CONTENT = "master data content";
 	static final String ATTR_UNIT = "unit";
 	static final String ACTION_REMOVE = "remove";
@@ -39,6 +41,7 @@ public abstract class EditableFolder {
 	static final String ACTION_IMPORT_MASTER_DATA = "import master data";
 	static final String ACTION_IMPORT_PROJECT = "import project by xml";
 	static final String ACTION_IMPORT_OPC = "import project by esf";
+	static final String ACTION_IMPORT_GROUP_ADDRESS = "import project by group address";
 	static final String NODE_STATUS = "STATUS";
 	static final String DEFAULT_GROUP_ADDRESS = "0/0/0";
 	static final String GROUP_ADDRESS_SEPARATOR = "/";
@@ -60,6 +63,7 @@ public abstract class EditableFolder {
 		makeImportMasterDataAction();
 		makeImportProjectAction();
 		makeImportOpcAction();
+		makeImportGroupAddressAction();
 	}
 
 	public EditableFolder(KnxConnection conn, EditableFolder root, Node node) {
@@ -108,7 +112,7 @@ public abstract class EditableFolder {
 	public void makeImportProjectAction() {
 		Action act;
 		act = new Action(Permission.READ, new AddImportProjectHandler());
-		act.addParameter(new Parameter(ATTR_PROJECT_CONTENT, ValueType.STRING).setEditorType(EditorType.TEXT_AREA));
+		act.addParameter(new Parameter(ATTR_PROJECT_CONTENT_XML, ValueType.STRING).setEditorType(EditorType.TEXT_AREA));
 
 		node.createChild(ACTION_IMPORT_PROJECT).setAction(act).build().setSerializable(false);
 	}
@@ -116,9 +120,18 @@ public abstract class EditableFolder {
 	public void makeImportOpcAction() {
 		Action act;
 		act = new Action(Permission.READ, new AddImportOpcHandler());
-		act.addParameter(new Parameter(ATTR_PROJECT_CONTENT, ValueType.STRING).setEditorType(EditorType.TEXT_AREA));
+		act.addParameter(new Parameter(ATTR_PROJECT_CONTENT_ESF, ValueType.STRING).setEditorType(EditorType.TEXT_AREA));
 
 		node.createChild(ACTION_IMPORT_OPC).setAction(act).build().setSerializable(false);
+	}
+
+	public void makeImportGroupAddressAction() {
+		Action act;
+		act = new Action(Permission.READ, new AddImportGroupAddressHandler());
+		act.addParameter(new Parameter(ATTR_PROJECT_CONTENT_GROUP_ADDRESS, ValueType.STRING)
+				.setEditorType(EditorType.TEXT_AREA));
+
+		node.createChild(ACTION_IMPORT_GROUP_ADDRESS).setAction(act).build().setSerializable(false);
 	}
 
 	protected class EditHandler implements Handler<ActionResult> {
@@ -165,6 +178,12 @@ public abstract class EditableFolder {
 		}
 	}
 
+	protected class AddImportGroupAddressHandler implements Handler<ActionResult> {
+		public void handle(ActionResult event) {
+			importProjectByGroupAddress(event);
+		}
+	}
+
 	void restoreLastSession() {
 		if (null == node.getChildren())
 			return;
@@ -192,10 +211,15 @@ public abstract class EditableFolder {
 
 	protected abstract void addFolder(String name);
 
-	protected abstract void importMasterData(ActionResult event);
+	protected void importMasterData(ActionResult event) {
+	};
 
-	protected abstract void importProjectByXml(ActionResult event);
+	protected void importProjectByXml(ActionResult event) {
+	};
 
-	protected abstract void importProjectByEsf(ActionResult event);
+	protected void importProjectByEsf(ActionResult event) {
+	};
 
+	protected void importProjectByGroupAddress(ActionResult event) {
+	};
 }

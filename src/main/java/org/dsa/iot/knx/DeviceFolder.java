@@ -12,6 +12,7 @@ import org.dsa.iot.knx.project.EtsXmlParser;
 import org.dsa.iot.knx.project.KnxProjectParser;
 import org.dsa.iot.knx.project.OpcFileParser;
 import org.dsa.iot.knx.datapoint.DatapointType;
+import org.dsa.iot.knx.groupaddress.GroupAddressParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -103,7 +104,7 @@ public class DeviceFolder extends EditableFolder {
 
 	@Override
 	protected void importProjectByXml(ActionResult event) {
-		String contentProject = event.getParameter(ATTR_PROJECT_CONTENT, ValueType.STRING).getString();
+		String contentProject = event.getParameter(ATTR_PROJECT_CONTENT_XML, ValueType.STRING).getString();
 		EtsXmlParser projectParser = new EtsXmlParser(this);
 		if (contentProject != null && !contentProject.isEmpty()) {
 			projectParser.parse(contentProject);
@@ -113,8 +114,16 @@ public class DeviceFolder extends EditableFolder {
 
 	@Override
 	protected void importProjectByEsf(ActionResult event) {
-		String content = event.getParameter(ATTR_PROJECT_CONTENT, ValueType.STRING).getString();
+		String content = event.getParameter(ATTR_PROJECT_CONTENT_ESF, ValueType.STRING).getString();
 		KnxProjectParser parser = new OpcFileParser(this);
+
+		parser.parse(content);
+	}
+
+	@Override
+	protected void importProjectByGroupAddress(ActionResult event) {
+		String content = event.getParameter(ATTR_PROJECT_CONTENT_GROUP_ADDRESS, ValueType.STRING).getString();
+		GroupAddressParser parser = new GroupAddressParser(this);
 
 		parser.parse(content);
 	}
