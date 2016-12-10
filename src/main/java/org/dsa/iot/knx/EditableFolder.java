@@ -32,6 +32,7 @@ public abstract class EditableFolder {
 	static final String ATTR_PROJECT_CONTENT_XML = "xml content";
 	static final String ATTR_PROJECT_CONTENT_ESF = "esf content";
 	static final String ATTR_PROJECT_CONTENT_GROUP_ADDRESS = "group address content";
+	static final String ATTR_PROJECT_NAMING_CONVENTION = "naming convention";
 	static final String ATTR_MASTER_DATA_CONTENT = "master data content";
 	static final String ATTR_UNIT = "unit";
 	static final String ACTION_REMOVE = "remove";
@@ -130,7 +131,7 @@ public abstract class EditableFolder {
 		act = new Action(Permission.READ, new AddImportGroupAddressHandler());
 		act.addParameter(new Parameter(ATTR_PROJECT_CONTENT_GROUP_ADDRESS, ValueType.STRING)
 				.setEditorType(EditorType.TEXT_AREA));
-
+		act.addParameter(new Parameter(ATTR_PROJECT_NAMING_CONVENTION, ValueType.BOOL));
 		node.createChild(ACTION_IMPORT_GROUP_ADDRESS).setAction(act).build().setSerializable(false);
 	}
 
