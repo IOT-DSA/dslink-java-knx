@@ -66,11 +66,12 @@ public class DevicePoint extends EditablePoint {
 
 	@Override
 	public void edit(ActionResult event) {
-		PointType type;
+		DatapointType type;
 		ValueType valType;
 		try {
-			type = PointType.valueOf(event.getParameter(ATTR_POINT_TYPE, ValueType.STRING).getString().toUpperCase());
-			valType = PointType.getValueType(type);
+			type = DatapointType
+					.valueOf(event.getParameter(ATTR_POINT_TYPE, ValueType.STRING).getString().toUpperCase());
+			valType = DatapointType.getValueType(type);
 		} catch (Exception e) {
 			LOGGER.debug("error: ", e);
 			return;
@@ -95,7 +96,7 @@ public class DevicePoint extends EditablePoint {
 
 		node.setAttribute(ATTR_POINT_TYPE, new Value(type.toString()));
 		node.setAttribute(ATTR_GROUP_ADDRESS, new Value(groupAddress.toString()));
-		if (PointType.UNSIGNED.equals(type)) {
+		if (DatapointType.EIGHT_BIT_UNSIGNED_PERCENT.equals(type)) {
 			node.setAttribute(ATTR_UNIT, new Value(PERCENTAGE_UNIT));
 		}
 	}

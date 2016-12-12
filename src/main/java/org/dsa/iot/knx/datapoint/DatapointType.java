@@ -292,36 +292,40 @@ public enum DatapointType {
     STRING_ASCII("knx.dpt.string.ascii", "DPST-16-0", new DPTString("16.000")),
     STRING_8859_1("knx.dpt.string.8859_1", "DPST-16-1", new DPTString("16.001")),
     ;
- 
-    public final String nameKey;
-    public final String typeId;
-    public final DPT dpt;
 
-    private DatapointType(String nameKey, String typeId, DPT dpt) {
+	public final String nameKey;
+	public final String typeId;
+	public final DPT dpt;
+
+	private DatapointType(String nameKey, String typeId, DPT dpt) {
         this.nameKey = nameKey;
         this.typeId = typeId;
         this.dpt = dpt;
     }
 
-    public static DatapointType forTypeId(String typeId) {
-        for (DatapointType e : values()) {
-            if (e.typeId.equals(typeId))
-                return e;
-        }
-        return UNDEFINED;
-    }
+	public static DatapointType forTypeId(String typeId) {
+		String fullTypeId = typeId;
+		if (typeId.startsWith("DPT")) {
+			fullTypeId = typeId.replaceFirst("DPT", "DPST") + "-1";
+		}
+		for (DatapointType e : values()) {
+			if (e.typeId.equals(fullTypeId))
+				return e;
+		}
+		return UNDEFINED;
+	}
 
-    public static Map<String, Object> serialize() {
-        Map<String, Object> result = new LinkedHashMap<>();
-        for (DatapointType t : values()) {
-            Map<String, Object> tm = new HashMap<>();
-            tm.put("labelKey", t.nameKey);
-            tm.put("dataTypeId", t.dpt.getDataTypeId());
-            result.put(t.name(), tm);
-        }
-        return result;
-    }
-    
+	public static Map<String, Object> serialize() {
+		Map<String, Object> result = new LinkedHashMap<>();
+		for (DatapointType t : values()) {
+			Map<String, Object> tm = new HashMap<>();
+			tm.put("labelKey", t.nameKey);
+			tm.put("dataTypeId", t.dpt.getDataTypeId());
+			result.put(t.name(), tm);
+		}
+		return result;
+	}
+
 	public static DatapointType forMajorTypeId(String typeId, boolean isMajorId) {
 		for (DatapointType e : values()) {
 			if (getMajorTypeId(e.typeId, false).equals(getMajorTypeId(typeId, isMajorId)))
