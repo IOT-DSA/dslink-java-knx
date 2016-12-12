@@ -123,9 +123,10 @@ public class DeviceFolder extends EditableFolder {
 	@Override
 	protected void importProjectByGroupAddress(ActionResult event) {
 		String content = event.getParameter(ATTR_PROJECT_CONTENT_GROUP_ADDRESS, ValueType.STRING).getString();
+        boolean withNamingConvention = event.getParameter(ATTR_PROJECT_NAMING_CONVENTION, ValueType.BOOL).getBool();
 		GroupAddressParser parser = new GroupAddressParser(this);
 
-		parser.parse(content);
+		parser.parse(content, withNamingConvention);
 	}
 
 	public Node buildFolderTree(Node parent, Queue<String> path) {

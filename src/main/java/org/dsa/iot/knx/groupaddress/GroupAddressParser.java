@@ -19,7 +19,6 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -45,32 +44,48 @@ public class GroupAddressParser {
 		this.folder = folder;
 	}
 
-	public void parse(String content) {
+	public void parse(String content, boolean withNamingConvention) {
+
 		JAXBContext context = null;
 		try {
 			context = JAXBContext.newInstance(GroupAddressExport.class);
 			Unmarshaller unMarshaller = context.createUnmarshaller();
 			InputStream stream = new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8));
 			GroupAddressExport export = (GroupAddressExport) unMarshaller.unmarshal(stream);
-			List<GroupRange> majorGroupRangeList = export.getGroupRange();
-			for (GroupRange major : majorGroupRangeList) {
-				List<GroupRange> middleGroupRangeList = major.getGroupRange();
-				for (GroupRange middle : middleGroupRangeList) {
-					List<GroupRange.GroupAddress> groupAddressList = middle.getGroupAddress();
+			List<GroupRange> mainGroupRangeList = export.getGroupRange();
+			for (GroupRange mainRange : mainGroupRangeList) {
+				String mainRangeName = mainRange.getName();
+				List<GroupRange> middleGroupRangeList = mainRange.getGroupRange();
+				for (GroupRange middleRange : middleGroupRangeList) {
+					String middleRangeName = middleRange.getName();
+					List<GroupRange.GroupAddress> groupAddressList = middleRange.getGroupAddress();
 					for (GroupRange.GroupAddress groupAddress : groupAddressList) {
-						String address = groupAddress.getAddress();
-						String dptId = groupAddress.getDPTs();
-						DatapointType type = DatapointType.forTypeId(dptId);
-						String nameWithPath = groupAddress.getName();
-						String[] nameArray = parseGroupAddressName(nameWithPath);
-						String name = nameArray[0];
-						String path = nameArray[1];
+						String address = null != groupAddress.getAddress() ? groupAddress.getAddress() : "";
+						String dptId = null != groupAddress.getDPTs() ? groupAddress.getDPTs() : "";
+						String name = null != groupAddress.getName() ? groupAddress.getName() : "";
+
+						tuwien.auto.calimero.GroupAddress groupAddressObject = new tuwien.auto.calimero.GroupAddress(
+								address);
+						int mainGroup = groupAddressObject.getMainGroup();
+						int middleGroup = groupAddressObject.getMiddleGroup();
+						String dataPointName = "";
+						String path = "";
+
+						if (withNamingConvention) {
+							String[] nameArray = parseGroupAddressName(name);
+							dataPointName = nameArray[0];
+							path = nameArray[1];
+						} else {
+							dataPointName = address + " " + name;
+							path = mainGroup + " " + mainRangeName + "_" + mainGroup + "/" + middleGroup + " "
+									+ middleRangeName;
+						}
 
 						GroupAddressBean bean = new GroupAddressBean();
-						bean.setDptId(dptId);
 						bean.setGroupAddress(address);
-						bean.setDataPointName(name);
-						bean.setDataPointType(type.name());
+						bean.setDptId(dptId);
+						bean.setDataPointName(dataPointName);
+						bean.setDataPointType(DatapointType.forTypeId(dptId).name());
 						addressToBean.put(address, bean);
 
 						if (!pathToNodes.containsKey(path)) {
@@ -82,7 +97,7 @@ public class GroupAddressParser {
 							nodes.add(address);
 							pathToNodes.put(path, nodes);
 						}
-						LOGGER.info(address + " : " + dptId + " : " + name + " : " + path);
+						LOGGER.info(address + " : " + dptId + " : " + dataPointName + " : " + path);
 					}
 				}
 			}
