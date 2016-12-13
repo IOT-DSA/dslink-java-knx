@@ -690,7 +690,6 @@ public abstract class KnxIPConnection extends KnxConnection {
 				String address = node.getAttribute(EditablePoint.ATTR_GROUP_ADDRESS).getString();
 				boolean polled = addressToPolled.get(address);
 				if (point.isSubscribed() && !polled) {
-					LOGGER.info("Polling: ");
 					readPoint(group, point);
 				}
 			}
