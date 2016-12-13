@@ -60,9 +60,9 @@ public class GroupAddressParser {
 					String middleRangeName = middleRange.getName();
 					List<GroupRange.GroupAddress> groupAddressList = middleRange.getGroupAddress();
 					for (GroupRange.GroupAddress groupAddress : groupAddressList) {
-						String address = null != groupAddress.getAddress() ? groupAddress.getAddress() : "";
-						String dptId = null != groupAddress.getDPTs() ? groupAddress.getDPTs() : "";
-						String name = null != groupAddress.getName() ? groupAddress.getName() : "";
+						String address = null != groupAddress.getAddress() ? groupAddress.getAddress() : "undefined";
+						String dptId = null != groupAddress.getDPTs() ? groupAddress.getDPTs() : "undefined";
+						String name = null != groupAddress.getName() ? groupAddress.getName() : "undefined";
 
 						tuwien.auto.calimero.GroupAddress groupAddressObject = new tuwien.auto.calimero.GroupAddress(
 								address);
@@ -77,8 +77,7 @@ public class GroupAddressParser {
 							path = nameArray[1];
 						} else {
 							dataPointName = address + " " + name;
-							path = mainGroup + " " + mainRangeName + "_" + mainGroup + "/" + middleGroup + " "
-									+ middleRangeName;
+							path = mainRangeName + "_" + middleRangeName;
 						}
 
 						GroupAddressBean bean = new GroupAddressBean();
