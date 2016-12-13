@@ -76,7 +76,7 @@ public class GroupAddressParser {
 							dataPointName = nameArray[0];
 							path = nameArray[1];
 						} else {
-							dataPointName = address + " " + name;
+							dataPointName = name;
 							path = mainRangeName + "_" + middleRangeName;
 						}
 
