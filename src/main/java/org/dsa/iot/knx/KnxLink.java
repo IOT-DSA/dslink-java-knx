@@ -136,9 +136,9 @@ public class KnxLink {
 			Value interval = child.getAttribute(ATTR_POLLING_INTERVAL);
 			Value timeout = child.getAttribute(ATTR_POLLING_TIMEOUT);
 			KnxIPConnection ipConnection;
-			if (transType != null && groupLevel != null && null != deviceAddress && interval != null
-					&& timeout != null) {
-				if (localHost != null && remoteHost != null && port != null && useNat != null) {
+			if (transType != null && groupLevel != null && interval != null && timeout != null) {
+				if (localHost != null && remoteHost != null && port != null && useNat != null
+						&& null != deviceAddress) {
 					ipConnection = new KnxIPTunnelingConnection(getLink(), child);
 				} else {
 					ipConnection = new KnxIPRoutingConnection(getLink(), child);
