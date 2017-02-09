@@ -348,6 +348,7 @@ public abstract class KnxIPConnection extends KnxConnection {
 			DatapointType type = point.getType();
 			String unit = null;
 			DPT dpt = type.getDpt();
+			unit = dpt.getUnit();
 			if (dpt instanceof DPTBoolean) {
 				value = new Value((asdu[0] & 0x01) == 1);
 			} else if (dpt instanceof DPT1BitControlled) {
@@ -382,7 +383,6 @@ public abstract class KnxIPConnection extends KnxConnection {
 					}
 					translator.setData(asdu, 0);
 					asFloat = (float) translator.getNumericValue();
-					unit = dpt.getUnit();
 				} catch (KNXFormatException e) {
 					LOGGER.error(e.getMessage());
 				}
@@ -595,6 +595,7 @@ public abstract class KnxIPConnection extends KnxConnection {
 		String unit = null;
 
 		DPT dpt = type.getDpt();
+		unit = dpt.getUnit();
 		try {
 			if (dpt instanceof DPTBoolean) {
 				valBoolean = communicator.readBool(groupAddress);
@@ -621,7 +622,6 @@ public abstract class KnxIPConnection extends KnxConnection {
 					value = new Value(rawToPercentage(valInt));
 				}
 				valueType = ValueType.NUMBER;
-				unit = dpt.getUnit();
 			} else if (dpt instanceof DPTSceneNumber || dpt instanceof DPTSceneControl) {
 				Datapoint dataPnt = new StateDP(groupAddress, "1 byte scene", 0, dpt.getDtpId());
 				valString = communicator.read(dataPnt);
