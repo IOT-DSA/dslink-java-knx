@@ -135,7 +135,7 @@ public abstract class KnxIPConnection extends KnxConnection {
 	long timeout;
 
 	Map<String, DeviceDIB> hostToDeviceDIB;
-	Set<DeviceNode> deviceSet;
+	Map<String, DeviceNode> nameToDeviceNode;
 	Map<String, EditablePoint> addressToDataPoint;
 	Map<String, Boolean> addressToPolled;
 
@@ -161,7 +161,7 @@ public abstract class KnxIPConnection extends KnxConnection {
 		hostToDeviceDIB = new HashMap<String, DeviceDIB>();
 		addressToDataPoint = new HashMap<String, EditablePoint>();
 		addressToPolled = new HashMap<>();
-		deviceSet = new HashSet<DeviceNode>();
+		nameToDeviceNode = new HashMap<String, DeviceNode>();
 	}
 
 	public void init() {
@@ -511,10 +511,14 @@ public abstract class KnxIPConnection extends KnxConnection {
 	protected DeviceNode setupDeviceNode(String host, DeviceDIB dib) {
 		DeviceNode deviceNode = null;
 		String name = dib.getName();
-		Node child = node.getChild(name);
-		if (null == child) {
-			child = node.createChild(name).build();
+		if (!nameToDeviceNode.containsKey(name)) {
+			Node child = node.getChild(name);
+			if (null == child) {
+				child = node.createChild(name).build();
+			}
 			deviceNode = new DeviceNode(getConnection(), null, child, dib);
+		} else {
+			deviceNode = nameToDeviceNode.get(name);
 		}
 
 		return deviceNode;
@@ -538,13 +542,13 @@ public abstract class KnxIPConnection extends KnxConnection {
 			DeviceDIB dib = (DeviceDIB) pair.getValue();
 			DeviceNode device = setupDeviceNode(host, dib);
 			if (null != device) {
-				deviceSet.add(device);
+				nameToDeviceNode.put(dib.getName(), device);
 			}
 
 		}
 
-		if (isRestoring && !deviceSet.isEmpty()) {
-			for (DeviceNode device : deviceSet) {
+		if (isRestoring && !nameToDeviceNode.isEmpty()) {
+			for (DeviceNode device : nameToDeviceNode.values()) {
 				device.restoreLastSession();
 			}
 			isRestoring = false;
