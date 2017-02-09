@@ -93,6 +93,7 @@ public abstract class KnxIPConnection extends KnxConnection {
 	static final String ATTR_MEDIUM = "medium";
 	static final String ATTR_POLLING_INTERVAL = "polling interval";
 	static final String ATTR_POLLING_TIMEOUT = "polling timeout";
+	static final String ATTR_UNIT = "unit";
 	static final String NODE_STATUS = "STATUS";
 	static final String STATUS_CONNECTING = "connecting";
 	static final String STATUS_CONNECTED = "connected";
@@ -345,8 +346,8 @@ public abstract class KnxIPConnection extends KnxConnection {
 		if (null != point) {
 			Value value = null;
 			DatapointType type = point.getType();
-
-			DPT dpt = type.dpt;
+			String unit = null;
+			DPT dpt = type.getDpt();
 			if (dpt instanceof DPTBoolean) {
 				value = new Value((asdu[0] & 0x01) == 1);
 			} else if (dpt instanceof DPT1BitControlled) {
@@ -356,7 +357,8 @@ public abstract class KnxIPConnection extends KnxConnection {
 				int asInt = (asdu[0] & 0x0F);
 				value = new Value(asInt);
 			} else if (dpt instanceof DPT8BitUnsigned) {
-				if ("DPST-5-1".equals(type.typeId) || "DPST-5-3".equals(type.typeId)) {
+				if (DatapointType.EIGHT_BIT_UNSIGNED_SCALING.getTypeId().equals(type.getTypeId())
+						|| DatapointType.EIGHT_BIT_UNSIGNED_ANGLE.getTypeId().equals(type.getTypeId())) {
 					int asInt = asdu[0] & 0x000000FF;
 					value = new Value(asInt);
 				} else {
@@ -380,6 +382,7 @@ public abstract class KnxIPConnection extends KnxConnection {
 					}
 					translator.setData(asdu, 0);
 					asFloat = (float) translator.getNumericValue();
+					unit = dpt.getUnit();
 				} catch (KNXFormatException e) {
 					LOGGER.error(e.getMessage());
 				}
@@ -484,6 +487,9 @@ public abstract class KnxIPConnection extends KnxConnection {
 			}
 
 			point.node.setValue(value);
+			if (unit != null) {
+				point.node.setAttribute(ATTR_UNIT, new Value(unit));
+			}
 		}
 
 	}
@@ -586,8 +592,9 @@ public abstract class KnxIPConnection extends KnxConnection {
 		Float valFloat = null;
 		Boolean valBoolean = null;
 		String valString = null;
+		String unit = null;
 
-		DPT dpt = type.dpt;
+		DPT dpt = type.getDpt();
 		try {
 			if (dpt instanceof DPTBoolean) {
 				valBoolean = communicator.readBool(groupAddress);
@@ -603,10 +610,10 @@ public abstract class KnxIPConnection extends KnxConnection {
 				value = new Value(valInt);
 				valueType = ValueType.NUMBER;
 			} else if (dpt instanceof DPT8BitUnsigned) {
-				if ("DPST-5-1".equals(type.typeId)) {
+				if (DatapointType.EIGHT_BIT_UNSIGNED_SCALING.getTypeId().equals(type.getTypeId())) {
 					valInt = communicator.readUnsigned(groupAddress, ProcessCommunicationBase.SCALING);
 					value = new Value(valInt);
-				} else if ("DPST-5-3".equals(type.typeId)) {
+				} else if (DatapointType.EIGHT_BIT_UNSIGNED_ANGLE.getTypeId().equals(type.getTypeId())) {
 					valInt = communicator.readUnsigned(groupAddress, ProcessCommunicationBase.ANGLE);
 					value = new Value(valInt);
 				} else {
@@ -614,6 +621,7 @@ public abstract class KnxIPConnection extends KnxConnection {
 					value = new Value(rawToPercentage(valInt));
 				}
 				valueType = ValueType.NUMBER;
+				unit = dpt.getUnit();
 			} else if (dpt instanceof DPTSceneNumber || dpt instanceof DPTSceneControl) {
 				Datapoint dataPnt = new StateDP(groupAddress, "1 byte scene", 0, dpt.getDtpId());
 				valString = communicator.read(dataPnt);
@@ -632,6 +640,7 @@ public abstract class KnxIPConnection extends KnxConnection {
 				valFloat = communicator.readFloat(groupAddress, false);
 				value = new Value(valFloat);
 				valueType = ValueType.NUMBER;
+				unit = dpt.getUnit();
 			} else if (dpt instanceof DPT4ByteFloat) {
 				valFloat = communicator.readFloat(groupAddress, true);
 				value = new Value(valFloat);
@@ -666,12 +675,15 @@ public abstract class KnxIPConnection extends KnxConnection {
 				value = new Value(valString);
 				valueType = ValueType.STRING;
 			} else {
-				valString = type.nameKey;
+				valString = type.getNameKey();
 				valueType = ValueType.STRING;
 			}
 
 			pointNode.setValueType(valueType);
 			pointNode.setValue(value);
+			if (null != unit) {
+				pointNode.setAttribute(ATTR_UNIT, new Value(unit));
+			}
 			addressToPolled.put(address, true);
 			if (value != null) {
 				LOGGER.debug("read and updated " + pointNode.getName() + " : " + value.toString());
@@ -700,7 +712,7 @@ public abstract class KnxIPConnection extends KnxConnection {
 
 		DatapointType type = point.getType();
 		GroupAddress dst = point.getGroupAddress();
-		DPT dpt = type.dpt;
+		DPT dpt = type.getDpt();
 		try {
 			if (dpt instanceof DPTBoolean) {
 				communicator.write(dst, val.getBool());
@@ -713,10 +725,10 @@ public abstract class KnxIPConnection extends KnxConnection {
 				communicator.write(dst, control, Math.abs(stepcode));
 			} else if (dpt instanceof DPT8BitUnsigned) {
 				int unsigned = 0;
-				if ("DPST-5-1".equals(type.typeId)) {
+				if (DatapointType.EIGHT_BIT_UNSIGNED_SCALING.getTypeId().equals(type.getTypeId())) {
 					unsigned = val.getNumber().intValue();
 					communicator.write(dst, unsigned, ProcessCommunicationBase.SCALING);
-				} else if ("DPST-5-3".equals(type.typeId)) {
+				} else if (DatapointType.EIGHT_BIT_UNSIGNED_ANGLE.getTypeId().equals(type.getTypeId())) {
 					unsigned = val.getNumber().intValue();
 					communicator.write(dst, unsigned, ProcessCommunicationBase.ANGLE);
 				} else {

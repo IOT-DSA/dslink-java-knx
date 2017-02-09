@@ -83,9 +83,6 @@ public class DeviceFolder extends EditableFolder {
 		Node pointNode = node.createChild(pointName).setValueType(valType).build();
 		pointNode.setAttribute(ATTR_POINT_TYPE, new Value(type.toString()));
 		pointNode.setAttribute(ATTR_GROUP_ADDRESS, new Value(groupAddress.toString()));
-		if (DatapointType.EIGHT_BIT_UNSIGNED_PERCENT.equals(type)) {
-			pointNode.setAttribute(ATTR_UNIT, new Value(PERCENTAGE_UNIT));
-		}
 
 		DevicePoint point = new DevicePoint(conn, this, pointNode);
 		getConnection().setupPointListener(point);
@@ -123,7 +120,7 @@ public class DeviceFolder extends EditableFolder {
 	@Override
 	protected void importProjectByGroupAddress(ActionResult event) {
 		String content = event.getParameter(ATTR_PROJECT_CONTENT_GROUP_ADDRESS, ValueType.STRING).getString();
-        boolean withNamingConvention = event.getParameter(ATTR_PROJECT_NAMING_CONVENTION, ValueType.BOOL).getBool();
+		boolean withNamingConvention = event.getParameter(ATTR_PROJECT_NAMING_CONVENTION, ValueType.BOOL).getBool();
 		GroupAddressParser parser = new GroupAddressParser(this);
 
 		parser.parse(content, withNamingConvention);

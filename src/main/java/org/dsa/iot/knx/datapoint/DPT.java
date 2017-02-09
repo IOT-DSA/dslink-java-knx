@@ -18,6 +18,10 @@ abstract public class DPT {
 
 	abstract public int getDataTypeId();
 
+	abstract public String getLabel(boolean isZero);
+
+	abstract public String getUnit();
+
 	protected byte[] getKnxBytes(DPTXlator xl8or) {
 		byte[] b = new byte[FULL_OFFSET + xl8or.getTypeSize()];
 		if (xl8or.getTypeSize() == 0)

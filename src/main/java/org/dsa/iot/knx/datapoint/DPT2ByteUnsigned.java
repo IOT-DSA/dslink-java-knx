@@ -16,4 +16,15 @@ public class DPT2ByteUnsigned extends DPT {
 	public int getDataTypeId() {
 		return DataTypes.NUMERIC.ordinal();
 	}
+
+	@Override
+	public String getLabel(boolean isZero) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getUnit() {
+		return this.suffix;
+	}
 }
