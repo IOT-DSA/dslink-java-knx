@@ -16,4 +16,5 @@ public class DPTRGB extends DPT {
 	public int getDataTypeId() {
 		return DataTypes.BINARY.ordinal();
 	}
+
 }

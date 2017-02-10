@@ -46,7 +46,6 @@ public abstract class EditableFolder {
 	static final String NODE_STATUS = "STATUS";
 	static final String DEFAULT_GROUP_ADDRESS = "0/0/0";
 	static final String GROUP_ADDRESS_SEPARATOR = "/";
-	static final String PERCENTAGE_UNIT = "%";
 
 	KnxConnection conn;
 	Node node;

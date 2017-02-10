@@ -16,4 +16,5 @@ public class DPTDate extends DPT {
 	public int getDataTypeId() {
 		return DataTypes.BINARY.ordinal();
 	}
+
 }

@@ -293,16 +293,28 @@ public enum DatapointType {
     STRING_8859_1("knx.dpt.string.8859_1", "DPST-16-1", new DPTString("16.001")),
     ;
 
-	public final String nameKey;
-	public final String typeId;
-	public final DPT dpt;
+	final String nameKey;
+	final String typeId;
+	final DPT dpt;
 
 	private DatapointType(String nameKey, String typeId, DPT dpt) {
         this.nameKey = nameKey;
         this.typeId = typeId;
         this.dpt = dpt;
     }
+	
+	public DPT getDpt() {
+		return dpt;
+	}
 
+	public String getTypeId() {
+		return typeId;
+	}
+
+	public String getNameKey() {
+		return nameKey;
+	}
+	
 	public static DatapointType forTypeId(String typeId) {
 		String fullTypeId = typeId;
 		if (typeId.startsWith("DPT")) {
