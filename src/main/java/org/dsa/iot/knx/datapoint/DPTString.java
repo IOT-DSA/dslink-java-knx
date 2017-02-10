@@ -12,16 +12,4 @@ public class DPTString extends DPT {
 		return DataTypes.ALPHANUMERIC.ordinal();
 	}
 
-	@Override
-	public String getLabel(boolean isZero) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String getUnit() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 }

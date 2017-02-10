@@ -2,7 +2,7 @@ package org.dsa.iot.knx.datapoint;
 
 import org.dsa.iot.knx.DataTypes;
 
-public class DPT64BitSigned extends DPT {
+public class DPT64BitSigned extends DPT implements DatapointUnit {
 	private final String format;
 	private final String suffix;
 
@@ -18,13 +18,8 @@ public class DPT64BitSigned extends DPT {
 	}
 
 	@Override
-	public String getLabel(boolean isZero) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public String getUnit() {
 		return this.suffix;
 	}
+
 }

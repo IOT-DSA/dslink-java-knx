@@ -2,7 +2,7 @@ package org.dsa.iot.knx.datapoint;
 
 import org.dsa.iot.knx.DataTypes;
 
-public class DPT1BitControlled extends DPT {
+public class DPT1BitControlled extends DPT implements DatapointStatus {
 	private final String zeroLabel;
 	private final String oneLabel;
 
@@ -18,13 +18,7 @@ public class DPT1BitControlled extends DPT {
 	}
 
 	@Override
-	public String getLabel(boolean isZero) {
-		return isZero ? this.zeroLabel : this.oneLabel;
-	}
-
-	@Override
-	public String getUnit() {
-		// TODO Auto-generated method stub
-		return null;
+	public String getStatusLabel(boolean isOff) {
+		return isOff ? this.zeroLabel : this.oneLabel;
 	}
 }
