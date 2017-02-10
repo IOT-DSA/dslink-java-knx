@@ -36,6 +36,7 @@ import org.dsa.iot.knx.datapoint.DPTSceneNumber;
 import org.dsa.iot.knx.datapoint.DPTString;
 import org.dsa.iot.knx.datapoint.DPTTime;
 import org.dsa.iot.knx.datapoint.DatapointType;
+import org.dsa.iot.knx.datapoint.DatapointUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -346,9 +347,7 @@ public abstract class KnxIPConnection extends KnxConnection {
 		if (null != point) {
 			Value value = null;
 			DatapointType type = point.getType();
-			String unit = null;
 			DPT dpt = type.getDpt();
-			unit = dpt.getUnit();
 			if (dpt instanceof DPTBoolean) {
 				value = new Value((asdu[0] & 0x01) == 1);
 			} else if (dpt instanceof DPT1BitControlled) {
@@ -487,8 +486,8 @@ public abstract class KnxIPConnection extends KnxConnection {
 			}
 
 			point.node.setValue(value);
-			if (unit != null) {
-				point.node.setAttribute(ATTR_UNIT, new Value(unit));
+			if (dpt instanceof DatapointUnit) {
+				point.node.setAttribute(ATTR_UNIT, new Value(((DatapointUnit) dpt).getUnit()));
 			}
 		}
 
@@ -596,10 +595,8 @@ public abstract class KnxIPConnection extends KnxConnection {
 		Float valFloat = null;
 		Boolean valBoolean = null;
 		String valString = null;
-		String unit = null;
 
 		DPT dpt = type.getDpt();
-		unit = dpt.getUnit();
 		try {
 			if (dpt instanceof DPTBoolean) {
 				valBoolean = communicator.readBool(groupAddress);
@@ -644,7 +641,6 @@ public abstract class KnxIPConnection extends KnxConnection {
 				valFloat = communicator.readFloat(groupAddress, false);
 				value = new Value(valFloat);
 				valueType = ValueType.NUMBER;
-				unit = dpt.getUnit();
 			} else if (dpt instanceof DPT4ByteFloat) {
 				valFloat = communicator.readFloat(groupAddress, true);
 				value = new Value(valFloat);
@@ -685,8 +681,8 @@ public abstract class KnxIPConnection extends KnxConnection {
 
 			pointNode.setValueType(valueType);
 			pointNode.setValue(value);
-			if (null != unit) {
-				pointNode.setAttribute(ATTR_UNIT, new Value(unit));
+			if (dpt instanceof DatapointUnit) {
+				pointNode.setAttribute(ATTR_UNIT, new Value(((DatapointUnit) dpt).getUnit()));
 			}
 			addressToPolled.put(address, true);
 			if (value != null) {

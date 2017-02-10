@@ -17,15 +17,4 @@ public class DPTDate extends DPT {
 		return DataTypes.BINARY.ordinal();
 	}
 
-	@Override
-	public String getLabel(boolean isZero) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String getUnit() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 }
