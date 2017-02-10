@@ -66,7 +66,6 @@ public class DevicePoint extends EditablePoint {
 
 	@Override
 	public void edit(ActionResult event) {
-		DatapointType type;
 		ValueType valType;
 		try {
 			type = DatapointType
@@ -76,15 +75,7 @@ public class DevicePoint extends EditablePoint {
 			LOGGER.debug("error: ", e);
 			return;
 		}
-		String name = node.getName();
-		String newname = event.getParameter(ATTR_NAME, ValueType.STRING).getString();
-		if (null != newname && !newname.isEmpty() && !newname.equals(name)
-				|| null != type && !type.toString().equals(node.getAttribute(ATTR_POINT_TYPE))) {
-			Node parent = node.getParent();
-			parent.removeChild(node);
-			node = parent.createChild(newname).setValueType(valType).build();
-		}
-
+		
 		String groupAddressStr = event.getParameter(ATTR_GROUP_ADDRESS).getString();
 		GroupAddress groupAddress = null;
 		try {
@@ -93,7 +84,34 @@ public class DevicePoint extends EditablePoint {
 			LOGGER.debug(e.getMessage());
 			return;
 		}
-
+		String mainGroup = null;
+		String middleGroup = null;
+		String group = null;
+		if (null != groupAddress) {
+			mainGroup = String.valueOf(groupAddress.getMainGroup());
+			middleGroup = String.valueOf(groupAddress.getMiddleGroup());
+			group = mainGroup + DeviceFolder.GROUP_ADDRESS_SEPARATOR + middleGroup;
+		}
+		
+		remove(null);
+		getConnection().updateGroupToPoints(group, this, true);
+		getConnection().updateAddressToPoint(groupAddress.toString(), this, true);
+		
+		String name = node.getName();
+		String newname = event.getParameter(ATTR_NAME, ValueType.STRING).getString();
+		if (null != newname && !newname.isEmpty() && !newname.equals(name)) {
+			Node parent = node.getParent();
+			parent.removeChild(node);
+			
+			node = parent.createChild(newname).setValueType(valType).build();
+			this.node.setAttribute(ATTR_RESTORE_TYPE, new Value(RESTORE_EDITABLE_POINT));
+			makeRemoveAction();
+			makeSetAction();
+			
+			getConnection().setupPointListener(this);	
+		}
+		
+		node.setValueType(valType);
 		node.setAttribute(ATTR_POINT_TYPE, new Value(type.toString()));
 		node.setAttribute(ATTR_GROUP_ADDRESS, new Value(groupAddress.toString()));
 		if (DatapointType.EIGHT_BIT_UNSIGNED_PERCENT.equals(type)) {

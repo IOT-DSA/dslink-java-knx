@@ -320,8 +320,9 @@ public abstract class KnxIPConnection extends KnxConnection {
 					LOGGER.info(MESSAGE_SERVICE_FAMILIES + MESSAGE_MAP_SEPARATOR + fam.toString());
 
 					hostToDeviceDIB.put(hpai.getAddress().getHostAddress(), dib);
-					this.listener.onDiscovered();
 				}
+				this.listener.onDiscovered();
+				
 
 				if (responses.length > 0) {
 					discoverFuture.cancel(true);
