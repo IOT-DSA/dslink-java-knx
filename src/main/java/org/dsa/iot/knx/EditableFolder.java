@@ -45,7 +45,6 @@ public abstract class EditableFolder {
 	static final String ACTION_IMPORT_GROUP_ADDRESS = "import project by group address";
 	static final String NODE_STATUS = "STATUS";
 	static final String DEFAULT_GROUP_ADDRESS = "0/0/0";
-	static final String GROUP_ADDRESS_SEPARATOR = "/";
 
 	KnxConnection conn;
 	Node node;

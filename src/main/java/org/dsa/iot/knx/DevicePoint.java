@@ -4,7 +4,9 @@ import org.dsa.iot.dslink.node.Node;
 import org.dsa.iot.dslink.node.actions.ActionResult;
 import org.dsa.iot.dslink.node.value.Value;
 import org.dsa.iot.dslink.node.value.ValueType;
+import org.dsa.iot.knx.datapoint.DPT;
 import org.dsa.iot.knx.datapoint.DatapointType;
+import org.dsa.iot.knx.datapoint.DatapointUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,7 +77,7 @@ public class DevicePoint extends EditablePoint {
 			LOGGER.debug("error: ", e);
 			return;
 		}
-		
+
 		String groupAddressStr = event.getParameter(ATTR_GROUP_ADDRESS).getString();
 		GroupAddress groupAddress = null;
 		try {
@@ -84,38 +86,33 @@ public class DevicePoint extends EditablePoint {
 			LOGGER.debug(e.getMessage());
 			return;
 		}
-		String mainGroup = null;
-		String middleGroup = null;
-		String group = null;
-		if (null != groupAddress) {
-			mainGroup = String.valueOf(groupAddress.getMainGroup());
-			middleGroup = String.valueOf(groupAddress.getMiddleGroup());
-			group = mainGroup + DeviceFolder.GROUP_ADDRESS_SEPARATOR + middleGroup;
-		}
-		
+   
+        String group = Utils.getGroupName(groupAddress);
 		remove(null);
 		getConnection().updateGroupToPoints(group, this, true);
 		getConnection().updateAddressToPoint(groupAddress.toString(), this, true);
-		
+
 		String name = node.getName();
 		String newname = event.getParameter(ATTR_NAME, ValueType.STRING).getString();
 		if (null != newname && !newname.isEmpty() && !newname.equals(name)) {
 			Node parent = node.getParent();
 			parent.removeChild(node);
-			
+
 			node = parent.createChild(newname, true).setValueType(valType).build();
+
 			this.node.setAttribute(ATTR_RESTORE_TYPE, new Value(RESTORE_EDITABLE_POINT));
 			makeRemoveAction();
 			makeSetAction();
-			
-			getConnection().setupPointListener(this);	
+
+			getConnection().setupPointListener(this);
 		}
-		
+
 		node.setValueType(valType);
 		node.setAttribute(ATTR_POINT_TYPE, new Value(type.toString()));
 		node.setAttribute(ATTR_GROUP_ADDRESS, new Value(groupAddress.toString()));
-		if (DatapointType.EIGHT_BIT_UNSIGNED_PERCENT.equals(type)) {
-			node.setAttribute(ATTR_UNIT, new Value(PERCENTAGE_UNIT));
+		DPT dpt = type.getDpt();
+		if (dpt instanceof DatapointUnit) {
+			node.setAttribute(ATTR_UNIT, new Value(((DatapointUnit) dpt).getUnit()));
 		}
 	}
 
@@ -130,14 +127,7 @@ public class DevicePoint extends EditablePoint {
 			return;
 		}
 
-		String mainGroup = null;
-		String middleGroup = null;
-		String group = null;
-		if (null != groupAddress) {
-			mainGroup = String.valueOf(groupAddress.getMainGroup());
-			middleGroup = String.valueOf(groupAddress.getMiddleGroup());
-			group = mainGroup + "/" + middleGroup;
-		}
+        String group = Utils.getGroupName(groupAddress);
 		this.conn.updateGroupToPoints(group, this, false);
 		this.conn.updateAddressToPoint(address, this, false);
 

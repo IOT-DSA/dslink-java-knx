@@ -70,14 +70,7 @@ public class DeviceFolder extends EditableFolder {
 			return;
 		}
 
-		String mainGroup = null;
-		String middleGroup = null;
-		String group = null;
-		if (null != groupAddress) {
-			mainGroup = String.valueOf(groupAddress.getMainGroup());
-			middleGroup = String.valueOf(groupAddress.getMiddleGroup());
-			group = mainGroup + GROUP_ADDRESS_SEPARATOR + middleGroup;
-		}
+		String group = Utils.getGroupName(groupAddress);
 
 		ValueType valType = DatapointType.getValueType(type);
 		Node pointNode = node.createChild(pointName, true).setValueType(valType).build();
