@@ -103,7 +103,7 @@ public class DevicePoint extends EditablePoint {
 			Node parent = node.getParent();
 			parent.removeChild(node);
 			
-			node = parent.createChild(newname).setValueType(valType).build();
+			node = parent.createChild(newname, true).setValueType(valType).build();
 			this.node.setAttribute(ATTR_RESTORE_TYPE, new Value(RESTORE_EDITABLE_POINT));
 			makeRemoveAction();
 			makeSetAction();

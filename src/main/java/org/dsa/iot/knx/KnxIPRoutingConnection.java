@@ -42,18 +42,18 @@ public class KnxIPRoutingConnection extends KnxIPConnection {
 		act.addParameter(
 				new Parameter(ATTR_POLLING_TIMEOUT, ValueType.NUMBER, node.getAttribute(ATTR_POLLING_TIMEOUT)));
 
-		Node actionNode = node.getChild(ACTION_EDIT);
+		Node actionNode = node.getChild(ACTION_EDIT, true);
 		if (null == actionNode)
-			node.createChild(ACTION_EDIT).setAction(act).build().setSerializable(false);
+			node.createChild(ACTION_EDIT, true).setAction(act).build().setSerializable(false);
 		else
 			actionNode.setAction(act);
 	}
 
 	public void makeDiscoverAction() {
 		Action act = new Action(Permission.READ, new DeviceDiscoveryHandler());
-		Node actionNode = node.getChild(ACTION_DISCOVER_DEVICES);
+		Node actionNode = node.getChild(ACTION_DISCOVER_DEVICES, true);
 		if (null == actionNode)
-			node.createChild(ACTION_DISCOVER_DEVICES).setAction(act).build().setSerializable(false);
+			node.createChild(ACTION_DISCOVER_DEVICES, true).setAction(act).build().setSerializable(false);
 		else
 			actionNode.setAction(act);
 	}

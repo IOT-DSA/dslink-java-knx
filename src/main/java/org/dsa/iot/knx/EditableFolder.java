@@ -75,13 +75,13 @@ public abstract class EditableFolder {
 	public void makeEditAction() {
 		Action act;
 		act = new Action(Permission.READ, new EditHandler());
-		node.createChild(ACTION_EDIT).setAction(act).build().setSerializable(false);
+		node.createChild(ACTION_EDIT, true).setAction(act).build().setSerializable(false);
 	}
 
 	public void makeRemoveAction() {
 		Action act;
 		act = new Action(Permission.READ, new RemoveHandler());
-		node.createChild(ACTION_REMOVE).setAction(act).build().setSerializable(false);
+		node.createChild(ACTION_REMOVE, true).setAction(act).build().setSerializable(false);
 	}
 
 	public void makeAddPointAction() {
@@ -91,14 +91,14 @@ public abstract class EditableFolder {
 		act.addParameter(new Parameter(ATTR_POINT_NAME, ValueType.STRING));
 		act.addParameter(new Parameter(ATTR_GROUP_ADDRESS, ValueType.STRING, new Value(DEFAULT_GROUP_ADDRESS)));
 
-		node.createChild(ACTION_ADD_POINT).setAction(act).build().setSerializable(false);
+		node.createChild(ACTION_ADD_POINT, true).setAction(act).build().setSerializable(false);
 	}
 
 	public void makeAddFolderAction() {
 		Action act;
 		act = new Action(Permission.READ, new AddFolderHandler());
 		act.addParameter(new Parameter(ATTR_NAME, ValueType.STRING));
-		node.createChild(ACTION_ADD_FOLDER).setAction(act).build().setSerializable(false);
+		node.createChild(ACTION_ADD_FOLDER, true).setAction(act).build().setSerializable(false);
 	}
 
 	public void makeImportMasterDataAction() {
@@ -106,7 +106,7 @@ public abstract class EditableFolder {
 		act = new Action(Permission.READ, new AddImportMasterDataHandler());
 		act.addParameter(new Parameter(ATTR_MASTER_DATA_CONTENT, ValueType.STRING).setEditorType(EditorType.TEXT_AREA));
 
-		node.createChild(ACTION_IMPORT_MASTER_DATA).setAction(act).build().setSerializable(false);
+		node.createChild(ACTION_IMPORT_MASTER_DATA, true).setAction(act).build().setSerializable(false);
 	}
 
 	public void makeImportProjectAction() {
@@ -114,7 +114,7 @@ public abstract class EditableFolder {
 		act = new Action(Permission.READ, new AddImportProjectHandler());
 		act.addParameter(new Parameter(ATTR_PROJECT_CONTENT_XML, ValueType.STRING).setEditorType(EditorType.TEXT_AREA));
 
-		node.createChild(ACTION_IMPORT_PROJECT).setAction(act).build().setSerializable(false);
+		node.createChild(ACTION_IMPORT_PROJECT, true).setAction(act).build().setSerializable(false);
 	}
 
 	public void makeImportOpcAction() {
@@ -122,7 +122,7 @@ public abstract class EditableFolder {
 		act = new Action(Permission.READ, new AddImportOpcHandler());
 		act.addParameter(new Parameter(ATTR_PROJECT_CONTENT_ESF, ValueType.STRING).setEditorType(EditorType.TEXT_AREA));
 
-		node.createChild(ACTION_IMPORT_OPC).setAction(act).build().setSerializable(false);
+		node.createChild(ACTION_IMPORT_OPC, true).setAction(act).build().setSerializable(false);
 	}
 
 	public void makeImportGroupAddressAction() {
@@ -131,7 +131,7 @@ public abstract class EditableFolder {
 		act.addParameter(new Parameter(ATTR_PROJECT_CONTENT_GROUP_ADDRESS, ValueType.STRING)
 				.setEditorType(EditorType.TEXT_AREA));
 		act.addParameter(new Parameter(ATTR_PROJECT_NAMING_CONVENTION, ValueType.BOOL));
-		node.createChild(ACTION_IMPORT_GROUP_ADDRESS).setAction(act).build().setSerializable(false);
+		node.createChild(ACTION_IMPORT_GROUP_ADDRESS, true).setAction(act).build().setSerializable(false);
 	}
 
 	protected class EditHandler implements Handler<ActionResult> {

@@ -43,7 +43,7 @@ public class DeviceFolder extends EditableFolder {
 
 	@Override
 	protected void addFolder(String name) {
-		Node child = node.createChild(name).build();
+		Node child = node.createChild(name, true).build();
 		new DeviceFolder(conn, root, child);
 	}
 
@@ -80,7 +80,7 @@ public class DeviceFolder extends EditableFolder {
 		}
 
 		ValueType valType = DatapointType.getValueType(type);
-		Node pointNode = node.createChild(pointName).setValueType(valType).build();
+		Node pointNode = node.createChild(pointName, true).setValueType(valType).build();
 		pointNode.setAttribute(ATTR_POINT_TYPE, new Value(type.toString()));
 		pointNode.setAttribute(ATTR_GROUP_ADDRESS, new Value(groupAddress.toString()));
 
@@ -129,7 +129,7 @@ public class DeviceFolder extends EditableFolder {
 	public Node buildFolderTree(Node parent, Queue<String> path) {
 		if (path.size() > 0) {
 			String name = path.poll();
-			Node child = parent.createChild(name).build();
+			Node child = parent.createChild(name, true).build();
 			new DeviceFolder(getConnection(), child);
 			Node node = buildFolderTree(child, path);
 			return node;
@@ -153,7 +153,7 @@ public class DeviceFolder extends EditableFolder {
 		DatapointType type = DatapointType.valueOf(addressBean.getDataPointType());
 		ValueType valueType = DatapointType.getValueType(type);
 		String dataPointName = addressBean.getDataPointName();
-		Node pointNode = parent.createChild(dataPointName).setValueType(valueType).build();
+		Node pointNode = parent.createChild(dataPointName, true).setValueType(valueType).build();
 		pointNode.setAttribute(ATTR_POINT_TYPE, new Value(type.name()));
 		pointNode.setAttribute(ATTR_GROUP_ADDRESS, new Value(groupAddress.toString()));
 
