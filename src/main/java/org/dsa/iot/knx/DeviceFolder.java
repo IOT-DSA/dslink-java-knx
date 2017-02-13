@@ -168,7 +168,17 @@ public class DeviceFolder extends EditableFolder {
 				DeviceFolder folder = new DeviceFolder(this.getConnection(), root, child);
 				folder.restoreLastSession();
 			} else if (null != restype && ATTR_EDITABLE_POINT.equals(restype.getString())) {
-				new DevicePoint(this.getConnection(), this, child);
+				DevicePoint point = new DevicePoint(this.getConnection(), this, child);
+				getConnection().setupPointListener(point);
+				try {
+					String groupAddressStr = child.getAttribute(ATTR_GROUP_ADDRESS).getString();
+					GroupAddress groupAddress = new GroupAddress(groupAddressStr);
+					String group = Utils.getGroupName(groupAddress);
+					getConnection().updateGroupToPoints(group, point, true);
+					getConnection().updateAddressToPoint(groupAddress.toString(), point, true);
+				} catch (Exception e) {
+					LOGGER.debug("", e);
+				}
 			} else if (null == child.getAction() && !NODE_STATUS.equals(child.getName())) {
 				node.removeChild(child);
 			}
