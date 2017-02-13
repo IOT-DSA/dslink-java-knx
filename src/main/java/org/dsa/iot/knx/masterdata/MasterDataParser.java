@@ -95,7 +95,7 @@ public class MasterDataParser {
 			}
 
 		} catch (JAXBException e) {
-			e.printStackTrace();
+			LOGGER.debug("", e);
 		}
 		LOGGER.info("parsing is done!");
 	}

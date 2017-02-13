@@ -45,7 +45,7 @@ public class DevicePoint extends EditablePoint {
 			groupAddress = new GroupAddress(addressStr);
 		} catch (KNXFormatException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOGGER.debug("" ,e);
 		}
 
 		return groupAddress;
@@ -123,7 +123,7 @@ public class DevicePoint extends EditablePoint {
 		try {
 			groupAddress = new GroupAddress(address);
 		} catch (KNXFormatException e1) {
-			e1.printStackTrace();
+			LOGGER.debug("", e1);
 			return;
 		}
 

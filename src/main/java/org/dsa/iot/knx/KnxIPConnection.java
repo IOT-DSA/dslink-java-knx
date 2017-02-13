@@ -281,7 +281,7 @@ public abstract class KnxIPConnection extends KnxConnection {
 			try {
 				poll(groupToPoints);
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				LOGGER.debug("", e);
 			}
 		}
 	}

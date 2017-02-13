@@ -103,7 +103,7 @@ public class KnxLink {
 		try {
 			localInetAddress = InetAddress.getLocalHost();
 		} catch (UnknownHostException e) {
-			e.printStackTrace();
+			LOGGER.debug("", e);
 		}
 		if (null != localInetAddress) {
 			localHost = localInetAddress.getHostAddress();

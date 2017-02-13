@@ -66,7 +66,7 @@ public class DeviceFolder extends EditableFolder {
 		try {
 			groupAddress = new GroupAddress(groupAddressStr);
 		} catch (KNXFormatException e1) {
-			e1.printStackTrace();
+			LOGGER.debug("", e1);
 			return;
 		}
 
@@ -78,9 +78,7 @@ public class DeviceFolder extends EditableFolder {
 		pointNode.setAttribute(ATTR_GROUP_ADDRESS, new Value(groupAddress.toString()));
 
 		DevicePoint point = new DevicePoint(conn, this, pointNode);
-		getConnection().setupPointListener(point);
-		getConnection().updateGroupToPoints(group, point, true);
-		getConnection().updateAddressToPoint(groupAddress.toString(), point, true);
+		setupPoint(point, groupAddress.toString(), group);
 	}
 
 	@Override
@@ -137,7 +135,7 @@ public class DeviceFolder extends EditableFolder {
 		try {
 			groupAddress = new GroupAddress(addressBean.getGroupAddress());
 		} catch (KNXFormatException e) {
-			e.printStackTrace();
+			LOGGER.debug("", e);
 		} finally {
 			if (null == groupAddress)
 				return;
@@ -151,9 +149,13 @@ public class DeviceFolder extends EditableFolder {
 		pointNode.setAttribute(ATTR_GROUP_ADDRESS, new Value(groupAddress.toString()));
 
 		DevicePoint point = new DevicePoint(conn, this, pointNode);
+		setupPoint(point, groupAddress.toString(), addressBean.getMiddleGroup());
+	}
+	
+	void setupPoint(DevicePoint point, String groupAddressStr, String group) {
 		getConnection().setupPointListener(point);
-		getConnection().updateGroupToPoints(addressBean.getMiddleGroup(), point, true);
-		getConnection().updateAddressToPoint(groupAddress.toString(), point, true);
+		getConnection().updateGroupToPoints(group, point, true);
+		getConnection().updateAddressToPoint(groupAddressStr, point, true);
 	}
 
 	@Override
@@ -169,13 +171,11 @@ public class DeviceFolder extends EditableFolder {
 				folder.restoreLastSession();
 			} else if (null != restype && ATTR_EDITABLE_POINT.equals(restype.getString())) {
 				DevicePoint point = new DevicePoint(this.getConnection(), this, child);
-				getConnection().setupPointListener(point);
 				try {
 					String groupAddressStr = child.getAttribute(ATTR_GROUP_ADDRESS).getString();
 					GroupAddress groupAddress = new GroupAddress(groupAddressStr);
 					String group = Utils.getGroupName(groupAddress);
-					getConnection().updateGroupToPoints(group, point, true);
-					getConnection().updateAddressToPoint(groupAddress.toString(), point, true);
+					setupPoint(point, groupAddressStr, group);
 				} catch (Exception e) {
 					LOGGER.debug("", e);
 				}

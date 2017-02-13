@@ -48,7 +48,7 @@ public class OpcFileParser extends KnxProjectParser {
 			try {
 				groupAddress = new GroupAddress(addressStr);
 			} catch (KNXFormatException e) {
-				e.printStackTrace();
+				LOGGER.debug("" ,e);
 			} finally {
 				if (null == groupAddress) {
 					return;
