@@ -87,7 +87,7 @@ public class DevicePoint extends EditablePoint {
 			return;
 		}
    
-        String group = Utils.getGroupName(groupAddress);
+		String group = Utils.getGroupName(groupAddress);
 		remove(null);
 		getConnection().updateGroupToPoints(group, this, true);
 		getConnection().updateAddressToPoint(groupAddress.toString(), this, true);
@@ -127,7 +127,7 @@ public class DevicePoint extends EditablePoint {
 			return;
 		}
 
-        String group = Utils.getGroupName(groupAddress);
+		String group = Utils.getGroupName(groupAddress);
 		this.conn.updateGroupToPoints(group, this, false);
 		this.conn.updateAddressToPoint(address, this, false);
 

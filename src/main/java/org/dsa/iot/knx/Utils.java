@@ -1,9 +1,7 @@
 package org.dsa.iot.knx;
 
 import java.util.Arrays;
-
 import tuwien.auto.calimero.GroupAddress;
-
 
 public class Utils {
 	static final String GROUP_ADDRESS_SEPARATOR = "/";

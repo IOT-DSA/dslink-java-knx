@@ -249,7 +249,6 @@ public abstract class KnxIPConnection extends KnxConnection {
 
 		public void groupWrite(ProcessEvent e) {
 			GroupAddress dstAddress = e.getDestination();
-			//IndividualAddress srcAddress = e.getSourceAddr();
 			byte[] asdu = e.getASDU();
 			int service = e.getServiceCode();
 			switch (service) {
