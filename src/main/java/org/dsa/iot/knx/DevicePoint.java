@@ -86,7 +86,7 @@ public class DevicePoint extends EditablePoint {
 			LOGGER.debug(e.getMessage());
 			return;
 		}
-   
+
 		String group = Utils.getGroupName(groupAddress);
 		remove(null);
 		getConnection().updateGroupToPoints(group, this, true);
