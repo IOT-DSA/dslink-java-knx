@@ -37,23 +37,23 @@ public abstract class KnxConnection {
 
 	public void makeRemoveAction() {
 		Action act = new Action(Permission.READ, new RemoveHandler());
-		Node actionNode = node.getChild(ACTION_REMOVE);
+		Node actionNode = node.getChild(ACTION_REMOVE, true);
 		if (null == actionNode)
-			node.createChild(ACTION_REMOVE).setAction(act).build().setSerializable(false);
+			node.createChild(ACTION_REMOVE, true).setAction(act).build().setSerializable(false);
 		else
 			actionNode.setAction(act);
 
 		act = new Action(Permission.READ, new StopHandler());
-		actionNode = node.getChild(ACTION_STOP);
+		actionNode = node.getChild(ACTION_STOP, true);
 		if (null == actionNode)
-			node.createChild(ACTION_STOP).setAction(act).build().setSerializable(false);
+			node.createChild(ACTION_STOP, true).setAction(act).build().setSerializable(false);
 		else
 			actionNode.setAction(act);
 
 		act = new Action(Permission.READ, new RestartHandler());
-		actionNode = node.getChild(ACTION_RESTART);
+		actionNode = node.getChild(ACTION_RESTART, true);
 		if (null == actionNode)
-			node.createChild(ACTION_RESTART).setAction(act).build().setSerializable(false);
+			node.createChild(ACTION_RESTART, true).setAction(act).build().setSerializable(false);
 		else
 			actionNode.setAction(act);
 	};

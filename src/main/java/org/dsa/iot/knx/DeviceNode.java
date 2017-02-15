@@ -27,11 +27,11 @@ public class DeviceNode extends DeviceFolder {
 		super(conn, node);
 
 		this.root = this;
-		if (null != node.getChild(NODE_STATUS)) {
-			this.statusNode = node.getChild(NODE_STATUS);
+		if (null != node.getChild(NODE_STATUS, true)) {
+			this.statusNode = node.getChild(NODE_STATUS, true);
 
 		} else {
-			this.statusNode = node.createChild(NODE_STATUS).setValueType(ValueType.STRING)
+			this.statusNode = node.createChild(NODE_STATUS, true).setValueType(ValueType.STRING)
 					.setValue(new Value("enabled")).build();
 		}
 	}

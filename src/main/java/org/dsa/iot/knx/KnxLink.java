@@ -78,7 +78,7 @@ public class KnxLink {
 		act.addParameter(new Parameter(ATTR_GROUP_LEVEL, ValueType.makeEnum(Utils.enumNames(GroupAddressType.class))));
 		act.addParameter(new Parameter(ATTR_POLLING_INTERVAL, ValueType.NUMBER, new Value(DEFAULT_POLLING_INTERVAL)));
 		act.addParameter(new Parameter(ATTR_POLLING_TIMEOUT, ValueType.NUMBER, new Value(DEFAULT_POLLING_TIMEOUT)));
-		node.createChild(ACTION_ADD_IP_ROUTING_CONNECTION).setAction(act).build().setSerializable(false);
+		node.createChild(ACTION_ADD_IP_ROUTING_CONNECTION, true).setAction(act).build().setSerializable(false);
 	}
 
 	private void makeAddIPTunnelConnection() {
@@ -94,7 +94,7 @@ public class KnxLink {
 		act.addParameter(new Parameter(ATTR_INDIVIDUAL_ADDRESS, ValueType.STRING, new Value(DEFAULT_DEVICE_ADDRESS)));
 		act.addParameter(new Parameter(ATTR_POLLING_INTERVAL, ValueType.NUMBER, new Value(DEFAULT_POLLING_INTERVAL)));
 		act.addParameter(new Parameter(ATTR_POLLING_TIMEOUT, ValueType.NUMBER, new Value(DEFAULT_POLLING_TIMEOUT)));
-		node.createChild(ACTION_ADD_IP_TUNNELING_CONNECTION).setAction(act).build().setSerializable(false);
+		node.createChild(ACTION_ADD_IP_TUNNELING_CONNECTION, true).setAction(act).build().setSerializable(false);
 	}
 
 	private String getLocalHost() {
@@ -103,7 +103,7 @@ public class KnxLink {
 		try {
 			localInetAddress = InetAddress.getLocalHost();
 		} catch (UnknownHostException e) {
-			e.printStackTrace();
+			LOGGER.debug("", e);
 		}
 		if (null != localInetAddress) {
 			localHost = localInetAddress.getHostAddress();
@@ -158,7 +158,7 @@ public class KnxLink {
 			long interval = event.getParameter(ATTR_POLLING_INTERVAL, ValueType.NUMBER).getNumber().longValue();
 			long timeout = event.getParameter(ATTR_POLLING_TIMEOUT, ValueType.NUMBER).getNumber().longValue();
 
-			Node ipConnNode = node.createChild(name).build();
+			Node ipConnNode = node.createChild(name, true).build();
 			ipConnNode.setAttribute(ATTR_TRANSMISSION_TYPE, new Value(transmission));
 			ipConnNode.setAttribute(ATTR_GROUP_LEVEL, new Value(groupLevel));
 			ipConnNode.setAttribute(ATTR_POLLING_INTERVAL, new Value(interval));
@@ -182,7 +182,7 @@ public class KnxLink {
 			int interval = event.getParameter(ATTR_POLLING_INTERVAL, ValueType.NUMBER).getNumber().intValue();
 			int timeout = event.getParameter(ATTR_POLLING_TIMEOUT, ValueType.NUMBER).getNumber().intValue();
 
-			Node ipConnNode = node.createChild(name).build();
+			Node ipConnNode = node.createChild(name, true).build();
 			ipConnNode.setAttribute(ATTR_TRANSMISSION_TYPE, new Value(transmission));
 			ipConnNode.setAttribute(ATTR_GROUP_LEVEL, new Value(groupLevel));
 			ipConnNode.setAttribute(ATTR_LOCAL_HOST, new Value(localHost));

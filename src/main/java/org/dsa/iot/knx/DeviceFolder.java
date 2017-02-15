@@ -43,7 +43,7 @@ public class DeviceFolder extends EditableFolder {
 
 	@Override
 	protected void addFolder(String name) {
-		Node child = node.createChild(name).build();
+		Node child = node.createChild(name, true).build();
 		new DeviceFolder(conn, root, child);
 	}
 
@@ -66,28 +66,19 @@ public class DeviceFolder extends EditableFolder {
 		try {
 			groupAddress = new GroupAddress(groupAddressStr);
 		} catch (KNXFormatException e1) {
-			e1.printStackTrace();
+			LOGGER.debug("", e1);
 			return;
 		}
 
-		String mainGroup = null;
-		String middleGroup = null;
-		String group = null;
-		if (null != groupAddress) {
-			mainGroup = String.valueOf(groupAddress.getMainGroup());
-			middleGroup = String.valueOf(groupAddress.getMiddleGroup());
-			group = mainGroup + GROUP_ADDRESS_SEPARATOR + middleGroup;
-		}
+		String group = Utils.getGroupName(groupAddress);
 
 		ValueType valType = DatapointType.getValueType(type);
-		Node pointNode = node.createChild(pointName).setValueType(valType).build();
+		Node pointNode = node.createChild(pointName, true).setValueType(valType).build();
 		pointNode.setAttribute(ATTR_POINT_TYPE, new Value(type.toString()));
 		pointNode.setAttribute(ATTR_GROUP_ADDRESS, new Value(groupAddress.toString()));
 
 		DevicePoint point = new DevicePoint(conn, this, pointNode);
-		getConnection().setupPointListener(point);
-		getConnection().updateGroupToPoints(group, point, true);
-		getConnection().updateAddressToPoint(groupAddress.toString(), point, true);
+		setupPoint(point, groupAddress.toString(), group);
 	}
 
 	@Override
@@ -129,7 +120,7 @@ public class DeviceFolder extends EditableFolder {
 	public Node buildFolderTree(Node parent, Queue<String> path) {
 		if (path.size() > 0) {
 			String name = path.poll();
-			Node child = parent.createChild(name).build();
+			Node child = parent.createChild(name, true).build();
 			new DeviceFolder(getConnection(), child);
 			Node node = buildFolderTree(child, path);
 			return node;
@@ -144,7 +135,7 @@ public class DeviceFolder extends EditableFolder {
 		try {
 			groupAddress = new GroupAddress(addressBean.getGroupAddress());
 		} catch (KNXFormatException e) {
-			e.printStackTrace();
+			LOGGER.debug("", e);
 		} finally {
 			if (null == groupAddress)
 				return;
@@ -153,14 +144,18 @@ public class DeviceFolder extends EditableFolder {
 		DatapointType type = DatapointType.valueOf(addressBean.getDataPointType());
 		ValueType valueType = DatapointType.getValueType(type);
 		String dataPointName = addressBean.getDataPointName();
-		Node pointNode = parent.createChild(dataPointName).setValueType(valueType).build();
+		Node pointNode = parent.createChild(dataPointName, true).setValueType(valueType).build();
 		pointNode.setAttribute(ATTR_POINT_TYPE, new Value(type.name()));
 		pointNode.setAttribute(ATTR_GROUP_ADDRESS, new Value(groupAddress.toString()));
 
 		DevicePoint point = new DevicePoint(conn, this, pointNode);
+		setupPoint(point, groupAddress.toString(), addressBean.getMiddleGroup());
+	}
+	
+	void setupPoint(DevicePoint point, String groupAddressStr, String group) {
 		getConnection().setupPointListener(point);
-		getConnection().updateGroupToPoints(addressBean.getMiddleGroup(), point, true);
-		getConnection().updateAddressToPoint(groupAddress.toString(), point, true);
+		getConnection().updateGroupToPoints(group, point, true);
+		getConnection().updateAddressToPoint(groupAddressStr, point, true);
 	}
 
 	@Override
@@ -175,7 +170,15 @@ public class DeviceFolder extends EditableFolder {
 				DeviceFolder folder = new DeviceFolder(this.getConnection(), root, child);
 				folder.restoreLastSession();
 			} else if (null != restype && ATTR_EDITABLE_POINT.equals(restype.getString())) {
-				new DevicePoint(this.getConnection(), this, child);
+				DevicePoint point = new DevicePoint(this.getConnection(), this, child);
+				try {
+					String groupAddressStr = child.getAttribute(ATTR_GROUP_ADDRESS).getString();
+					GroupAddress groupAddress = new GroupAddress(groupAddressStr);
+					String group = Utils.getGroupName(groupAddress);
+					setupPoint(point, groupAddressStr, group);
+				} catch (Exception e) {
+					LOGGER.debug("", e);
+				}
 			} else if (null == child.getAction() && !NODE_STATUS.equals(child.getName())) {
 				node.removeChild(child);
 			}

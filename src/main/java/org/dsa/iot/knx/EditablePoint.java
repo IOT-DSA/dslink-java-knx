@@ -15,7 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import tuwien.auto.calimero.GroupAddress;
-import tuwien.auto.calimero.exception.KNXFormatException;
 
 public abstract class EditablePoint {
 	private static final Logger LOGGER;
@@ -65,18 +64,18 @@ public abstract class EditablePoint {
 				node.getAttribute(ATTR_POINT_TYPE)));
 		act.addParameter(new Parameter(ATTR_GROUP_ADDRESS, ValueType.STRING, node.getAttribute(ATTR_GROUP_ADDRESS)));
 
-		Node actionNode = node.getChild(ACTION_EDIT);
+		Node actionNode = node.getChild(ACTION_EDIT, true);
 		if (null == actionNode)
-			node.createChild(ACTION_EDIT).setAction(act).build().setSerializable(false);
+			node.createChild(ACTION_EDIT, true).setAction(act).build().setSerializable(false);
 		else
 			actionNode.setAction(act);
 	}
 
 	public void makeRemoveAction() {
 		Action act = new Action(Permission.READ, new RemoveHandler());
-		Node actionNode = node.getChild(ACTION_REMOVE);
+		Node actionNode = node.getChild(ACTION_REMOVE, true);
 		if (null == actionNode)
-			node.createChild(ACTION_REMOVE).setAction(act).build().setSerializable(false);
+			node.createChild(ACTION_REMOVE, true).setAction(act).build().setSerializable(false);
 		else
 			actionNode.setAction(act);
 	}

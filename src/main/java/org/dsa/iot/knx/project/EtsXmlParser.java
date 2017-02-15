@@ -186,7 +186,7 @@ public class EtsXmlParser extends KnxProjectParser {
 			}
 		} catch (JAXBException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOGGER.debug("", e);
 		} finally {
 			if (null == context) {
 				return;

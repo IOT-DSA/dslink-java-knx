@@ -50,7 +50,7 @@ public class KnxIPTunnelingConnection extends KnxIPConnection {
 	}
 
 	private void generateGatewayNode() {
-		Node child = node.createChild(ATTR_GATEWAY_NAME).build();
+		Node child = node.createChild(ATTR_GATEWAY_NAME, true).build();
 		child.setAttribute(ATTR_INDIVIDUAL_ADDRESS, new Value(individualAddress));
 		child.setAttribute(ATTR_MEDIUM, new Value(TPSettings.getMediumString(TPSettings.MEDIUM_TP1)));
 
@@ -76,9 +76,9 @@ public class KnxIPTunnelingConnection extends KnxIPConnection {
 		act.addParameter(
 				new Parameter(ATTR_POLLING_TIMEOUT, ValueType.NUMBER, node.getAttribute(ATTR_POLLING_TIMEOUT)));
 
-		Node actionNode = node.getChild(ACTION_EDIT);
+		Node actionNode = node.getChild(ACTION_EDIT, true);
 		if (null == actionNode)
-			node.createChild(ACTION_EDIT).setAction(act).build().setSerializable(false);
+			node.createChild(ACTION_EDIT, true).setAction(act).build().setSerializable(false);
 		else
 			actionNode.setAction(act);
 	}

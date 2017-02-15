@@ -2,7 +2,7 @@ apply plugin: 'java'
 apply plugin: 'findbugs'
 apply plugin: 'application'
 
-version '0.0.44-SNAPSHOT'
+version '0.0.45-SNAPSHOT'
 
 mainClassName = 'org.dsa.iot.knx.Main'
 sourceCompatibility = 1.7
@@ -10,10 +10,13 @@ targetCompatibility = 1.7
 
 repositories {
     mavenCentral()
+    maven {
+        url 'https://oss.sonatype.org/content/repositories/snapshots/'
+    }
 }
 
 dependencies {
-    compile 'org.iot-dsa:dslink:0.14.1'
+    compile 'org.iot-dsa:dslink:0.17.1-SNAPSHOT'
     compile 'com.github.calimero:calimero-core:2.3-beta'
     compile 'com.github.calimero:calimero-tools:2.3-beta' 
     compile 'org.apache.commons:commons-lang3:3.0'

@@ -3,12 +3,10 @@ package org.dsa.iot.knx;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -44,19 +42,14 @@ import tuwien.auto.calimero.CloseEvent;
 import tuwien.auto.calimero.DetachEvent;
 import tuwien.auto.calimero.FrameEvent;
 import tuwien.auto.calimero.GroupAddress;
-import tuwien.auto.calimero.IndividualAddress;
 import tuwien.auto.calimero.datapoint.Datapoint;
 import tuwien.auto.calimero.datapoint.StateDP;
 import tuwien.auto.calimero.dptxlator.DPTXlator;
-import tuwien.auto.calimero.dptxlator.DPTXlator1BitControlled;
 import tuwien.auto.calimero.dptxlator.DPTXlator2ByteFloat;
-import tuwien.auto.calimero.dptxlator.DPTXlator2ByteUnsigned;
-import tuwien.auto.calimero.dptxlator.DPTXlator3BitControlled;
 import tuwien.auto.calimero.dptxlator.DPTXlator4ByteFloat;
 import tuwien.auto.calimero.dptxlator.DPTXlatorTime;
 import tuwien.auto.calimero.dptxlator.DPTXlatorDate;
 import tuwien.auto.calimero.dptxlator.DPTXlatorRGB;
-import tuwien.auto.calimero.dptxlator.TranslatorTypes;
 import tuwien.auto.calimero.exception.KNXException;
 import tuwien.auto.calimero.exception.KNXFormatException;
 import tuwien.auto.calimero.exception.KNXIllegalArgumentException;
@@ -180,9 +173,9 @@ public abstract class KnxIPConnection extends KnxConnection {
 	}
 
 	protected void connect() {
-		statusNode = node.getChild(NODE_STATUS);
+		statusNode = node.getChild(NODE_STATUS, true);
 		if (null == statusNode) {
-			statusNode = node.createChild(NODE_STATUS).setValueType(ValueType.STRING).build();
+			statusNode = node.createChild(NODE_STATUS, true).setValueType(ValueType.STRING).build();
 			statusNode.setSerializable(false);
 		} else {
 			statusNode.setValue(new Value(STATUS_CONNECTING));
@@ -256,7 +249,6 @@ public abstract class KnxIPConnection extends KnxConnection {
 
 		public void groupWrite(ProcessEvent e) {
 			GroupAddress dstAddress = e.getDestination();
-			IndividualAddress srcAddress = e.getSourceAddr();
 			byte[] asdu = e.getASDU();
 			int service = e.getServiceCode();
 			switch (service) {
@@ -288,7 +280,7 @@ public abstract class KnxIPConnection extends KnxConnection {
 			try {
 				poll(groupToPoints);
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				LOGGER.debug("", e);
 			}
 		}
 	}
@@ -321,8 +313,9 @@ public abstract class KnxIPConnection extends KnxConnection {
 					LOGGER.info(MESSAGE_SERVICE_FAMILIES + MESSAGE_MAP_SEPARATOR + fam.toString());
 
 					hostToDeviceDIB.put(hpai.getAddress().getHostAddress(), dib);
-					this.listener.onDiscovered();
 				}
+				this.listener.onDiscovered();
+				
 
 				if (responses.length > 0) {
 					discoverFuture.cancel(true);
@@ -511,9 +504,9 @@ public abstract class KnxIPConnection extends KnxConnection {
 		DeviceNode deviceNode = null;
 		String name = dib.getName();
 		if (!nameToDeviceNode.containsKey(name)) {
-			Node child = node.getChild(name);
+			Node child = node.getChild(name, true);
 			if (null == child) {
-				child = node.createChild(name).build();
+				child = node.createChild(name, true).build();
 			}
 			deviceNode = new DeviceNode(getConnection(), null, child, dib);
 		} else {
