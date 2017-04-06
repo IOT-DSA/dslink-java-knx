@@ -23,6 +23,7 @@ import org.dsa.iot.knx.datapoint.DPT2ByteFloat;
 import org.dsa.iot.knx.datapoint.DPT2ByteUnsigned;
 import org.dsa.iot.knx.datapoint.DPT3BitControlled;
 import org.dsa.iot.knx.datapoint.DPT4ByteFloat;
+import org.dsa.iot.knx.datapoint.DPT4ByteSigned;
 import org.dsa.iot.knx.datapoint.DPT64BitSigned;
 import org.dsa.iot.knx.datapoint.DPT8BitUnsigned;
 import org.dsa.iot.knx.datapoint.DPTBoolean;
@@ -47,6 +48,7 @@ import tuwien.auto.calimero.datapoint.StateDP;
 import tuwien.auto.calimero.dptxlator.DPTXlator;
 import tuwien.auto.calimero.dptxlator.DPTXlator2ByteFloat;
 import tuwien.auto.calimero.dptxlator.DPTXlator4ByteFloat;
+import tuwien.auto.calimero.dptxlator.DPTXlator4ByteSigned;
 import tuwien.auto.calimero.dptxlator.DPTXlatorTime;
 import tuwien.auto.calimero.dptxlator.DPTXlatorDate;
 import tuwien.auto.calimero.dptxlator.DPTXlatorRGB;
@@ -315,7 +317,6 @@ public abstract class KnxIPConnection extends KnxConnection {
 					hostToDeviceDIB.put(hpai.getAddress().getHostAddress(), dib);
 				}
 				this.listener.onDiscovered();
-				
 
 				if (responses.length > 0) {
 					discoverFuture.cancel(true);
@@ -395,6 +396,21 @@ public abstract class KnxIPConnection extends KnxConnection {
 				}
 
 				value = new Value(asFloat);
+			} else if (dpt instanceof DPT4ByteSigned) {
+				double asInt = 0;
+				DPTXlator translator;
+				try {
+					translator = new DPTXlator4ByteSigned(dpt.getDtpId());
+					if (asdu.length < 4) {
+						throw new KNXIllegalArgumentException("minimum APDU length is 4 bytes");
+					}
+					translator.setData(asdu, 0);
+					asInt = (int) translator.getNumericValue();
+				} catch (KNXFormatException e) {
+					LOGGER.error(e.getMessage());
+				}
+
+				value = new Value(asInt);
 			} else if (dpt instanceof DPTDate) {
 				String date = null;
 				DPTXlator translator;
@@ -638,6 +654,11 @@ public abstract class KnxIPConnection extends KnxConnection {
 				valFloat = communicator.readFloat(groupAddress, true);
 				value = new Value(valFloat);
 				valueType = ValueType.NUMBER;
+			} else if (dpt instanceof DPT4ByteSigned) {
+				Datapoint dataPnt = new StateDP(groupAddress, "4 byte signed", 0, dpt.getDtpId());
+				value = new Value(valFloat);
+				valString = communicator.read(dataPnt);
+				valueType = ValueType.NUMBER;
 			} else if (dpt instanceof DPTTime) {
 				Datapoint dataPnt = new StateDP(groupAddress, "time", 0, dpt.getDtpId());
 				valString = communicator.read(dataPnt);
@@ -738,6 +759,9 @@ public abstract class KnxIPConnection extends KnxConnection {
 				communicator.write(dst, val.getNumber().floatValue(), false);
 			} else if (dpt instanceof DPT4ByteFloat) {
 				communicator.write(dst, val.getNumber().floatValue(), true);
+			} else if (dpt instanceof DPT4ByteSigned) {
+				Datapoint dataPnt = new StateDP(dst, "4 byte signed", 0, dpt.getDtpId());
+				communicator.write(dataPnt, val.getString());
 			} else if (dpt instanceof DPTTime) {
 				Datapoint dataPnt = new StateDP(dst, "time", 0, dpt.getDtpId());
 				communicator.write(dataPnt, val.getString());
