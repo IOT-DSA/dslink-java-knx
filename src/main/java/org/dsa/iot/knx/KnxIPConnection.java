@@ -2,6 +2,7 @@ package org.dsa.iot.knx;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -24,6 +25,7 @@ import org.dsa.iot.knx.datapoint.DPT2ByteUnsigned;
 import org.dsa.iot.knx.datapoint.DPT3BitControlled;
 import org.dsa.iot.knx.datapoint.DPT4ByteFloat;
 import org.dsa.iot.knx.datapoint.DPT4ByteSigned;
+import org.dsa.iot.knx.datapoint.DPT4ByteUnsigned;
 import org.dsa.iot.knx.datapoint.DPT64BitSigned;
 import org.dsa.iot.knx.datapoint.DPT8BitUnsigned;
 import org.dsa.iot.knx.datapoint.DPTBoolean;
@@ -486,11 +488,8 @@ public abstract class KnxIPConnection extends KnxConnection {
 				}
 				long kiloValue = Long.parseLong(kiloString);
 				value = new Value(kiloValue);
-			} else if (dpt instanceof DPTString) {
-				String asString = asdu.toString();
-				value = new Value(asString);
 			} else {
-				String asString = asdu.toString();
+				String asString = Arrays.toString(asdu);
 				value = new Value(asString);
 			}
 
@@ -633,16 +632,16 @@ public abstract class KnxIPConnection extends KnxConnection {
 				}
 				valueType = ValueType.NUMBER;
 			} else if (dpt instanceof DPTSceneNumber || dpt instanceof DPTSceneControl) {
-				Datapoint dataPnt = new StateDP(groupAddress, "1 byte scene", 0, dpt.getDtpId());
+				Datapoint dataPnt = new StateDP(groupAddress, "1 byte scene", 0, null);
 				valString = communicator.read(dataPnt);
-				byte[] b = valString.getBytes();
+				byte[] b = Utils.hexStringToArray(valString);
 				short number = (short) (b[0] & 0x3F);
 				value = new Value(number);
 				valueType = ValueType.NUMBER;
 			} else if (dpt instanceof DPT2ByteUnsigned) {
-				Datapoint dataPnt = new StateDP(groupAddress, "2 byte unsigned", 0, dpt.getDtpId());
+				Datapoint dataPnt = new StateDP(groupAddress, "2 byte unsigned", 0, null);
 				valString = communicator.read(dataPnt);
-				byte[] b = valString.getBytes();
+				byte[] b = Utils.hexStringToArray(valString);
 				int unsigned = ((b[0] << 8) & 0x0000ff00) | (b[1] & 0x000000ff);
 				value = new Value(unsigned);
 				valueType = ValueType.NUMBER;
@@ -655,9 +654,19 @@ public abstract class KnxIPConnection extends KnxConnection {
 				value = new Value(valFloat);
 				valueType = ValueType.NUMBER;
 			} else if (dpt instanceof DPT4ByteSigned) {
-				Datapoint dataPnt = new StateDP(groupAddress, "4 byte signed", 0, dpt.getDtpId());
-				value = new Value(valFloat);
+				Datapoint dataPnt = new StateDP(groupAddress, "4 byte signed", 0, null);
 				valString = communicator.read(dataPnt);
+				byte[] b = Utils.hexStringToArray(valString);
+				int signed = ((b[0] << 24) & 0xff000000) | ((b[1] << 16) & 0x00ff0000) | ((b[2] << 8) & 0x0000ff00) | (b[3] & 0x000000ff);
+				value = new Value(signed);
+				valueType = ValueType.NUMBER;
+			} else if (dpt instanceof DPT4ByteUnsigned) {
+				Datapoint dataPnt = new StateDP(groupAddress, "4 byte unsigned", 0, null);
+				valString = communicator.read(dataPnt);
+				byte[] b = Utils.hexStringToArray(valString);
+				int signed = ((b[0] << 24) & 0xff000000) | ((b[1] << 16) & 0x00ff0000) | ((b[2] << 8) & 0x0000ff00) | (b[3] & 0x000000ff);
+				long unsigned = signed & 0xffffffffl;
+				value = new Value(unsigned);
 				valueType = ValueType.NUMBER;
 			} else if (dpt instanceof DPTTime) {
 				Datapoint dataPnt = new StateDP(groupAddress, "time", 0, dpt.getDtpId());
@@ -873,7 +882,7 @@ public abstract class KnxIPConnection extends KnxConnection {
 		} else if (null != individualAddress && null != medium && null != restType) {
 			LOGGER.debug("gateways already is created!");
 		} else if (null == child.getAction() && !NODE_STATUS.equals(child.getName())) {
-			node.removeChild(child);
+			node.removeChild(child, false);
 		}
 	}
 

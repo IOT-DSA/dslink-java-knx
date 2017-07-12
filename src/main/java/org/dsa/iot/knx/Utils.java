@@ -23,4 +23,15 @@ public class Utils {
 		
 		return group;
 	}
+	
+	public static byte[] hexStringToArray(String s) {
+		s = s.trim();
+		String[] arr = s.split("\\s+");
+		byte[] retval = new byte[arr.length];
+		for (int i = 0; i < arr.length; i++) {
+			String byteStr = arr[i];
+			retval[i] = (byte) Integer.parseInt(byteStr, 16);
+		}
+		return retval;
+	}
 }

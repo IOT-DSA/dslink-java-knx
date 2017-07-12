@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
 import org.dsa.iot.dslink.node.Node;
@@ -15,6 +16,8 @@ import org.dsa.iot.knx.datapoint.DatapointType;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import tuwien.auto.calimero.exception.KNXFormatException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -102,7 +105,7 @@ public class GroupAddressParser {
 			}
 			// build the folder tree from the hashMap
 			buildGroupTree();
-		} catch (Exception e) {
+		} catch (JAXBException | KNXFormatException e) {
 			LOGGER.debug(e.getMessage());
 		}
 	}
