@@ -1,6 +1,6 @@
 {
   "name": "dslink-java-knx",
-  "version": "0.0.46",
+  "version": "0.0.48",
   "description": "Java DSLink for KNX",
   "license": "Apache",
   "author": {

@@ -353,13 +353,15 @@ public abstract class KnxIPConnection extends KnxConnection {
 				int asInt = (asdu[0] & 0x0F);
 				value = new Value(asInt);
 			} else if (dpt instanceof DPT8BitUnsigned) {
-				if (DatapointType.EIGHT_BIT_UNSIGNED_SCALING.getTypeId().equals(type.getTypeId())
-						|| DatapointType.EIGHT_BIT_UNSIGNED_ANGLE.getTypeId().equals(type.getTypeId())) {
-					int asInt = asdu[0] & 0x000000FF;
-					value = new Value(asInt);
-				} else {
+				if (DatapointType.EIGHT_BIT_UNSIGNED_SCALING.getTypeId().equals(type.getTypeId())) {
 					int asInt = asdu[0] & 0x000000FF;
 					value = new Value(rawToPercentage(asInt));
+				} else if (DatapointType.EIGHT_BIT_UNSIGNED_ANGLE.getTypeId().equals(type.getTypeId())) {
+					int asInt = asdu[0] & 0x000000FF;
+					value = new Value(rawToAngle(asInt));
+				} else {
+					int asInt = asdu[0] & 0x000000FF;
+					value = new Value(asInt);
 				}
 			} else if (dpt instanceof DPTSceneNumber || dpt instanceof DPTSceneControl) {
 				int asInt = asdu[0] & 0x0000003F;
@@ -502,18 +504,19 @@ public abstract class KnxIPConnection extends KnxConnection {
 	}
 
 	int rawToPercentage(int number) {
-		double percentage = (double) number / (double) MAXIMUM_UNSIGNED_BYTE;
-		percentage *= (double) PERCENTAGE_FACTOR;
-		long rounded = Math.round(percentage);
-		return (int) rounded;
+		return (short) Math.round(number * 100.0f / 255);
+	}
+	
+	int rawToAngle(int number) {
+		return (short) Math.round(number * 360.0f / 255);
 	}
 
-	int percentageToRaw(int percentage) {
-		double converted = (double) percentage / (double) PERCENTAGE_FACTOR;
-		converted *= (double) MAXIMUM_UNSIGNED_BYTE;
-		long rounded = Math.round(converted);
-		return (int) rounded;
-	}
+//	int percentageToRaw(int percentage) {
+//		double converted = (double) percentage / (double) PERCENTAGE_FACTOR;
+//		converted *= (double) MAXIMUM_UNSIGNED_BYTE;
+//		long rounded = Math.round(converted);
+//		return (int) rounded;
+//	}
 
 	protected DeviceNode setupDeviceNode(String host, DeviceDIB dib) {
 		DeviceNode deviceNode = null;
@@ -628,7 +631,7 @@ public abstract class KnxIPConnection extends KnxConnection {
 					value = new Value(valInt);
 				} else {
 					valInt = communicator.readUnsigned(groupAddress, ProcessCommunicationBase.UNSCALED);
-					value = new Value(rawToPercentage(valInt));
+					value = new Value(valInt);
 				}
 				valueType = ValueType.NUMBER;
 			} else if (dpt instanceof DPTSceneNumber || dpt instanceof DPTSceneControl) {
@@ -719,7 +722,7 @@ public abstract class KnxIPConnection extends KnxConnection {
 	private void poll(Map<String, List<EditablePoint>> groupToPoints) throws InterruptedException {
 		for (Entry<String, List<EditablePoint>> entry : groupToPoints.entrySet()) {
 			String group = entry.getKey();
-			List<EditablePoint> points = entry.getValue();
+			List<EditablePoint> points = new ArrayList<EditablePoint>(entry.getValue());
 			for (EditablePoint point : points) {
 				Node node = point.node;
 				String address = node.getAttribute(EditablePoint.ATTR_GROUP_ADDRESS).getString();
@@ -756,7 +759,7 @@ public abstract class KnxIPConnection extends KnxConnection {
 					communicator.write(dst, unsigned, ProcessCommunicationBase.ANGLE);
 				} else {
 					unsigned = val.getNumber().intValue();
-					communicator.write(dst, percentageToRaw(unsigned), ProcessCommunicationBase.UNSCALED);
+					communicator.write(dst, unsigned, ProcessCommunicationBase.UNSCALED);
 				}
 			} else if (dpt instanceof DPTSceneNumber || dpt instanceof DPTSceneControl) {
 				Datapoint dataPnt = new StateDP(dst, "1 byte scene", 0, dpt.getDtpId());
