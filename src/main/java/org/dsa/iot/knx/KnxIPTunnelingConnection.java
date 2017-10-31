@@ -50,11 +50,16 @@ public class KnxIPTunnelingConnection extends KnxIPConnection {
 	}
 
 	private void generateGatewayNode() {
-		Node child = node.createChild(ATTR_GATEWAY_NAME, true).build();
+		
+		Node child = node.getChild(ATTR_GATEWAY_NAME, true);
+		if (child == null) {
+			child = node.createChild(ATTR_GATEWAY_NAME, true).build();
+		}
 		child.setAttribute(ATTR_INDIVIDUAL_ADDRESS, new Value(individualAddress));
 		child.setAttribute(ATTR_MEDIUM, new Value(TPSettings.getMediumString(TPSettings.MEDIUM_TP1)));
 
-		new DeviceNode(getConnection(), null, child);
+		DeviceNode gateway = new DeviceNode(getConnection(), null, child);
+		gateway.restoreLastSession();
 	}
 
 	@Override

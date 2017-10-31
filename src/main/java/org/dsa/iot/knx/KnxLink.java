@@ -138,7 +138,7 @@ public class KnxLink {
 			KnxIPConnection ipConnection;
 			if (transType != null && groupLevel != null && interval != null && timeout != null) {
 				if (localHost != null && remoteHost != null && port != null && useNat != null
-						&& null != deviceAddress) {
+						&& deviceAddress != null) {
 					ipConnection = new KnxIPTunnelingConnection(getLink(), child);
 				} else {
 					ipConnection = new KnxIPRoutingConnection(getLink(), child);
